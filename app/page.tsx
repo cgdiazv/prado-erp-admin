@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer } from "lucide-react";
+import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer, Database, ArrowUpDown } from "lucide-react";
 import CajaChicaModule from "@/components/CajaChicaModule";
 import AccountingBooksModule from "@/components/AccountingBooksModule";
 import CustomerAgingReportModule from "@/components/CustomerAgingReportModule";
@@ -1780,12 +1780,152 @@ export default function AdminDashboard() {
   // Hub de Listas State
   const [activeListModal, setActiveListModal] = useState<string | null>(null);
 
-  // Import Data Wizard State (Clientes, Proveedores, Productos para Inventario, Catálogo de Cuentas)
+  // Import / Export Data Wizard State
+  const [dataExchangeMode, setDataExchangeMode] = useState<"import" | "export">("import");
   const [selectedImportCategory, setSelectedImportCategory] = useState<"clientes" | "proveedores" | "productos" | "cuentas">("clientes");
+  const [selectedExportCategory, setSelectedExportCategory] = useState<
+    "clientes" | "proveedores" | "productos" | "cuentas" | "facturas_venta" | "facturas_compra" | "pedidos_venta" | "cotizaciones" | "asientos"
+  >("clientes");
+  const [exportFormat, setExportFormat] = useState<"csv" | "excel" | "json">("csv");
+  const [exportDelimiter, setExportDelimiter] = useState<"," | ";" | "\t">(",");
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const [importPasteText, setImportPasteText] = useState<string>("");
   const [importPreviewRows, setImportPreviewRows] = useState<any[]>([]);
   const [importNotification, setImportNotification] = useState<string>("");
   const [isImporting, setIsImporting] = useState<boolean>(false);
+
+  const handleExportData = async (catOverride?: string) => {
+    const targetCat = catOverride || selectedExportCategory;
+    setIsExporting(true);
+    setImportNotification("");
+    try {
+      let endpoint = "";
+      let filename = "";
+      let columnHeaders: string[] = [];
+      let extractRow: (item: any) => string[] = () => [];
+
+      switch (targetCat) {
+        case "clientes":
+          endpoint = "/api/customers";
+          filename = "Clientes";
+          columnHeaders = ["Código Macola", "Nombre", "RTN", "Correo", "Teléfono", "Dirección", "Moneda"];
+          extractRow = (c) => [c.macolaCode || "", c.name || "", c.rtn || "", c.email || "", c.phone || "", c.address || "", c.currency || "USD"];
+          break;
+        case "proveedores":
+          endpoint = "/api/vendors";
+          filename = "Proveedores";
+          columnHeaders = ["Código Macola", "Nombre / Razón Social", "RTN", "Correo", "Teléfono", "Dirección", "Moneda"];
+          extractRow = (v) => [v.macolaCode || "", v.name || "", v.rtn || "", v.email || "", v.phone || "", v.address || "", v.currency || "USD"];
+          break;
+        case "productos":
+          endpoint = "/api/inventory";
+          filename = "Productos_Inventario";
+          columnHeaders = ["SKU", "Descripción", "Cantidad Stock", "Costo Unitario", "Precio Venta", "Tipo Seguimiento"];
+          extractRow = (p) => [p.sku || "", p.description || "", String(p.quantity ?? 0), String(p.cost ?? 0), String(p.price ?? 0), p.trackingType || "NONE"];
+          break;
+        case "cuentas":
+          endpoint = "/api/accounts";
+          filename = "Catalogo_Cuentas";
+          columnHeaders = ["Código", "Nombre de Cuenta", "Tipo", "Moneda", "Saldo", "Estado"];
+          extractRow = (a) => [a.code || "", a.name || "", a.type || "", a.currency || "USD", String(a.balance ?? 0), a.isActive ? "Activa" : "Inactiva"];
+          break;
+        case "facturas_venta":
+          endpoint = "/api/invoices";
+          filename = "Facturas_Venta";
+          columnHeaders = ["Número Factura", "Fecha", "Cliente", "Vencimiento", "Subtotal", "Impuesto", "Total", "Estado", "Estado Pago"];
+          extractRow = (f) => [f.invoiceNumber || f.num || "", f.invoiceDate || f.date || "", f.customerName || f.customer || "", f.dueDate || f.due || "", String(f.subtotal ?? 0), String(f.tax ?? 0), String(f.total ?? 0), f.status || "", f.paymentStatus || ""];
+          break;
+        case "facturas_compra":
+          endpoint = "/api/purchase-invoices";
+          filename = "Facturas_Compra";
+          columnHeaders = ["Número Factura", "Orden de Compra", "Proveedor", "Fecha Emisión", "Vencimiento", "Subtotal", "Impuesto", "Total", "Estado Pago", "Estado Inventario"];
+          extractRow = (pi) => [pi.invoiceNumber || "", pi.purchaseOrderNumber || "", pi.vendorName || "", pi.issueDate || "", pi.dueDate || "", String(pi.subtotal ?? 0), String(pi.tax ?? 0), String(pi.total ?? 0), pi.paymentStatus || "", pi.inventoryStatus || ""];
+          break;
+        case "pedidos_venta":
+          endpoint = "/api/sales-orders";
+          filename = "Pedidos_Venta";
+          columnHeaders = ["Número Pedido", "O.C. Cliente", "Cliente", "Fecha Pedido", "Fecha Entrega", "Subtotal", "Total", "Estado"];
+          extractRow = (so) => [so.orderNumber || "", so.customerPoNumber || "", so.customerName || "", so.orderDate || "", so.expectedDeliveryDate || "", String(so.subtotal ?? 0), String(so.total ?? 0), so.status || ""];
+          break;
+        case "cotizaciones":
+          endpoint = "/api/quotes";
+          filename = "Cotizaciones";
+          columnHeaders = ["Número Cotización", "Cliente", "Fecha Emisión", "Válida Hasta", "Términos", "Moneda", "Vendedor", "Subtotal", "Total", "Estado"];
+          extractRow = (q) => [q.quoteNumber || "", q.customerName || "", q.quoteDate || "", q.validUntil || "", q.paymentTerms || "", q.currency || "USD", q.salesRepName || "", String(q.subtotal ?? 0), String(q.total ?? 0), q.status || ""];
+          break;
+        case "asientos":
+          endpoint = "/api/journal-entries";
+          filename = "Asientos_Contables";
+          columnHeaders = ["Número Asiento", "Fecha", "Concepto / Descripción", "Estado", "Referencia"];
+          extractRow = (je) => [je.entryNumber || "", je.date || "", je.description || "", je.status || "", je.reference || ""];
+          break;
+      }
+
+      const res = await fetch(endpoint);
+      const json = await res.json();
+      let records: any[] = [];
+      if (Array.isArray(json)) {
+        records = json;
+      } else if (json.data && Array.isArray(json.data)) {
+        records = json.data;
+      } else if (json.invoices && Array.isArray(json.invoices)) {
+        records = json.invoices;
+      } else if (json.quotes && Array.isArray(json.quotes)) {
+        records = json.quotes;
+      } else if (json.orders && Array.isArray(json.orders)) {
+        records = json.orders;
+      }
+
+      const escapeVal = (val: any) => {
+        if (val === null || val === undefined) return "";
+        const str = String(val);
+        if (str.includes(",") || str.includes(";") || str.includes("\t") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const dateStr = new Date().toISOString().split("T")[0];
+      const fullFilename = `${filename}_${dateStr}`;
+
+      if (exportFormat === "json") {
+        const jsonString = JSON.stringify(records, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${fullFilename}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        const delim = exportFormat === "excel" ? "\t" : exportDelimiter;
+        const extension = exportFormat === "excel" ? "xls" : "csv";
+        const mime = exportFormat === "excel" ? "application/vnd.ms-excel;charset=utf-8;" : "text/csv;charset=utf-8;";
+
+        const headerLine = columnHeaders.map(escapeVal).join(delim);
+        const dataLines = records.map((r) => extractRow(r).map(escapeVal).join(delim));
+        const csvContent = "\uFEFF" + [headerLine, ...dataLines].join("\r\n");
+        const blob = new Blob([csvContent], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${fullFilename}.${extension}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      setImportNotification(`¡Se exportaron exitosamente ${records.length} registros de ${filename.replace(/_/g, " ")}!`);
+    } catch (err: any) {
+      console.error("Export error:", err);
+      setImportNotification(`Error al exportar datos: ${err.message || "Error de conexión"}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const [productCategoriesList, setProductCategoriesList] = useState<string[]>([]);
 
@@ -9549,7 +9689,7 @@ export default function AdminDashboard() {
                       { id: "horas", label: "Horas trabajadas" },
                       { id: "monedas", label: "Monedas" },
                       { id: "listas", label: "Todas las listas" },
-                      { id: "importar", label: "Importar datos" },
+                      { id: "importar", label: "Importar / Exportar" },
                       { id: "avanzadas", label: "Opciones avanzadas" },
                     ].map((tab) => {
                       const isActive = configSubTab === tab.id;
@@ -12425,18 +12565,18 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 pt-2">
                         {/* Columna 1 */}
                         <div className="space-y-7">
-                          {/* Item: Importar datos */}
+                          {/* Item: Importar / Exportar datos */}
                           <div className="p-3.5 rounded-xl bg-orange-50/70 border border-[#1b426e]/30">
                             <button
                               type="button"
                               onClick={() => setConfigSubTab("importar")}
                               className="font-bold text-sm text-[#1b426e] hover:underline cursor-pointer text-left mb-1 flex items-center gap-2"
                             >
-                              <Download className="w-4 h-4 text-[#1b426e] shrink-0" />
-                              <span>Importar datos (Clientes, Proveedores, Inventario, Catálogo)</span>
+                              <ArrowUpDown className="w-4 h-4 text-[#1b426e] shrink-0" />
+                              <span>Importar / Exportar datos (Clientes, Proveedores, Inventario, Catálogo)</span>
                             </button>
                             <p className="text-xs text-slate-600 leading-relaxed">
-                              Permite importar de forma masiva tablas de clientes, proveedores, catálogo de productos/inventario y catálogo de cuentas contables desde archivos CSV o Excel.
+                              Permite importar o exportar de forma masiva tablas de clientes, proveedores, catálogo de productos/inventario, facturación y catálogo de cuentas contables desde y hacia archivos CSV, Excel o JSON.
                             </p>
                           </div>
 
@@ -12665,14 +12805,54 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* SUBTAB: IMPORTAR DATOS */}
+                  {/* SUBTAB: IMPORTAR / EXPORTAR DATOS */}
                   {configSubTab === "importar" && (
                     <div className="max-w-4xl space-y-6 animate-in fade-in duration-150">
-                      <div>
-                        <h2 className="font-bold text-lg text-slate-900">Importación Masiva de Tablas</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Selecciona el tipo de datos que deseas importar a la base de datos de Wayne Trademark mediante archivos CSV o Excel.
-                        </p>
+                      {/* Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                          <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                            <ArrowUpDown className="w-5 h-5 text-[#1b426e]" />
+                            <span>Importar / Exportar Datos</span>
+                          </h2>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Carga masiva y descarga de tablas maestras, catálogos y transacciones de {companySettings.nombreLegal || companySettings.nombre || "Prado ERP"}.
+                          </p>
+                        </div>
+
+                        {/* Mode Switcher Tabs */}
+                        <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200 self-start sm:self-auto shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDataExchangeMode("import");
+                              setImportNotification("");
+                            }}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                              dataExchangeMode === "import"
+                                ? "bg-white text-[#1b426e] shadow-xs"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Importar Datos</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDataExchangeMode("export");
+                              setImportNotification("");
+                            }}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                              dataExchangeMode === "export"
+                                ? "bg-white text-[#1b426e] shadow-xs"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Exportar Datos</span>
+                          </button>
+                        </div>
                       </div>
 
                       {importNotification && (
@@ -12681,233 +12861,453 @@ export default function AdminDashboard() {
                           <button
                             type="button"
                             onClick={() => setImportNotification("")}
-                            className="text-emerald-600 hover:text-emerald-900 font-bold"
+                            className="text-emerald-600 hover:text-emerald-900 font-bold cursor-pointer"
                           >
                             ✕
                           </button>
                         </div>
                       )}
 
-                      {/* 1. Selection Cards */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {[
-                          {
-                            id: "clientes",
-                            title: "Clientes",
-                            desc: "Nombres, RTN, correos, teléfonos y direcciones de entrega",
-                            Icon: Users,
-                            color: "bg-blue-50 text-blue-700 border-blue-200",
-                          },
-                          {
-                            id: "proveedores",
-                            title: "Proveedores",
-                            desc: "Proveedores de insumos, cartón, tinta y materias primas",
-                            Icon: Factory,
-                            color: "bg-amber-50 text-amber-700 border-amber-200",
-                          },
-                          {
-                            id: "productos",
-                            title: "Productos Inventario",
-                            desc: "Catálogo de artículos, SKU, precios unitarios y stock inicial",
-                            Icon: Package,
-                            color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                          },
-                          {
-                            id: "cuentas",
-                            title: "Catálogo de Cuentas",
-                            desc: "Plan contable, números de cuenta, categorías y saldos",
-                            Icon: BookOpen,
-                            color: "bg-purple-50 text-purple-700 border-purple-200",
-                          },
-                        ].map((cat) => {
-                          const isSelected = selectedImportCategory === cat.id;
-                          const IconComp = cat.Icon;
-                          return (
-                            <button
-                              key={cat.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedImportCategory(cat.id as any);
-                                setImportPasteText("");
-                                setImportPreviewRows([]);
-                              }}
-                              className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between h-36 ${
-                                isSelected
-                                  ? `${cat.color} ring-2 ring-[#1b426e] font-semibold shadow-xs`
-                                  : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
-                              }`}
-                            >
+                      {/* ================= MODE: IMPORTAR ================= */}
+                      {dataExchangeMode === "import" && (
+                        <div className="space-y-6 animate-in fade-in duration-150">
+                          {/* 1. Selection Cards */}
+                          <div>
+                            <span className="text-xs font-bold text-slate-700 block mb-2">1. Selecciona la tabla a importar:</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              {[
+                                {
+                                  id: "clientes",
+                                  title: "Clientes",
+                                  desc: "Nombres, RTN, correos, teléfonos y direcciones de entrega",
+                                  Icon: Users,
+                                  color: "bg-blue-50 text-blue-700 border-blue-200",
+                                },
+                                {
+                                  id: "proveedores",
+                                  title: "Proveedores",
+                                  desc: "Proveedores de insumos, materias primas y servicios",
+                                  Icon: Factory,
+                                  color: "bg-amber-50 text-amber-700 border-amber-200",
+                                },
+                                {
+                                  id: "productos",
+                                  title: "Productos Inventario",
+                                  desc: "Catálogo de artículos, SKU, precios unitarios y stock inicial",
+                                  Icon: Package,
+                                  color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                },
+                                {
+                                  id: "cuentas",
+                                  title: "Catálogo de Cuentas",
+                                  desc: "Plan contable, números de cuenta, categorías y naturaleza",
+                                  Icon: BookOpen,
+                                  color: "bg-purple-50 text-purple-700 border-purple-200",
+                                },
+                              ].map((cat) => {
+                                const isSelected = selectedImportCategory === cat.id;
+                                const IconComp = cat.Icon;
+                                return (
+                                  <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedImportCategory(cat.id as any);
+                                      setImportPasteText("");
+                                      setImportPreviewRows([]);
+                                    }}
+                                    className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between h-36 ${
+                                      isSelected
+                                        ? `${cat.color} ring-2 ring-[#1b426e] font-semibold shadow-xs`
+                                        : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
+                                    }`}
+                                  >
+                                    <div>
+                                      <div className="mb-2">
+                                        <IconComp className="w-6 h-6 stroke-[2]" />
+                                      </div>
+                                      <h3 className="font-bold text-xs text-slate-900">{cat.title}</h3>
+                                      <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{cat.desc}</p>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-[#0066cc] uppercase tracking-wider flex items-center gap-1">
+                                      {isSelected ? (
+                                        <>
+                                          <CheckCircle2 className="w-3 h-3 text-[#0066cc]" />
+                                          <span>Seleccionado</span>
+                                        </>
+                                      ) : (
+                                        <span>Seleccionar</span>
+                                      )}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* 2. Upload / Paste Container */}
+                          <div className="border border-slate-200 rounded-2xl p-6 bg-white space-y-5 shadow-xs">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
                               <div>
-                                <div className="mb-2">
-                                  <IconComp className="w-6 h-6 stroke-[2]" />
-                                </div>
-                                <h3 className="font-bold text-xs text-slate-900">{cat.title}</h3>
-                                <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{cat.desc}</p>
+                                <h3 className="font-bold text-sm text-slate-900 capitalize">
+                                  2. Importar {selectedImportCategory === "productos" ? "Productos para inventario" : selectedImportCategory}
+                                </h3>
+                                <p className="text-xs text-slate-500">Pega los datos copiados desde Excel o carga tu archivo en formato CSV / TSV.</p>
                               </div>
-                              <span className="text-[10px] font-bold text-[#0066cc] uppercase tracking-wider flex items-center gap-1">
-                                {isSelected ? (
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  let sampleCsv = "";
+                                  if (selectedImportCategory === "clientes") {
+                                    sampleCsv = "Nombre,RTN,Correo,Telefono,Dirección\nTextiles Búfalo S.A.,08019012345678,compras@bufalo.hn,+504 2550-1122,Zip Búfalo Nave 4\nEmpaques del Norte,05019009876543,ventas@empaques.hn,+504 9988-7766,San Pedro Sula";
+                                  } else if (selectedImportCategory === "proveedores") {
+                                    sampleCsv = "Proveedor,RTN,Correo,Telefono,Categoria\nInsumos Flexográficos S.A.,08019998877665,contacto@insumosflexo.com,+504 2233-4455,Tintas Flexo\nPapelera Hondureña,05018887766554,pedidos@papelera.hn,+504 2550-9900,Cartón y Papel";
+                                  } else if (selectedImportCategory === "productos") {
+                                    sampleCsv = "SKU,Nombre,Categoria,Precio,Stock\nFLEX-1001,Cajas Flexo 12x12,Empaque Flexográfico,25.50,500\nETIQ-2002,Etiquetas Adhesivas Rollos,Etiquetas Industriales,8.75,1200";
+                                  } else {
+                                    sampleCsv = "Codigo,Cuenta,Tipo,Subcuenta\n1000,Caja y Bancos,Activo,No\n1010,Banco Ficohsa USD,Activo,Sí\n4000,Ingresos por Ventas Flexo,Ingreso,No";
+                                  }
+
+                                  const blob = new Blob([sampleCsv], { type: "text/csv;charset=utf-8;" });
+                                  const url = URL.createObjectURL(blob);
+                                  const link = document.createElement("a");
+                                  link.setAttribute("href", url);
+                                  link.setAttribute("download", `Plantilla_Ejemplo_${selectedImportCategory}.csv`);
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                                className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
+                              >
+                                <FileSpreadsheet className="w-4 h-4 text-slate-500" />
+                                <span>Descargar plantilla CSV</span>
+                              </button>
+                            </div>
+
+                            {/* Textarea or File Parser */}
+                            <div className="space-y-3">
+                              <label className="block text-xs font-semibold text-slate-700">
+                                Pega aquí las filas de tu hoja de cálculo (Excel / Google Sheets) o CSV:
+                              </label>
+                              <textarea
+                                rows={5}
+                                value={importPasteText}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setImportPasteText(val);
+                                  const lines = val.trim().split("\n").filter((l) => l.trim().length > 0);
+                                  if (lines.length > 0) {
+                                    const parsed = lines.map((line, idx) => {
+                                      const cols = line.includes("\t") ? line.split("\t") : line.split(",");
+                                      return { id: idx, cols };
+                                    });
+                                    setImportPreviewRows(parsed);
+                                  } else {
+                                    setImportPreviewRows([]);
+                                  }
+                                }}
+                                placeholder={
+                                  selectedImportCategory === "clientes"
+                                    ? "Ejemplo:\nTextiles Búfalo S.A., 08019012345678, compras@bufalo.hn, +504 2550-1122, Zip Búfalo\nEmpaques del Norte, 05019009876543, ventas@empaques.hn, +504 9988-7766, San Pedro Sula"
+                                    : "Pega las filas de tu tabla separadas por coma o tabulación..."
+                                }
+                                className="w-full p-3.5 text-xs font-mono rounded-xl border border-slate-300 bg-slate-50/70 text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                              />
+                            </div>
+
+                            {/* Interactive Data Preview Table */}
+                            {importPreviewRows.length > 0 && (
+                              <div className="space-y-3 pt-2 animate-in fade-in duration-150">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-slate-800">
+                                    Vista previa ({importPreviewRows.length} registros detectados)
+                                  </span>
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                    ✓ Formato detectado correctamente
+                                  </span>
+                                </div>
+
+                                <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-xl overflow-x-auto">
+                                  <table className="w-full text-left text-xs">
+                                    <thead>
+                                      <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
+                                        <th className="p-2.5 text-center w-10">#</th>
+                                        {importPreviewRows[0]?.cols.map((_: any, i: number) => (
+                                          <th key={i} className="p-2.5">Columna {i + 1}</th>
+                                        ))}
+                                        <th className="p-2.5 text-right">Estado</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 font-mono">
+                                      {importPreviewRows.slice(0, 10).map((row, idx) => (
+                                        <tr key={idx} className="hover:bg-slate-50">
+                                          <td className="p-2.5 text-center text-slate-400 font-sans">{idx + 1}</td>
+                                          {row.cols.map((col: string, cIdx: number) => (
+                                            <td key={cIdx} className="p-2.5 text-slate-800 font-sans">{col.trim()}</td>
+                                          ))}
+                                          <td className="p-2.5 text-right font-sans">
+                                            <span className="px-2 py-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded-full">
+                                              Listo
+                                            </span>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Execute Button */}
+                            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                              <span className="text-xs text-slate-500">
+                                {importPreviewRows.length > 0 ? `${importPreviewRows.length} registros listos para importación.` : "Ingresa o pega filas para continuar."}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={importPreviewRows.length === 0 || isImporting}
+                                onClick={() => {
+                                  setIsImporting(true);
+                                  setTimeout(() => {
+                                    setIsImporting(false);
+                                    const count = importPreviewRows.length;
+                                    const catName = selectedImportCategory === "productos" ? "Productos de inventario" : selectedImportCategory;
+                                    setImportNotification(`¡Se han importado exitosamente ${count} registros en la tabla de ${catName}!`);
+                                    setImportPasteText("");
+                                    setImportPreviewRows([]);
+                                  }, 1000);
+                                }}
+                                className="px-6 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
+                              >
+                                {isImporting ? (
                                   <>
-                                    <CheckCircle2 className="w-3 h-3 text-[#0066cc]" />
-                                    <span>Seleccionado</span>
+                                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>Procesando importación...</span>
                                   </>
                                 ) : (
-                                  <span>Seleccionar</span>
+                                  <span>Importar a la Base de Datos →</span>
                                 )}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
-                      {/* 2. Upload / Paste Container */}
-                      <div className="border border-slate-200 rounded-2xl p-6 bg-white space-y-5 shadow-xs">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      {/* ================= MODE: EXPORTAR ================= */}
+                      {dataExchangeMode === "export" && (
+                        <div className="space-y-6 animate-in fade-in duration-150">
+                          {/* 1. Selection Cards */}
                           <div>
-                            <h3 className="font-bold text-sm text-slate-900 capitalize">
-                              Importar {selectedImportCategory === "productos" ? "Productos para inventario" : selectedImportCategory}
-                            </h3>
-                            <p className="text-xs text-slate-500">Pega los datos copiados desde Excel o carga tu archivo en formato CSV / TSV.</p>
+                            <span className="text-xs font-bold text-slate-700 block mb-2">1. Selecciona la tabla o entidad a exportar:</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                              {[
+                                {
+                                  id: "clientes",
+                                  title: "Clientes",
+                                  desc: "Nombres, RTN, correos, teléfonos, direcciones y moneda",
+                                  Icon: Users,
+                                  color: "bg-blue-50 text-blue-700 border-blue-200",
+                                },
+                                {
+                                  id: "proveedores",
+                                  title: "Proveedores",
+                                  desc: "Proveedores de materias primas, insumos y servicios",
+                                  Icon: Factory,
+                                  color: "bg-amber-50 text-amber-700 border-amber-200",
+                                },
+                                {
+                                  id: "productos",
+                                  title: "Productos e Inventario",
+                                  desc: "Catálogo de productos, SKU, stock actual, costo y precios",
+                                  Icon: Package,
+                                  color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                },
+                                {
+                                  id: "cuentas",
+                                  title: "Catálogo Contable",
+                                  desc: "Plan de cuentas, código contable, tipo de cuenta y saldo",
+                                  Icon: BookOpen,
+                                  color: "bg-purple-50 text-purple-700 border-purple-200",
+                                },
+                                {
+                                  id: "facturas_venta",
+                                  title: "Facturas de Venta",
+                                  desc: "Historial de facturación de clientes, montos y estados de cobro",
+                                  Icon: FileText,
+                                  color: "bg-indigo-50 text-indigo-700 border-indigo-200",
+                                },
+                                {
+                                  id: "facturas_compra",
+                                  title: "Facturas de Compra",
+                                  desc: "Facturas de proveedores, órdenes vinculadas y pagos",
+                                  Icon: CreditCard,
+                                  color: "bg-teal-50 text-teal-700 border-teal-200",
+                                },
+                                {
+                                  id: "pedidos_venta",
+                                  title: "Pedidos de Venta",
+                                  desc: "Órdenes de clientes (Sales Orders), fechas y estados",
+                                  Icon: Boxes,
+                                  color: "bg-orange-50 text-orange-700 border-orange-200",
+                                },
+                                {
+                                  id: "cotizaciones",
+                                  title: "Cotizaciones",
+                                  desc: "Propuestas comerciales a clientes con validez y vendedor",
+                                  Icon: Tag,
+                                  color: "bg-rose-50 text-rose-700 border-rose-200",
+                                },
+                                {
+                                  id: "asientos",
+                                  title: "Asientos Contables",
+                                  desc: "Libro de diario general, números de póliza y referencias",
+                                  Icon: Layers,
+                                  color: "bg-violet-50 text-violet-700 border-violet-200",
+                                },
+                              ].map((cat) => {
+                                const isSelected = selectedExportCategory === cat.id;
+                                const IconComp = cat.Icon;
+                                return (
+                                  <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={() => setSelectedExportCategory(cat.id as any)}
+                                    className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between h-32 ${
+                                      isSelected
+                                        ? `${cat.color} ring-2 ring-[#1b426e] font-semibold shadow-xs`
+                                        : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
+                                    }`}
+                                  >
+                                    <div>
+                                      <div className="flex items-center justify-between mb-1.5">
+                                        <IconComp className="w-5 h-5 stroke-[2]" />
+                                        {isSelected && <CheckCircle2 className="w-4 h-4 text-[#1b426e]" />}
+                                      </div>
+                                      <h3 className="font-bold text-xs text-slate-900">{cat.title}</h3>
+                                      <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{cat.desc}</p>
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0066cc]">
+                                      {isSelected ? "Seleccionada" : "Seleccionar"}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              let sampleCsv = "";
-                              if (selectedImportCategory === "clientes") {
-                                sampleCsv = "Nombre,RTN,Correo,Telefono,Dirección\nTextiles Búfalo S.A.,08019012345678,compras@bufalo.hn,+504 2550-1122,Zip Búfalo Nave 4\nEmpaques del Norte,05019009876543,ventas@empaques.hn,+504 9988-7766,San Pedro Sula";
-                              } else if (selectedImportCategory === "proveedores") {
-                                sampleCsv = "Proveedor,RTN,Correo,Telefono,Categoria\nInsumos Flexográficos S.A.,08019998877665,contacto@insumosflexo.com,+504 2233-4455,Tintas Flexo\nPapelera Hondureña,05018887766554,pedidos@papelera.hn,+504 2550-9900,Cartón y Papel";
-                              } else if (selectedImportCategory === "productos") {
-                                sampleCsv = "SKU,Nombre,Categoria,Precio,Stock\nFLEX-1001,Cajas Flexo 12x12,Empaque Flexográfico,25.50,500\nETIQ-2002,Etiquetas Adhesivas Rollos,Etiquetas Industriales,8.75,1200";
-                              } else {
-                                sampleCsv = "Codigo,Cuenta,Tipo,Subcuenta\n1000,Caja y Bancos,Activo,No\n1010,Banco Ficohsa USD,Activo,Sí\n4000,Ingresos por Ventas Flexo,Ingreso,No";
-                              }
-
-                              const blob = new Blob([sampleCsv], { type: "text/csv;charset=utf-8;" });
-                              const url = URL.createObjectURL(blob);
-                              const link = document.createElement("a");
-                              link.setAttribute("href", url);
-                              link.setAttribute("download", `Plantilla_Ejemplo_${selectedImportCategory}.csv`);
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                            }}
-                            className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
-                          >
-                            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            <span>Descargar plantilla CSV</span>
-                          </button>
-                        </div>
-
-                        {/* Textarea or File Parser */}
-                        <div className="space-y-3">
-                          <label className="block text-xs font-semibold text-slate-700">
-                            Pega aquí las filas de tu hoja de cálculo (Excel / Google Sheets) o CSV:
-                          </label>
-                          <textarea
-                            rows={5}
-                            value={importPasteText}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setImportPasteText(val);
-                              // Auto parse lines
-                              const lines = val.trim().split("\n").filter((l) => l.trim().length > 0);
-                              if (lines.length > 0) {
-                                const parsed = lines.map((line, idx) => {
-                                  const cols = line.includes("\t") ? line.split("\t") : line.split(",");
-                                  return { id: idx, cols };
-                                });
-                                setImportPreviewRows(parsed);
-                              } else {
-                                setImportPreviewRows([]);
-                              }
-                            }}
-                            placeholder={
-                              selectedImportCategory === "clientes"
-                                ? "Ejemplo:\nTextiles Búfalo S.A., 08019012345678, compras@bufalo.hn, +504 2550-1122, Zip Búfalo\nEmpaques del Norte, 05019009876543, ventas@empaques.hn, +504 9988-7766, San Pedro Sula"
-                                : "Pega las filas de tu tabla separadas por coma o tabulación..."
-                            }
-                            className="w-full p-3.5 text-xs font-mono rounded-xl border border-slate-300 bg-slate-50/70 text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                          />
-                        </div>
-
-                        {/* Interactive Data Preview Table */}
-                        {importPreviewRows.length > 0 && (
-                          <div className="space-y-3 pt-2 animate-in fade-in duration-150">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-slate-800">
-                                Vista previa ({importPreviewRows.length} registros detectados)
-                              </span>
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                ✓ Formato detectado correctamente
-                              </span>
+                          {/* 2. Export Configuration & Action Panel */}
+                          <div className="border border-slate-200 rounded-2xl p-6 bg-white space-y-5 shadow-xs">
+                            <div className="border-b border-slate-100 pb-3">
+                              <h3 className="font-bold text-sm text-slate-900">
+                                2. Opciones de Formato y Exportación
+                              </h3>
+                              <p className="text-xs text-slate-500">
+                                Configura el formato de salida compatible con Excel o software contable externo.
+                              </p>
                             </div>
 
-                            <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-xl overflow-x-auto">
-                              <table className="w-full text-left text-xs">
-                                <thead>
-                                  <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
-                                    <th className="p-2.5 text-center w-10">#</th>
-                                    {importPreviewRows[0]?.cols.map((_: any, i: number) => (
-                                      <th key={i} className="p-2.5">Columna {i + 1}</th>
-                                    ))}
-                                    <th className="p-2.5 text-right">Estado</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 font-mono">
-                                  {importPreviewRows.slice(0, 10).map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50">
-                                      <td className="p-2.5 text-center text-slate-400 font-sans">{idx + 1}</td>
-                                      {row.cols.map((col: string, cIdx: number) => (
-                                        <td key={cIdx} className="p-2.5 text-slate-800 font-sans">{col.trim()}</td>
-                                      ))}
-                                      <td className="p-2.5 text-right font-sans">
-                                        <span className="px-2 py-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded-full">
-                                          Listo
-                                        </span>
-                                      </td>
-                                    </tr>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Format Selection */}
+                              <div className="space-y-2">
+                                <label className="block text-xs font-semibold text-slate-700">Formato del Archivo:</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {[
+                                    { id: "csv", label: "CSV (.csv)", desc: "Estándar UTF-8 con BOM" },
+                                    { id: "excel", label: "Excel (.xls)", desc: "Hojas de cálculo" },
+                                    { id: "json", label: "JSON (.json)", desc: "Estructura cruda" },
+                                  ].map((fmt) => (
+                                    <button
+                                      key={fmt.id}
+                                      type="button"
+                                      onClick={() => setExportFormat(fmt.id as any)}
+                                      className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                                        exportFormat === fmt.id
+                                          ? "bg-[#fff7ed] border-[#1b426e] text-[#1b426e] font-semibold ring-1 ring-[#1b426e]"
+                                          : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                                      }`}
+                                    >
+                                      <span className="block text-xs font-bold">{fmt.label}</span>
+                                      <span className="block text-[10px] text-slate-500">{fmt.desc}</span>
+                                    </button>
                                   ))}
-                                </tbody>
-                              </table>
+                                </div>
+                              </div>
+
+                              {/* Delimiter Selection (if CSV) */}
+                              {exportFormat === "csv" && (
+                                <div className="space-y-2">
+                                  <label className="block text-xs font-semibold text-slate-700">Separador de Campos (Delimitador):</label>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {[
+                                      { id: ",", label: "Coma (,)", desc: "Estándar internacional" },
+                                      { id: ";", label: "Punto y coma (;)", desc: "Excel en español" },
+                                      { id: "\t", label: "Tabulación (\\t)", desc: "TSV para copiar" },
+                                    ].map((del) => (
+                                      <button
+                                        key={del.id}
+                                        type="button"
+                                        onClick={() => setExportDelimiter(del.id as any)}
+                                        className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                                          exportDelimiter === del.id
+                                            ? "bg-[#fff7ed] border-[#1b426e] text-[#1b426e] font-semibold ring-1 ring-[#1b426e]"
+                                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                                        }`}
+                                      >
+                                        <span className="block text-xs font-bold">{del.label}</span>
+                                        <span className="block text-[10px] text-slate-500">{del.desc}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Export Summary Box */}
+                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2.5">
+                                <Database className="w-4 h-4 text-[#1b426e]" />
+                                <div>
+                                  <span className="font-semibold text-slate-800">Tabla seleccionada: </span>
+                                  <span className="font-bold text-[#1b426e] uppercase">{selectedExportCategory.replace(/_/g, " ")}</span>
+                                  <span className="text-slate-400 mx-2">•</span>
+                                  <span className="text-slate-600">Formato: {exportFormat.toUpperCase()}</span>
+                                </div>
+                              </div>
+                              <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                Listo para descarga
+                              </span>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                              <div className="text-xs text-slate-500">
+                                Los archivos exportados se descargarán directamente en tu dispositivo con codificación UTF-8.
+                              </div>
+                              <div className="flex items-center gap-2.5 self-end sm:self-auto">
+                                <button
+                                  type="button"
+                                  disabled={isExporting}
+                                  onClick={() => handleExportData()}
+                                  className="px-6 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
+                                >
+                                  {isExporting ? (
+                                    <>
+                                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                      <span>Generando archivo...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Download className="w-4 h-4" />
+                                      <span>Descargar Archivo Exportado</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        )}
-
-                        {/* Execute Button */}
-                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-xs text-slate-500">
-                            {importPreviewRows.length > 0 ? `${importPreviewRows.length} registros listos para importación.` : "Ingresa o pega filas para continuar."}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={importPreviewRows.length === 0 || isImporting}
-                            onClick={() => {
-                              setIsImporting(true);
-                              setTimeout(() => {
-                                setIsImporting(false);
-                                const count = importPreviewRows.length;
-                                const catName = selectedImportCategory === "productos" ? "Productos de inventario" : selectedImportCategory;
-                                setImportNotification(`¡Se han importado exitosamente ${count} registros en la tabla de ${catName}!`);
-                                setImportPasteText("");
-                                setImportPreviewRows([]);
-                              }, 1000);
-                            }}
-                            className="px-6 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
-                          >
-                            {isImporting ? (
-                              <>
-                                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                <span>Procesando importación...</span>
-                              </>
-                            ) : (
-                              <span>Importar a la Base de Datos →</span>
-                            )}
-                          </button>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
