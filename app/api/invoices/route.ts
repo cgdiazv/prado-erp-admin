@@ -16,8 +16,6 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, data: invoices });
-
-    return NextResponse.json({ success: true, data: invoices });
   } catch (error: unknown) {
     console.error("GET /api/invoices error:", error);
     const message = error instanceof Error ? error.message : "Internal Server Error";
