@@ -2,95 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
-const INITIAL_PURCHASE_ORDERS = [
-  {
-    orderNumber: "OC-2026-084",
-    vendorName: "Insumos Flexográficos S.A.",
-    vendorEmail: "compras@insumosflexo.hn",
-    vendorAddress: "Zona Industrial San José, San Pedro Sula",
-    category: "Tintas Flexo",
-    issueDate: "2026-09-02",
-    expectedDate: "2026-09-18",
-    paymentTerms: "Crédito 30 días",
-    currency: "USD",
-    subtotal: 5608.70,
-    tax: 841.30,
-    total: 6450.00,
-    status: "Aprobada",
-    notes: "Entregar en almacén central de materias primas con certificado de análisis de pigmento.",
-    items: [
-      {
-        productName: "Tinta Flexográfica Cyan Pro - Tambor 200L",
-        sku: "TINT-FLX-CYN-200",
-        description: "Tinta base agua para impresión en corrugado",
-        quantity: 2,
-        unitCost: 1850.00,
-        totalCost: 3700.00,
-      },
-      {
-        productName: "Tinta Flexográfica Amarillo Real - Tambor 200L",
-        sku: "TINT-FLX-YEL-200",
-        description: "Tinta de alta resistencia lumínica",
-        quantity: 1,
-        unitCost: 1908.70,
-        totalCost: 1908.70,
-      },
-    ],
-  },
-  {
-    orderNumber: "OC-2026-083",
-    vendorName: "Papelera Hondureña",
-    vendorEmail: "ventas@papelerahondurena.hn",
-    vendorAddress: "Villanueva, Cortés",
-    category: "Cartón Corrugado",
-    issueDate: "2026-08-30",
-    expectedDate: "2026-09-10",
-    paymentTerms: "Crédito 30 días",
-    currency: "USD",
-    subtotal: 12347.83,
-    tax: 1852.17,
-    total: 14200.00,
-    status: "Recibida",
-    notes: "Recepción en planta Búfalo, lote verificado en control de calidad.",
-    items: [
-      {
-        productName: "Bobina Papel Kraft Liner 150g - 1.80m",
-        sku: "PAP-KRF-150-180",
-        description: "Materia prima principal para fabricación de lámina",
-        quantity: 10,
-        unitCost: 1234.78,
-        totalCost: 12347.80,
-      },
-    ],
-  },
-  {
-    orderNumber: "OC-2026-082",
-    vendorName: "Químicos Industriales S.A.",
-    vendorEmail: "pedidos@quimicosindustriales.hn",
-    vendorAddress: "Choloma, Cortés",
-    category: "Solventes",
-    issueDate: "2026-08-25",
-    expectedDate: "2026-09-08",
-    paymentTerms: "Crédito 15 días",
-    currency: "USD",
-    subtotal: 2765.22,
-    tax: 414.78,
-    total: 3180.00,
-    status: "Pendiente",
-    notes: "Solventes de limpieza para anilox y cilindros de impresión.",
-    items: [
-      {
-        productName: "Solvente Lavador de Anilox Grado Industrial",
-        sku: "SOLV-ANX-50G",
-        description: "Desincrustante para resinas flexo",
-        quantity: 4,
-        unitCost: 691.30,
-        totalCost: 2765.20,
-      },
-    ],
-  },
-];
-
 export async function GET(request: NextRequest) {
   try {
     const db = prisma as any;
@@ -102,25 +13,6 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
     const from = searchParams.get("from");
     const to = searchParams.get("to");
-
-    // Check count and seed initial standard data if empty (for default company only)
-    if (companyId === "default") {
-      const count = await db.purchaseOrder.count({ where: { companyId: "default" } });
-      if (count === 0) {
-        for (const po of INITIAL_PURCHASE_ORDERS) {
-          const { items, ...orderData } = po;
-          await db.purchaseOrder.create({
-            data: {
-              ...orderData,
-              companyId: "default",
-              items: {
-                create: items,
-              },
-            },
-          });
-        }
-      }
-    }
 
     const whereClause: Record<string, unknown> = { companyId };
 

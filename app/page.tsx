@@ -5162,21 +5162,13 @@ export default function AdminDashboard() {
     setPurchaseInvoiceSuccess("");
     setPurchaseInvoiceForm({
       invoiceNumber: `FPROV-2026-${Math.floor(100 + Math.random() * 900)}`,
-      purchaseOrderNumber: "OC-2026-012",
-      vendorName: vendors[0]?.name || "Sun Chemical Ink Corporation",
+      purchaseOrderNumber: "",
+      vendorName: vendors[0]?.name || "",
       issueDate: new Date().toISOString().split("T")[0],
       dueDate: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split("T")[0],
       currency: "USD",
       notes: "",
-      items: [
-        {
-          sku: inventory[0]?.sku || "TIN-FLEX-001",
-          description: inventory[0]?.description || "Tinta Flexográfica Cyan Pro",
-          quantity: 5,
-          unitCost: inventory[0]?.cost || 120.0,
-          lotNumber: `LOT-${new Date().toISOString().slice(0, 7)}-01`,
-        },
-      ],
+      items: [],
     });
     setCurrentView("factura-compra-editor");
   };
@@ -5414,44 +5406,6 @@ export default function AdminDashboard() {
           status: po.status === "Aprobada" ? "PROGRAMADO" : "PROXIMO",
         });
       });
-
-    // Fallback items to guarantee a rich and complete experience
-    const fallbackList = [
-      {
-        id: "default-1",
-        payee: "Sun Chemical Ink Corporation",
-        concept: "FPROV-2026-089 • Tinta Flexográfica Cyan Pro",
-        dueDate: "05 Sep",
-        daysLeft: "Vence mañana",
-        amount: 977.50,
-        currency: "USD",
-        status: "URGENTE" as const,
-      },
-      {
-        id: "default-2",
-        payee: "Papelera Hondureña",
-        concept: "OC-2026-083 • Cartón Corrugado Flauta B",
-        dueDate: "07 Sep",
-        daysLeft: "En 3 días",
-        amount: 1420.00,
-        currency: "USD",
-        status: "PROXIMO" as const,
-      },
-      {
-        id: "default-3",
-        payee: "Insumos Flexográficos S.A.",
-        concept: "OC-2026-084 • Clichés y Solventes",
-        dueDate: "09 Sep",
-        daysLeft: "En 5 días",
-        amount: 645.00,
-        currency: "USD",
-        status: "PROGRAMADO" as const,
-      },
-    ];
-
-    if (list.length === 0) {
-      return fallbackList;
-    }
 
     return list.slice(0, 3);
   }, [purchaseInvoices, purchaseOrders]);
@@ -6473,7 +6427,12 @@ export default function AdminDashboard() {
 
                   {/* Payments List */}
                   <div className="space-y-2">
-                    {upcomingWeeklyPayments.map((item) => (
+                    {upcomingWeeklyPayments.length === 0 ? (
+                      <div className="py-8 text-center text-slate-400 text-xs">
+                        No hay pagos programados para esta semana
+                      </div>
+                    ) : (
+                      upcomingWeeklyPayments.map((item) => (
                       <div
                         key={item.id}
                         onClick={openPagarProveedorView}
@@ -6519,7 +6478,7 @@ export default function AdminDashboard() {
                           </span>
                         </div>
                       </div>
-                    ))}
+                    )))}
                   </div>
                 </div>
 
@@ -6536,7 +6495,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                       <span className="text-slate-700 font-medium">Organización</span>
-                      <span className="text-slate-800 font-medium">Wayne Trademark Honduras</span>
+                      <span className="text-slate-800 font-medium">{companySettings.nombreLegal || companySettings.nombre || "Prado ERP"}</span>
                     </div>
                   </div>
                 </div>

@@ -1,80 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-// Semilla inicial si la base de datos no tiene cotizaciones aún
-const initialSeedQuotes = [
-  {
-    quoteNumber: "COT-2026-0001",
-    customerName: "Cervecería Hondureña S.A.",
-    customerRtn: "05019001234567",
-    customerEmail: "compras@cerveceria.hn",
-    customerPhone: "+504 2550-1000",
-    customerAddress: "Blvd. del Norte, San Pedro Sula, Cortés",
-    quoteDate: "2026-09-01",
-    validUntil: "2026-09-30",
-    paymentTerms: "Neto 30 días",
-    currency: "USD",
-    salesRepName: "Carlos Menjívar",
-    notes: "Precios especiales por volumen de corrida flexográfica a 6 tintas.",
-    termsConditions: "Tiempo de entrega estimado: 10 días hábiles posterior a la aprobación de arte.",
-    subtotal: 14200.0,
-    discount: 0,
-    taxRate: 15,
-    tax: 2130.0,
-    total: 16330.0,
-    status: "Aprobada",
-    lines: [
-      {
-        productName: "Etiquetas Termoencogibles Corona 355ml",
-        sku: "LBL-SLV-355",
-        description: "Rollos de película PETG termoencogible con impresión flexográfica alta definición",
-        quantity: 50,
-        rate: 200.0,
-        amount: 10000.0,
-      },
-      {
-        productName: "Cajas Corrugadas Master Box Cerveza 24pk",
-        sku: "BOX-MST-024",
-        description: "Empaque corrugado flauta B con barniz antihumedad",
-        quantity: 2000,
-        rate: 2.10,
-        amount: 4200.0,
-      },
-    ],
-  },
-  {
-    quoteNumber: "COT-2026-0002",
-    customerName: "Embotelladora de Sula S.A. (Pepsi)",
-    customerRtn: "05019002345678",
-    customerEmail: "pagos@emsula.hn",
-    customerPhone: "+504 2545-2000",
-    customerAddress: "Carretera a Puerto Cortés, Choloma, Cortés",
-    quoteDate: "2026-09-03",
-    validUntil: "2026-10-03",
-    paymentTerms: "Neto 45 días",
-    currency: "USD",
-    salesRepName: "Ana Lucía Rivera",
-    notes: "Propuesta comercial para suministro trimestral Q4-2026.",
-    termsConditions: "Precios CIF planta Choloma. Sujeto a disponibilidad de bobina base.",
-    subtotal: 8750.0,
-    discount: 250.0,
-    taxRate: 15,
-    tax: 1275.0,
-    total: 9775.0,
-    status: "Enviada",
-    lines: [
-      {
-        productName: "Etiquetas Adhesivas BOPP Pepsi 2L",
-        sku: "LBL-BOPP-2L",
-        description: "Bobinas continuas para etiquetadora automática Krones",
-        quantity: 35,
-        rate: 250.0,
-        amount: 8750.0,
-      },
-    ],
-  },
-];
-
 import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(req: NextRequest) {
@@ -84,7 +9,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search") || "";
     const status = searchParams.get("status") || "";
 
-    let quotes = await prisma.quote.findMany({
+    const quotes = await prisma.quote.findMany({
       where: { companyId },
       include: {
         lines: true,
@@ -101,55 +26,6 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
-
-    // Sembrar datos iniciales si la empresa es 'default' y no hay cotizaciones
-    if (quotes.length === 0 && companyId === "default") {
-      for (const seed of initialSeedQuotes) {
-        await prisma.quote.create({
-          data: {
-            companyId,
-            quoteNumber: seed.quoteNumber,
-            customerName: seed.customerName,
-            customerRtn: seed.customerRtn,
-            customerEmail: seed.customerEmail,
-            customerPhone: seed.customerPhone,
-            customerAddress: seed.customerAddress,
-            quoteDate: seed.quoteDate,
-            validUntil: seed.validUntil,
-            paymentTerms: seed.paymentTerms,
-            currency: seed.currency,
-            salesRepName: seed.salesRepName,
-            notes: seed.notes,
-            termsConditions: seed.termsConditions,
-            subtotal: seed.subtotal,
-            discount: seed.discount,
-            taxRate: seed.taxRate,
-            tax: seed.tax,
-            total: seed.total,
-            status: seed.status,
-            lines: {
-              create: seed.lines.map((l) => ({
-                productName: l.productName,
-                sku: l.sku,
-                description: l.description,
-                quantity: l.quantity,
-                rate: l.rate,
-                amount: l.amount,
-              })),
-            },
-          },
-        });
-      }
-
-      quotes = await prisma.quote.findMany({
-        where: { companyId },
-        include: {
-          lines: true,
-          salesInvoice: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
-    }
 
     // Filtrar si se proporcionó búsqueda o estado
     let filtered = quotes;

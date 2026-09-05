@@ -2,62 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
-const defaultSampleNotes = [
-  {
-    id: "nc-001",
-    noteNumber: "NC-2026-001",
-    type: "CREDIT",
-    entityType: "CUSTOMER",
-    entityId: "cus-1",
-    entityName: "Embotelladora de Sula S.A.",
-    targetDocNum: "FAC-2026-004",
-    issueDate: "2026-08-28",
-    reason: "Devolución de Insumos / Mercadería Defectuosa",
-    amount: 1200.00,
-    tax: 180.00,
-    total: 1380.00,
-    currency: "USD",
-    status: "APLICADA",
-    notes: "Aceptado por control de calidad flexográfico. Descuento aplicado a cuenta corriente.",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "nd-001",
-    noteNumber: "ND-2026-001",
-    type: "DEBIT",
-    entityType: "CUSTOMER",
-    entityId: "cus-2",
-    entityName: "Gildan Activewear Honduras",
-    targetDocNum: "FAC-2026-008",
-    issueDate: "2026-08-30",
-    reason: "Cargo por Flete Especial y Gastos de Despacho",
-    amount: 450.00,
-    tax: 67.50,
-    total: 517.50,
-    currency: "USD",
-    status: "APLICADA",
-    notes: "Despacho urgente fuera de horario contratado.",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "nc-002",
-    noteNumber: "NC-2026-002",
-    type: "CREDIT",
-    entityType: "VENDOR",
-    entityId: "ven-1",
-    entityName: "Sun Chemical Ink Corporation",
-    targetDocNum: "OC-2026-012",
-    issueDate: "2026-09-01",
-    reason: "Descuento por Volumen en Tintas Flexo",
-    amount: 850.00,
-    tax: 127.50,
-    total: 977.50,
-    currency: "USD",
-    status: "APLICADA",
-    notes: "Bonificación acordada en contrato anual de suministros.",
-    createdAt: new Date().toISOString(),
-  },
-];
+
 
 export async function GET(req: Request) {
   try {

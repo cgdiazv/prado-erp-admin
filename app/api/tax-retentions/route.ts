@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       };
     }
 
-    let retentions = await db.taxRetention.findMany({
+    const retentions = await db.taxRetention.findMany({
       where,
       include: {
         provider: true,
@@ -32,88 +32,6 @@ export async function GET(req: Request) {
       },
       orderBy: { date: "desc" },
     });
-
-    // If database is completely empty of retentions, seed initial demonstration records (default company only)
-    if (companyId === "default" && (!retentions || retentions.length === 0) && !providerId && !month) {
-      const vendors = await db.vendor.findMany({ where: { companyId: "default" }, take: 3 });
-      const purchaseInvoices = await db.purchaseInvoice.findMany({ where: { companyId: "default" }, take: 2 });
-
-      if (vendors.length > 0) {
-        const seedData = [
-          {
-            retentionNumber: "RET-2026-0001",
-            providerId: vendors[0].id,
-            purchaseInvoiceId: purchaseInvoices[0]?.id || null,
-            baseAmount: purchaseInvoices[0]?.subtotal || 850.0,
-            retentionRate: 1.0, // 1% ISV Agente Retenedor SAR
-            retentionAmount: Math.round(((purchaseInvoices[0]?.subtotal || 850.0) * 0.01) * 100) / 100,
-            retentionType: "ISV_1",
-            status: "ISSUED",
-            cai: "2B8F44-96DF4A-3240BE-A33190-67B7A9-1E",
-            notes: "Retención del 1% de ISV sobre compra gravada según Art. 11 Ley de ISV (Gran Contribuyente).",
-            date: new Date("2026-09-02T14:30:00Z"),
-          },
-          ...(vendors.length > 1
-            ? [
-                {
-                  retentionNumber: "RET-2026-0002",
-                  providerId: vendors[1].id,
-                  purchaseInvoiceId: purchaseInvoices[1]?.id || null,
-                  baseAmount: 1200.0,
-                  retentionRate: 12.5, // 12.5% ISR Honorarios Profesionales SAR
-                  retentionAmount: 150.0,
-                  retentionType: "ISR_12_5",
-                  status: "ISSUED",
-                  cai: "2B8F44-96DF4A-3240BE-A33190-67B7A9-1E",
-                  notes: "Retención del 12.5% de Impuesto Sobre la Renta por Servicios Técnicos/Honorarios Profesionales.",
-                  date: new Date("2026-09-03T11:00:00Z"),
-                },
-              ]
-            : []),
-        ];
-
-        for (const item of seedData) {
-          try {
-            const created = await db.taxRetention.create({
-              data: item,
-            });
-
-            // Post accounting journal entry for seed
-            try {
-              const vendor = vendors.find((v: any) => v.id === item.providerId);
-              const journal = await postTaxRetentionEntry({
-                retentionNumber: item.retentionNumber,
-                providerName: vendor?.name || "Proveedor Comercial",
-                date: item.date.toISOString().split("T")[0],
-                retentionAmount: item.retentionAmount,
-                retentionType: item.retentionType,
-                invoiceNumber: purchaseInvoices[0]?.invoiceNumber,
-              });
-
-              if (journal?.id) {
-                await db.taxRetention.update({
-                  where: { id: created.id },
-                  data: { journalEntryId: journal.id },
-                });
-              }
-            } catch (accErr) {
-              console.warn("Accounting seed error:", accErr);
-            }
-          } catch (seedErr) {
-            console.warn("Could not insert seed retention:", seedErr);
-          }
-        }
-
-        retentions = await db.taxRetention.findMany({
-          where,
-          include: {
-            provider: true,
-            purchaseInvoice: true,
-          },
-          orderBy: { date: "desc" },
-        });
-      }
-    }
 
     return NextResponse.json({ success: true, data: retentions });
   } catch (error: any) {

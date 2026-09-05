@@ -3,108 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { postPurchaseInvoiceEntry } from "@/lib/accounting";
 import { resolveCompanyId } from "@/lib/tenant";
 
-const seedPurchaseInvoices = [
-  {
-    id: "pi-1",
-    invoiceNumber: "FPROV-2026-089",
-    purchaseOrderNumber: "OC-2026-012",
-    vendorName: "Sun Chemical Ink Corporation",
-    issueDate: "2026-09-01",
-    dueDate: "2026-10-01",
-    currency: "USD",
-    subtotal: 850.0,
-    tax: 127.5,
-    total: 977.5,
-    paymentStatus: "PENDIENTE",
-    inventoryStatus: "INGRESADO",
-    notes: "Tinta flexográfica de alta viscosidad para impresión de cajas corrugadas.",
-    items: [
-      {
-        sku: "TIN-FLEX-001",
-        description: "Tinta Flexográfica Cyan Pro (Tambo 200L)",
-        quantity: 2,
-        unitCost: 425.0,
-        totalCost: 850.0,
-        lotNumber: "LOT-TIN-2026-09",
-      },
-    ],
-  },
-  {
-    id: "pi-2",
-    invoiceNumber: "FPROV-2026-104",
-    purchaseOrderNumber: "OC-2026-008",
-    vendorName: "Empaques Industriales de Honduras",
-    issueDate: "2026-08-25",
-    dueDate: "2026-09-25",
-    currency: "USD",
-    subtotal: 3200.0,
-    tax: 480.0,
-    total: 3680.0,
-    paymentStatus: "PAGADA",
-    inventoryStatus: "INGRESADO",
-    notes: "Laminado de polietileno agrícola 50 micras en rollos.",
-    items: [
-      {
-        sku: "LAM-POL-050",
-        description: "Bobina Polietileno 50um Transparente",
-        quantity: 10,
-        unitCost: 320.0,
-        totalCost: 3200.0,
-        lotNumber: "LOT-POL-2026-88",
-      },
-    ],
-  },
-];
-
 export async function GET(req: Request) {
   try {
     const db = prisma as any;
     const companyId = await resolveCompanyId(req);
 
-    let invoices = await db.purchaseInvoice.findMany({
+    const invoices = await db.purchaseInvoice.findMany({
       where: { companyId },
       include: { items: true },
       orderBy: { createdAt: "desc" },
     });
-
-    if (companyId === "default" && (!invoices || invoices.length === 0)) {
-      for (const inv of seedPurchaseInvoices) {
-        await db.purchaseInvoice.create({
-          data: {
-            id: inv.id,
-            companyId: "default",
-            invoiceNumber: inv.invoiceNumber,
-            purchaseOrderNumber: inv.purchaseOrderNumber,
-            vendorName: inv.vendorName,
-            issueDate: inv.issueDate,
-            dueDate: inv.dueDate,
-            currency: inv.currency,
-            subtotal: inv.subtotal,
-            tax: inv.tax,
-            total: inv.total,
-            paymentStatus: inv.paymentStatus,
-            inventoryStatus: inv.inventoryStatus,
-            notes: inv.notes,
-            items: {
-              create: inv.items.map((it: any) => ({
-                sku: it.sku,
-                description: it.description,
-                quantity: it.quantity,
-                unitCost: it.unitCost,
-                totalCost: it.totalCost,
-                lotNumber: it.lotNumber,
-              })),
-            },
-          },
-        });
-      }
-
-      invoices = await db.purchaseInvoice.findMany({
-        where: { companyId },
-        include: { items: true },
-        orderBy: { createdAt: "desc" },
-      });
-    }
 
     return NextResponse.json({ success: true, data: invoices });
   } catch (error: any) {
