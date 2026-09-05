@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import logoImg from "@/public/logo.webp";
@@ -99,9 +100,17 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Contraseña
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Contraseña
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs font-semibold text-[#1b426e] hover:text-[#143355] hover:underline transition-colors"
+              >
+                ¿Olvidó su contraseña?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
