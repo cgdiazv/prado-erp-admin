@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wayne Admin | Wayne Trademark Honduras",
-  description: "Enterprise administration portal for Wayne Trademark HN",
+  title: {
+    default: "Prado ERP",
+    template: "%s | Prado ERP",
+  },
+  description: "Prado ERP - Enterprise Resource Planning & Administration System",
 };
 
 export const viewport: Viewport = {

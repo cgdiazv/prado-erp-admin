@@ -55,7 +55,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center">
             <Image
               src={logoImg}
-              alt="Wayne Trademark"
+              alt="Prado ERP"
               priority
               className="h-16 w-auto max-w-[260px] object-contain"
             />
@@ -143,7 +143,7 @@ export default function LoginPage() {
                 <span>Authenticating...</span>
               </>
             ) : (
-              <span>Sign In to Wayne Admin</span>
+              <span>Sign In to Prado ERP</span>
             )}
           </button>
         </form>

@@ -5660,13 +5660,13 @@ export default function AdminDashboard() {
                 <img src={companyLogo} alt="Logo" className="w-full h-full object-contain" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-[#fff7ed] border border-[#f6821f]/30 flex items-center justify-center font-bold text-[#f6821f] text-lg shrink-0 shadow-xs">
-                W
+              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[#1b426e] text-lg shrink-0 shadow-xs">
+                P
               </div>
             )}
             {!sidebarCollapsed && (
               <div className="truncate">
-                <h1 className="font-bold text-sm text-slate-900 leading-tight">Wayne Admin</h1>
+                <h1 className="font-bold text-sm text-slate-900 leading-tight">Prado ERP</h1>
               </div>
             )}
           </div>

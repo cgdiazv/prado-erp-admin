@@ -882,7 +882,7 @@ export default function VendorAgingReportModule({
           </span>
         </div>
         <div className="text-[11px] text-slate-400">
-          Auditoría de Cuentas por Pagar • Wayne Admin
+          Auditoría de Cuentas por Pagar • Prado ERP
         </div>
       </div>
     </div>
