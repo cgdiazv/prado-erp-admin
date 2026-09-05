@@ -196,7 +196,7 @@ export default function AccountingBooksModule({
             <button
               type="button"
               onClick={onOpenNewAccount}
-              className="px-3.5 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+              className="px-3.5 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
             >
               <span>+ Nueva Cuenta</span>
             </button>
@@ -225,7 +225,7 @@ export default function AccountingBooksModule({
           onClick={() => setActiveTab("catalogo")}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "catalogo"
-              ? "bg-[#f6821f] text-white shadow-xs"
+              ? "bg-[#1b426e] text-white shadow-xs"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -238,7 +238,7 @@ export default function AccountingBooksModule({
           onClick={() => setActiveTab("diario")}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "diario"
-              ? "bg-[#f6821f] text-white shadow-xs"
+              ? "bg-[#1b426e] text-white shadow-xs"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -251,7 +251,7 @@ export default function AccountingBooksModule({
           onClick={() => setActiveTab("mayor")}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "mayor"
-              ? "bg-[#f6821f] text-white shadow-xs"
+              ? "bg-[#1b426e] text-white shadow-xs"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -264,7 +264,7 @@ export default function AccountingBooksModule({
           onClick={() => setActiveTab("balance")}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "balance"
-              ? "bg-[#f6821f] text-white shadow-xs"
+              ? "bg-[#1b426e] text-white shadow-xs"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -286,14 +286,14 @@ export default function AccountingBooksModule({
                   placeholder="Filtrar por código o nombre..."
                   value={accountsSearch}
                   onChange={(e) => setAccountsSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
 
               <select
                 value={accountsTypeFilter}
                 onChange={(e) => setAccountsTypeFilter(e.target.value)}
-                className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:outline-none focus:border-[#1b426e] cursor-pointer"
               >
                 <option value="Todo">Todos los tipos</option>
                 <option value="Asset">Activo (Asset)</option>
@@ -359,7 +359,7 @@ export default function AccountingBooksModule({
                         <button
                           type="button"
                           onClick={() => onOpenEditAccount(acc)}
-                          className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                          className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                         >
                           Editar
                         </button>
@@ -421,14 +421,14 @@ export default function AccountingBooksModule({
                   placeholder="Buscar por número de asiento, concepto o ref..."
                   value={journalSearch}
                   onChange={(e) => setJournalSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
 
               <select
                 value={journalFilterType}
                 onChange={(e) => setJournalFilterType(e.target.value)}
-                className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:outline-none focus:border-[#1b426e] cursor-pointer"
               >
                 <option value="ALL">Todos los orígenes</option>
                 <option value="INVOICE">Facturas de Venta</option>
@@ -474,12 +474,12 @@ export default function AccountingBooksModule({
                 return (
                   <div
                     key={entry.id}
-                    className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:border-[#f6821f]/50 transition"
+                    className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:border-[#1b426e]/50 transition"
                   >
                     {/* Header of Entry */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
                       <div className="flex items-center gap-3">
-                        <span className="font-mono font-bold text-sm text-[#f6821f] bg-[#fff7ed] px-2.5 py-0.5 rounded-lg border border-[#fed7aa]">
+                        <span className="font-mono font-bold text-sm text-[#1b426e] bg-[#fff7ed] px-2.5 py-0.5 rounded-lg border border-[#fed7aa]">
                           {entry.entryNumber}
                         </span>
                         <span className="text-xs font-semibold text-slate-500">{entry.date}</span>
@@ -562,7 +562,7 @@ export default function AccountingBooksModule({
               <select
                 value={selectedLedgerAccount}
                 onChange={(e) => setSelectedLedgerAccount(e.target.value)}
-                className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold focus:outline-none focus:border-[#1b426e] cursor-pointer"
               >
                 <option value="ALL">Todas las Cuentas con Movimiento ({ledgerData.length})</option>
                 {ledgerData.map((acc) => (
@@ -579,7 +579,7 @@ export default function AccountingBooksModule({
                   placeholder="Buscar cuenta..."
                   value={ledgerSearch}
                   onChange={(e) => setLedgerSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
             </div>
@@ -626,7 +626,7 @@ export default function AccountingBooksModule({
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase">Saldo Acumulado</span>
-                        <span className="font-mono font-black text-base text-[#f6821f]">
+                        <span className="font-mono font-black text-base text-[#1b426e]">
                           {formatCurrency(acc.finalBalance)}
                         </span>
                       </div>
@@ -658,7 +658,7 @@ export default function AccountingBooksModule({
                             <td className="py-2 px-3 text-right font-bold text-slate-900">
                               {mov.credit > 0 ? formatCurrency(mov.credit) : "—"}
                             </td>
-                            <td className="py-2 px-3 text-right font-black text-[#f6821f]">
+                            <td className="py-2 px-3 text-right font-black text-[#1b426e]">
                               {formatCurrency(mov.balanceAfter)}
                             </td>
                           </tr>
@@ -671,7 +671,7 @@ export default function AccountingBooksModule({
                           </td>
                           <td className="py-2 px-3 text-right">{formatCurrency(acc.totalDebit)}</td>
                           <td className="py-2 px-3 text-right">{formatCurrency(acc.totalCredit)}</td>
-                          <td className="py-2 px-3 text-right text-[#f6821f]">{formatCurrency(acc.finalBalance)}</td>
+                          <td className="py-2 px-3 text-right text-[#1b426e]">{formatCurrency(acc.finalBalance)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -759,10 +759,10 @@ export default function AccountingBooksModule({
                       <td className="py-3 px-3 text-right text-emerald-700">
                         {formatCurrency(trialBalanceData.summary?.totalCredits || 0)}
                       </td>
-                      <td className="py-3 px-3 text-right text-[#f6821f]">
+                      <td className="py-3 px-3 text-right text-[#1b426e]">
                         {formatCurrency(trialBalanceData.summary?.totalDebitBalance || 0)}
                       </td>
-                      <td className="py-3 px-3 text-right text-[#f6821f]">
+                      <td className="py-3 px-3 text-right text-[#1b426e]">
                         {formatCurrency(trialBalanceData.summary?.totalCreditBalance || 0)}
                       </td>
                     </tr>
@@ -786,7 +786,7 @@ export default function AccountingBooksModule({
                 </span>
                 <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
                   <span>Partida Contable</span>
-                  <span className="font-mono text-[#f6821f]">{viewingEntry.entryNumber}</span>
+                  <span className="font-mono text-[#1b426e]">{viewingEntry.entryNumber}</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Fecha de Contabilización: <strong>{viewingEntry.date}</strong> | Tipo: <strong>{viewingEntry.referenceType}</strong>
@@ -865,7 +865,7 @@ export default function AccountingBooksModule({
               <button
                 type="button"
                 onClick={() => setViewingEntry(null)}
-                className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold transition cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold transition cursor-pointer"
               >
                 Cerrar
               </button>

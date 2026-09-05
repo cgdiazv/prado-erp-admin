@@ -1989,7 +1989,7 @@ export default function AdminDashboard() {
     preset: "Estándar Wayne Orange",
     template: "Moderno",
     printerFriendly: false,
-    color: "#f6821f",
+    color: "#1b426e",
     font: "Helvetica Neue",
     showTotal: true,
     showBankDeposit: false,
@@ -2094,7 +2094,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const activeInvoiceColor = invoiceDesign.printerFriendly ? "#111827" : (invoiceDesign.color || "#f6821f");
+  const activeInvoiceColor = invoiceDesign.printerFriendly ? "#111827" : (invoiceDesign.color || "#1b426e");
 
   const downloadInvoicePDF = async () => {
     setShowPrintDownloadDropdown(false);
@@ -5688,7 +5688,7 @@ export default function AdminDashboard() {
             onClick={() => setCurrentView("dashboard")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition cursor-pointer ${
               currentView === "dashboard"
-                ? "bg-[#fff7ed] text-[#f6821f] font-semibold shadow-xs"
+                ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >
@@ -5735,7 +5735,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("plan-cuentas")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "plan-cuentas"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5745,7 +5745,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("transacciones")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "transacciones"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5755,7 +5755,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("conciliacion-bancaria")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "conciliacion-bancaria"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5766,7 +5766,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("macola-sync")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "macola-sync"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5776,7 +5776,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("caja-chica")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "caja-chica"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5829,7 +5829,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("clientes")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "clientes"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5844,7 +5844,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("cotizaciones")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "cotizaciones"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5856,7 +5856,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("pedidos-venta")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "pedidos-venta"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5868,7 +5868,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("lista-facturas")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "lista-facturas" || currentView === "factura-editor"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5880,7 +5880,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("notas-credito-debito")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "notas-credito-debito"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5892,7 +5892,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("vendedores")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "vendedores"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5907,7 +5907,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("comisiones")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "comisiones"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5919,7 +5919,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("antiguedad-saldos")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "antiguedad-saldos"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -5985,7 +5985,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("proveedores")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "proveedores"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6000,7 +6000,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("lista-ordenes-compra")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "lista-ordenes-compra" || currentView === "orden-compra-editor"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6012,7 +6012,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("factura-compra-lista")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "factura-compra-lista" || currentView === "factura-compra-editor"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6024,7 +6024,7 @@ export default function AdminDashboard() {
                   onClick={() => { setSelectedPaymentVendor(""); setCurrentView("pagos-proveedores"); }}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "pagos-proveedores" || currentView === "pagar-proveedor"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6036,7 +6036,7 @@ export default function AdminDashboard() {
                   onClick={() => { setCurrentView("devoluciones-proveedor"); loadVendorReturns(); }}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "devoluciones-proveedor"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6053,7 +6053,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("antiguedad-saldos-proveedores")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "antiguedad-saldos-proveedores"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6065,7 +6065,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("retenciones-isv")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "retenciones-isv"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6103,7 +6103,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("inventario")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${
                     currentView === "inventario"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6113,7 +6113,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("lotes")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "lotes"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6126,7 +6126,7 @@ export default function AdminDashboard() {
                   onClick={() => setCurrentView("series")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
                     currentView === "series"
-                      ? "bg-[#fff7ed] text-[#f6821f] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -6240,7 +6240,7 @@ export default function AdminDashboard() {
                 placeholder="Buscar registros..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] focus:ring-2 focus:ring-[#f6821f]/20 shadow-xs"
+                className="w-full pl-9 pr-4 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/20 shadow-xs"
               />
               <svg className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -6253,7 +6253,7 @@ export default function AdminDashboard() {
               title="Sincronizar datos"
               className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer text-xs font-medium flex items-center gap-1.5 shadow-xs"
             >
-              <svg className={`w-3.5 h-3.5 text-[#f6821f] ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-3.5 h-3.5 text-[#1b426e] ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <span>Sync</span>
@@ -6264,7 +6264,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setShowAccionesDropdown(!showAccionesDropdown)}
-                className="px-3.5 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20"
+                className="px-3.5 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20"
               >
                 <span>Acciones</span>
                 <svg
@@ -6288,10 +6288,10 @@ export default function AdminDashboard() {
                       key={action.id}
                       type="button"
                       onClick={() => handleQuickAction(action.id)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center justify-between group"
+                      className="w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center justify-between group"
                     >
                       <span>{action.label}</span>
-                      <span className="text-[#f6821f] font-bold text-sm group-hover:scale-110 transition-transform">+</span>
+                      <span className="text-[#1b426e] font-bold text-sm group-hover:scale-110 transition-transform">+</span>
                     </button>
                   ))}
                 </div>
@@ -6304,7 +6304,7 @@ export default function AdminDashboard() {
               title="Centro de Reportes"
               className={`px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-semibold flex items-center gap-1.5 shadow-xs ${
                 currentView === "reportes"
-                  ? "bg-[#fff7ed] text-[#f6821f] border-[#f6821f]/40"
+                  ? "bg-[#fff7ed] text-[#1b426e] border-[#1b426e]/40"
                   : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
               }`}
             >
@@ -6318,7 +6318,7 @@ export default function AdminDashboard() {
               title="Configuración del Sistema"
               className={`px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-semibold flex items-center gap-1.5 shadow-xs ${
                 currentView === "configuracion"
-                  ? "bg-[#fff7ed] text-[#f6821f] border-[#f6821f]/40"
+                  ? "bg-[#fff7ed] text-[#1b426e] border-[#1b426e]/40"
                   : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
               }`}
             >
@@ -6351,11 +6351,11 @@ export default function AdminDashboard() {
                     {/* Plan de cuentas */}
                     <div
                       onClick={() => setCurrentView("plan-cuentas")}
-                      className="bg-white p-5 rounded-2xl border border-slate-200/80 hover:border-[#f6821f]/50 transition-all cursor-pointer shadow-xs hover:shadow-md relative overflow-hidden group"
+                      className="bg-white p-5 rounded-2xl border border-slate-200/80 hover:border-[#1b426e]/50 transition-all cursor-pointer shadow-xs hover:shadow-md relative overflow-hidden group"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-slate-500">Plan de Cuentas</span>
-                        <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center group-hover:scale-110 transition-transform">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                           </svg>
@@ -6365,7 +6365,7 @@ export default function AdminDashboard() {
                         <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{accounts.length}</span>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-1">Cuentas contables activas</p>
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                     </div>
 
                     {/* Clientes */}
@@ -6589,7 +6589,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center justify-between">
                     <h2 className="text-sm font-bold text-slate-900">Próximos Pagos de la Semana</h2>
                     <span
-                      className="text-xs text-[#f6821f] font-medium cursor-pointer hover:underline"
+                      className="text-xs text-[#1b426e] font-medium cursor-pointer hover:underline"
                       onClick={() => setCurrentView("factura-compra-lista")}
                     >
                       Ver todo →
@@ -6602,7 +6602,7 @@ export default function AdminDashboard() {
                       <div
                         key={item.id}
                         onClick={openPagarProveedorView}
-                        className="p-3 rounded-xl bg-white border border-slate-200 hover:border-[#f6821f]/50 hover:bg-orange-50/20 hover:shadow-xs transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                        className="p-3 rounded-xl bg-white border border-slate-200 hover:border-[#1b426e]/50 hover:bg-orange-50/20 hover:shadow-xs transition-all flex items-center justify-between gap-3 cursor-pointer group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {/* Date Box */}
@@ -6617,7 +6617,7 @@ export default function AdminDashboard() {
 
                           {/* Payee Info */}
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-slate-900 truncate group-hover:text-[#f6821f] transition-colors">
+                            <p className="text-xs font-semibold text-slate-900 truncate group-hover:text-[#1b426e] transition-colors">
                               {item.payee}
                             </p>
                             <p className="text-[11px] text-slate-500 truncate">
@@ -6657,7 +6657,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                       <span className="text-slate-700 font-medium">Cliente ORM</span>
-                      <span className="text-[#f6821f] font-mono font-medium bg-[#fff7ed] px-2 py-0.5 rounded border border-[#fed7aa]">Prisma 6.19.3</span>
+                      <span className="text-[#1b426e] font-mono font-medium bg-[#fff7ed] px-2 py-0.5 rounded border border-[#fed7aa]">Prisma 6.19.3</span>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                       <span className="text-slate-700 font-medium">Organización</span>
@@ -6744,11 +6744,11 @@ export default function AdminDashboard() {
                     onClick={() => setBankSubTab("reglas")}
                     className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                       bankSubTab === "reglas"
-                        ? "bg-[#f6821f] text-white border-[#f6821f] shadow-xs"
+                        ? "bg-[#1b426e] text-white border-[#1b426e] shadow-xs"
                         : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs"
                     }`}
                   >
-                    <svg className={`w-3.5 h-3.5 ${bankSubTab === "reglas" ? "text-white" : "text-[#f6821f]"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-3.5 h-3.5 ${bankSubTab === "reglas" ? "text-white" : "text-[#1b426e]"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     <span>Reglas de automatización</span>
@@ -6768,7 +6768,7 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setShowConnectBankModal(true)}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                   >
                     <span>+ Registrar cuenta bancaria</span>
                   </button>
@@ -6788,7 +6788,7 @@ export default function AdminDashboard() {
                     title="Recargar datos bancarios"
                     className="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition cursor-pointer disabled:opacity-50"
                   >
-                    <RefreshCw className={`w-4 h-4 ${bankSyncing ? "animate-spin text-[#f6821f]" : ""}`} />
+                    <RefreshCw className={`w-4 h-4 ${bankSyncing ? "animate-spin text-[#1b426e]" : ""}`} />
                   </button>
                 </div>
               </div>
@@ -6800,7 +6800,7 @@ export default function AdminDashboard() {
                   onClick={() => setSelectedBankId("all")}
                   className={`p-4 rounded-2xl border transition cursor-pointer flex flex-col justify-between ${
                     selectedBankId === "all"
-                      ? "bg-white border-[#f6821f] ring-2 ring-[#f6821f]/20 shadow-sm text-slate-900"
+                      ? "bg-white border-[#1b426e] ring-2 ring-[#1b426e]/20 shadow-sm text-slate-900"
                       : "bg-white border-slate-200 hover:border-slate-300 text-slate-800 shadow-2xs"
                   }`}
                 >
@@ -6833,7 +6833,7 @@ export default function AdminDashboard() {
                       onClick={() => setSelectedBankId(bank.id)}
                       className={`p-4 rounded-2xl border transition cursor-pointer flex flex-col justify-between relative overflow-hidden ${
                         isSelected
-                          ? "bg-white border-[#f6821f] ring-2 ring-[#f6821f]/20 shadow-sm"
+                          ? "bg-white border-[#1b426e] ring-2 ring-[#1b426e]/20 shadow-sm"
                           : "bg-white border-slate-200 hover:border-slate-300 shadow-2xs"
                       }`}
                     >
@@ -6892,7 +6892,7 @@ export default function AdminDashboard() {
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
                         <span className="text-slate-400">{bank.lastUpdated}</span>
                         {pending > 0 ? (
-                          <span className="px-2 py-0.5 rounded-full font-bold bg-[#fff7ed] text-[#f6821f] border border-[#fed7aa]">
+                          <span className="px-2 py-0.5 rounded-full font-bold bg-[#fff7ed] text-[#1b426e] border border-[#fed7aa]">
                             {pending} por revisar
                           </span>
                         ) : (
@@ -6912,13 +6912,13 @@ export default function AdminDashboard() {
                   onClick={() => setBankSubTab("porRevisar")}
                   className={`pb-3 transition flex items-center gap-2 cursor-pointer border-b-2 ${
                     bankSubTab === "porRevisar"
-                      ? "border-[#f6821f] text-[#f6821f]"
+                      ? "border-[#1b426e] text-[#1b426e]"
                       : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   <span>Por revisar</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    bankSubTab === "porRevisar" ? "bg-[#fff7ed] text-[#f6821f]" : "bg-slate-100 text-slate-600"
+                    bankSubTab === "porRevisar" ? "bg-[#fff7ed] text-[#1b426e]" : "bg-slate-100 text-slate-600"
                   }`}>
                     {bankTransactions.filter(
                       (t) => t.status === "porRevisar" && (selectedBankId === "all" || t.bankAccountId === selectedBankId || (t as unknown as { bankId?: string }).bankId === selectedBankId)
@@ -6930,13 +6930,13 @@ export default function AdminDashboard() {
                   onClick={() => setBankSubTab("categorizadas")}
                   className={`pb-3 transition flex items-center gap-2 cursor-pointer border-b-2 ${
                     bankSubTab === "categorizadas"
-                      ? "border-[#f6821f] text-[#f6821f]"
+                      ? "border-[#1b426e] text-[#1b426e]"
                       : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   <span>Categorizadas</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    bankSubTab === "categorizadas" ? "bg-[#fff7ed] text-[#f6821f]" : "bg-slate-100 text-slate-600"
+                    bankSubTab === "categorizadas" ? "bg-[#fff7ed] text-[#1b426e]" : "bg-slate-100 text-slate-600"
                   }`}>
                     {bankTransactions.filter(
                       (t) => t.status === "categorizadas" && (selectedBankId === "all" || t.bankAccountId === selectedBankId || (t as unknown as { bankId?: string }).bankId === selectedBankId)
@@ -6948,13 +6948,13 @@ export default function AdminDashboard() {
                   onClick={() => setBankSubTab("excluidas")}
                   className={`pb-3 transition flex items-center gap-2 cursor-pointer border-b-2 ${
                     bankSubTab === "excluidas"
-                      ? "border-[#f6821f] text-[#f6821f]"
+                      ? "border-[#1b426e] text-[#1b426e]"
                       : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   <span>Excluidas</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    bankSubTab === "excluidas" ? "bg-[#fff7ed] text-[#f6821f]" : "bg-slate-100 text-slate-600"
+                    bankSubTab === "excluidas" ? "bg-[#fff7ed] text-[#1b426e]" : "bg-slate-100 text-slate-600"
                   }`}>
                     {bankTransactions.filter(
                       (t) => t.status === "excluidas" && (selectedBankId === "all" || t.bankAccountId === selectedBankId || (t as unknown as { bankId?: string }).bankId === selectedBankId)
@@ -6966,13 +6966,13 @@ export default function AdminDashboard() {
                   onClick={() => setBankSubTab("reglas")}
                   className={`pb-3 transition flex items-center gap-2 cursor-pointer border-b-2 ${
                     bankSubTab === "reglas"
-                      ? "border-[#f6821f] text-[#f6821f]"
+                      ? "border-[#1b426e] text-[#1b426e]"
                       : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   <span>Reglas de automatización</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    bankSubTab === "reglas" ? "bg-[#fff7ed] text-[#f6821f]" : "bg-slate-100 text-slate-600"
+                    bankSubTab === "reglas" ? "bg-[#fff7ed] text-[#1b426e]" : "bg-slate-100 text-slate-600"
                   }`}>
                     {automationRules.length}
                   </span>
@@ -6990,7 +6990,7 @@ export default function AdminDashboard() {
                         placeholder="Buscar por descripción, proveedor o cliente..."
                         value={bankSearch}
                         onChange={(e) => setBankSearch(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e]"
                       />
                       <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -7068,7 +7068,7 @@ export default function AdminDashboard() {
                                               `Transacción "${tx.description.slice(0, 28)}..." coincidente y registrada en DB.`
                                             );
                                           }}
-                                          className="px-3 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition shadow-2xs cursor-pointer whitespace-nowrap"
+                                          className="px-3 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition shadow-2xs cursor-pointer whitespace-nowrap"
                                         >
                                           Coincidir / Agregar
                                         </button>
@@ -7159,7 +7159,7 @@ export default function AdminDashboard() {
                                       "Transacción devuelta a 'Por revisar'."
                                     );
                                   }}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Deshacer
                                 </button>
@@ -7211,7 +7211,7 @@ export default function AdminDashboard() {
                                       "Transacción restaurada a 'Por revisar'."
                                     );
                                   }}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Restaurar
                                 </button>
@@ -7244,7 +7244,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setShowNewRuleModal(true)}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -7420,7 +7420,7 @@ export default function AdminDashboard() {
                       alert("Generando reporte de clientes...");
                       window.print();
                     }}
-                    className="px-4 py-2 rounded-full border border-[#f6821f] text-[#f6821f] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    className="px-4 py-2 rounded-full border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs"
                   >
                     Generar reporte
                   </button>
@@ -7431,7 +7431,7 @@ export default function AdminDashboard() {
                       setCustomerDrawerSuccess("");
                       setShowNewCustomerDrawer(true);
                     }}
-                    className="px-5 py-2 rounded-full bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                    className="px-5 py-2 rounded-full bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
                   >
                     <span>Nuevo cliente</span>
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -7451,7 +7451,7 @@ export default function AdminDashboard() {
                       placeholder="Filtrar por nombre o número"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                     />
                     <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -7461,7 +7461,7 @@ export default function AdminDashboard() {
                   {/* Dropdown Filter Select */}
                   <div className="relative">
                     <select
-                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#f6821f] cursor-pointer pr-8 font-medium appearance-none"
+                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer pr-8 font-medium appearance-none"
                     >
                       <option value="todos">Todos los clientes</option>
                       <option value="activos">Clientes activos</option>
@@ -7501,7 +7501,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setShowConfigSidebar(true)}
                     className={`p-1.5 rounded-lg transition cursor-pointer ${
-                      showConfigSidebar ? "text-[#f6821f] bg-[#fff7ed]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                      showConfigSidebar ? "text-[#1b426e] bg-[#fff7ed]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                     }`}
                     title="Personalizar tabla de clientes"
                   >
@@ -7542,11 +7542,11 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditCustomer(c)}
-                                  className="text-[#f6821f] font-semibold hover:underline cursor-pointer flex items-center gap-1.5 group"
+                                  className="text-[#1b426e] font-semibold hover:underline cursor-pointer flex items-center gap-1.5 group"
                                   title="Haz clic para editar cliente"
                                 >
                                   <span>{c.macolaCode || `#${c.id.slice(0, 6)}`}</span>
-                                  <svg className="w-3 h-3 text-[#f6821f] opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3 h-3 text-[#1b426e] opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                   </svg>
                                 </button>
@@ -7555,7 +7555,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditCustomer(c)}
-                                  className="hover:text-[#f6821f] hover:underline cursor-pointer text-left font-medium"
+                                  className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium"
                                   title="Haz clic para editar cliente"
                                 >
                                   {c.name}
@@ -7570,7 +7570,7 @@ export default function AdminDashboard() {
                                   <button
                                     type="button"
                                     onClick={() => openCustomerStatement(c.id)}
-                                    className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f6821f] font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-[#fed7aa]"
+                                    className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-[#fed7aa]"
                                     title="Ver Estado de Cuenta del cliente"
                                   >
                                     <FileText className="w-3 h-3" />
@@ -7624,9 +7624,9 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setCurrentView("antiguedad-saldos-proveedores")}
-                    className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 hover:border-[#f6821f] hover:text-[#f6821f] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 hover:border-[#1b426e] hover:text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
-                    <Clock className="w-3.5 h-3.5 text-[#f6821f]" />
+                    <Clock className="w-3.5 h-3.5 text-[#1b426e]" />
                     <span>Antigüedad de Saldos</span>
                   </button>
 
@@ -7636,9 +7636,9 @@ export default function AdminDashboard() {
                       setSelectedPaymentVendor("");
                       setCurrentView("pagos-proveedores");
                     }}
-                    className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 hover:border-[#f6821f] hover:text-[#f6821f] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 hover:border-[#1b426e] hover:text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
-                    <CreditCard className="w-3.5 h-3.5 text-[#f6821f]" />
+                    <CreditCard className="w-3.5 h-3.5 text-[#1b426e]" />
                     <span>Pagos a Proveedores</span>
                   </button>
 
@@ -7649,7 +7649,7 @@ export default function AdminDashboard() {
                       setModalSuccess("");
                       setShowNewVendorDrawer(true);
                     }}
-                    className="px-5 py-2 rounded-full bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                    className="px-5 py-2 rounded-full bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
                   >
                     <span>Nuevo proveedor</span>
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -7669,7 +7669,7 @@ export default function AdminDashboard() {
                       placeholder="Filtrar por nombre o número"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                     />
                     <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -7679,7 +7679,7 @@ export default function AdminDashboard() {
                   {/* Dropdown Filter Select */}
                   <div className="relative">
                     <select
-                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#f6821f] cursor-pointer pr-8 font-medium appearance-none"
+                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer pr-8 font-medium appearance-none"
                     >
                       <option value="todos">Todos los proveedores</option>
                       <option value="activos">Proveedores activos</option>
@@ -7719,7 +7719,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setShowConfigSidebar(true)}
                     className={`p-1.5 rounded-lg transition cursor-pointer ${
-                      showConfigSidebar ? "text-[#f6821f] bg-[#fff7ed]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                      showConfigSidebar ? "text-[#1b426e] bg-[#fff7ed]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                     }`}
                     title="Personalizar tabla de proveedores"
                   >
@@ -7760,11 +7760,11 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditVendor(v)}
-                                  className="text-[#f6821f] font-semibold hover:underline cursor-pointer flex items-center gap-1.5 group"
+                                  className="text-[#1b426e] font-semibold hover:underline cursor-pointer flex items-center gap-1.5 group"
                                   title="Haz clic para editar proveedor"
                                 >
                                   <span>{v.macolaCode || `#${v.id.slice(0, 6)}`}</span>
-                                  <svg className="w-3 h-3 text-[#f6821f] opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3 h-3 text-[#1b426e] opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                   </svg>
                                 </button>
@@ -7773,7 +7773,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditVendor(v)}
-                                  className="hover:text-[#f6821f] hover:underline cursor-pointer text-left font-medium"
+                                  className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium"
                                   title="Haz clic para editar proveedor"
                                 >
                                   {v.name}
@@ -7796,7 +7796,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditVendor(v)}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#f6821f] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
+                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
                                 >
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -7843,7 +7843,7 @@ export default function AdminDashboard() {
                       alert("Generando reporte de inventario...");
                       window.print();
                     }}
-                    className="px-4 py-2 rounded-full border border-[#f6821f] text-[#f6821f] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    className="px-4 py-2 rounded-full border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs"
                   >
                     Generar reporte
                   </button>
@@ -7851,7 +7851,7 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setShowNewProductDrawer(true)}
-                    className="px-5 py-2 rounded-full bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                    className="px-5 py-2 rounded-full bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
                   >
                     <span>Nuevo producto</span>
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -7871,7 +7871,7 @@ export default function AdminDashboard() {
                       placeholder="Filtrar por nombre o SKU"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                     />
                     <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -7881,7 +7881,7 @@ export default function AdminDashboard() {
                   {/* Dropdown Filter Select */}
                   <div className="relative">
                     <select
-                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#f6821f] cursor-pointer pr-8 font-medium appearance-none"
+                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer pr-8 font-medium appearance-none"
                     >
                       <option value="todos">Todos los productos</option>
                       <option value="con-stock">Con inventario disponible</option>
@@ -7922,7 +7922,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setShowConfigSidebar(true)}
                     className={`p-1.5 rounded-lg transition cursor-pointer ${
-                      showConfigSidebar ? "text-[#f6821f] bg-[#fff7ed]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                      showConfigSidebar ? "text-[#1b426e] bg-[#fff7ed]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                     }`}
                     title="Personalizar tabla de inventario"
                   >
@@ -7963,7 +7963,7 @@ export default function AdminDashboard() {
                         <>
                           {filteredInventory.map((item) => (
                             <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                              <td className="p-3.5 font-mono text-[#f6821f] font-semibold">
+                              <td className="p-3.5 font-mono text-[#1b426e] font-semibold">
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditProduct(item)}
@@ -7971,7 +7971,7 @@ export default function AdminDashboard() {
                                   title="Haz clic para editar producto"
                                 >
                                   <span>{item.sku}</span>
-                                  <svg className="w-3 h-3 text-[#f6821f] opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3 h-3 text-[#1b426e] opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                   </svg>
                                 </button>
@@ -7980,7 +7980,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditProduct(item)}
-                                  className="hover:text-[#f6821f] hover:underline cursor-pointer text-left font-medium"
+                                  className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium"
                                   title="Haz clic para editar producto"
                                 >
                                   {item.description}
@@ -8049,7 +8049,7 @@ export default function AdminDashboard() {
                                   <button
                                     type="button"
                                     onClick={() => handleOpenEditProduct(item)}
-                                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#f6821f] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
+                                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
                                     title="Haz clic para editar producto"
                                   >
                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -8103,7 +8103,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Control Maestro de Lotes & Vencimientos
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         Trazabilidad FEFO ({allLots.length})
                       </span>
                     </div>
@@ -8259,7 +8259,7 @@ export default function AdminDashboard() {
                     placeholder="Buscar por lote, SKU o producto..."
                     value={lotesSearch}
                     onChange={(e) => setLotesSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                   />
                   <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -8381,7 +8381,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Control de Números de Serie & Trazabilidad
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         Garantías & Trazabilidad ({allSerials.length})
                       </span>
                     </div>
@@ -8632,7 +8632,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Gestión de Notas de Crédito & Débito
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         SAR & Macola ERP
                       </span>
                     </div>
@@ -8645,7 +8645,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={openCreateNoteModal}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                     >
                       <span className="text-sm leading-none">+</span>
                       <span>Nueva Nota de Crédito / Débito</span>
@@ -8724,8 +8724,8 @@ export default function AdminDashboard() {
 
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-[#f6821f]">Facturas Afectadas</span>
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                    <span className="text-xs font-medium text-[#1b426e]">Facturas Afectadas</span>
+                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                       <FileText className="w-4 h-4" />
                     </div>
                   </div>
@@ -8735,7 +8735,7 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">documentos de origen</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                 </div>
               </div>
 
@@ -8788,7 +8788,7 @@ export default function AdminDashboard() {
                     placeholder="Buscar por N.º nota, cliente, factura o motivo..."
                     value={notasSearch}
                     onChange={(e) => setNotasSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                   />
                   <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -8875,7 +8875,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => handlePrintNote(note)}
-                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#f6821f] text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
                             >
                               Imprimir PDF
                             </button>
@@ -8925,7 +8925,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Fuerza de Ventas & Ejecutivos Comerciales
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         {salesReps.filter((r) => r.status === "ACTIVO").length} Activos
                       </span>
                     </div>
@@ -8945,7 +8945,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={openCreateSalesRepModal}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                     >
                       <span className="text-sm leading-none">+</span>
                       <span>Registrar Nuevo Vendedor</span>
@@ -9007,18 +9007,18 @@ export default function AdminDashboard() {
 
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-[#f6821f]">Comisiones del Mes</span>
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                    <span className="text-xs font-medium text-[#1b426e]">Comisiones del Mes</span>
+                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                       <FileText className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="mt-2">
-                    <span className="text-2xl sm:text-3xl font-black text-[#f6821f] tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-black text-[#1b426e] tracking-tight">
                       ${commissionRecords.reduce((acc, c) => acc + (c.commissionAmount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">USD liquidados y por liquidar</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                 </div>
               </div>
 
@@ -9030,7 +9030,7 @@ export default function AdminDashboard() {
                     onClick={() => setVendedoresFilter("TODOS")}
                     className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer ${
                       vendedoresFilter === "TODOS"
-                        ? "bg-[#f6821f] text-white shadow-xs"
+                        ? "bg-[#1b426e] text-white shadow-xs"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
@@ -9066,7 +9066,7 @@ export default function AdminDashboard() {
                     placeholder="Buscar vendedor, código o zona..."
                     value={vendedoresSearch}
                     onChange={(e) => setVendedoresSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#f6821f] transition"
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#1b426e] transition"
                   />
                   <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -9109,7 +9109,7 @@ export default function AdminDashboard() {
                             {rep.phone || "—"}
                           </td>
                           <td className="p-3.5">
-                            <span className="px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#f6821f] font-bold text-[11px]">
+                            <span className="px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#1b426e] font-bold text-[11px]">
                               {rep.commissionRate}% ({rep.commissionType === "PERCENTAGE" ? "Fijo" : rep.commissionType === "TIERED" ? "Escalonado" : "Por Metas"})
                             </span>
                           </td>
@@ -9127,7 +9127,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => openEditSalesRepModal(rep)}
-                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#f6821f] text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
                             >
                               Editar Esquema
                             </button>
@@ -9176,7 +9176,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Control & Liquidación de Comisiones
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         Comisiones de Venta
                       </span>
                     </div>
@@ -9189,7 +9189,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={openCreateCommissionModal}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                     >
                       <span className="text-sm leading-none">+</span>
                       <span>Registrar Cálculo de Comisión</span>
@@ -9273,7 +9273,7 @@ export default function AdminDashboard() {
                     onClick={() => setComisionesStatusFilter("TODOS")}
                     className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer ${
                       comisionesStatusFilter === "TODOS"
-                        ? "bg-[#f6821f] text-white shadow-xs"
+                        ? "bg-[#1b426e] text-white shadow-xs"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
@@ -9320,7 +9320,7 @@ export default function AdminDashboard() {
                     placeholder="Buscar por vendedor, factura o cliente..."
                     value={comisionesSearch}
                     onChange={(e) => setComisionesSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#f6821f] transition"
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#1b426e] transition"
                   />
                   <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -9363,7 +9363,7 @@ export default function AdminDashboard() {
                           <td className="p-3.5 text-right font-bold text-slate-900">
                             ${(comm.saleAmount || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                           </td>
-                          <td className="p-3.5 text-center font-mono font-bold text-[#f6821f]">
+                          <td className="p-3.5 text-center font-mono font-bold text-[#1b426e]">
                             {comm.commissionRate}%
                           </td>
                           <td className="p-3.5 text-right font-bold text-emerald-700">
@@ -9447,60 +9447,60 @@ export default function AdminDashboard() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-5">
                   {/* Reporte 1: Pérdidas y Ganancias */}
-                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#f6821f]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
+                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#1b426e]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                       </div>
-                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#f6821f] transition">Estado de Pérdidas y Ganancias</h3>
+                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#1b426e] transition">Estado de Pérdidas y Ganancias</h3>
                       <p className="text-xs text-slate-500 mt-1">Desglose de ingresos brutos, gastos operacionales e ingresos netos del período.</p>
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">Actualizado hoy</span>
-                      <button className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer">Descargar PDF</button>
+                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar PDF</button>
                     </div>
                   </div>
 
                   {/* Reporte 2: Balance General */}
-                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#f6821f]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
+                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#1b426e]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-3">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                         </svg>
                       </div>
-                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#f6821f] transition">Balance de Situación</h3>
+                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#1b426e] transition">Balance de Situación</h3>
                       <p className="text-xs text-slate-500 mt-1">Resumen patrimonial clasificado: Activos, Pasivos y Capital Contable.</p>
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">Mensual</span>
-                      <button className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer">Descargar PDF</button>
+                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar PDF</button>
                     </div>
                   </div>
 
                   {/* Reporte 3: Valoración de Inventario */}
-                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#f6821f]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
+                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#1b426e]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-3">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                       </div>
-                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#f6821f] transition">Valoración de Inventario</h3>
+                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#1b426e] transition">Valoración de Inventario</h3>
                       <p className="text-xs text-slate-500 mt-1">Existencias físicas, valor total en libros ({formatCurrency(totalInventoryValuation)}) y costos unitarios.</p>
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">En tiempo real</span>
-                      <button className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer">Descargar Excel</button>
+                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar Excel</button>
                     </div>
                   </div>
 
                   {/* Reporte 4: Cuentas por Cobrar (Clientes) */}
                   <div
                     onClick={() => setCurrentView("antiguedad-saldos")}
-                    className="p-5 rounded-xl border border-slate-200 hover:border-[#f6821f] hover:shadow-md transition bg-white flex flex-col justify-between group cursor-pointer"
+                    className="p-5 rounded-xl border border-slate-200 hover:border-[#1b426e] hover:shadow-md transition bg-white flex flex-col justify-between group cursor-pointer"
                   >
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center mb-3 group-hover:scale-105 transition">
@@ -9509,7 +9509,7 @@ export default function AdminDashboard() {
                         </svg>
                       </div>
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#f6821f] transition">Antigüedad de Saldos Clientes</h3>
+                        <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#1b426e] transition">Antigüedad de Saldos Clientes</h3>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">30/60/90</span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">Monitoreo de cuentas por cobrar por tramos de vencimiento, morosidad y detalle por factura.</p>
@@ -9522,7 +9522,7 @@ export default function AdminDashboard() {
                           e.stopPropagation();
                           setCurrentView("antiguedad-saldos");
                         }}
-                        className="text-xs font-bold text-[#f6821f] hover:text-[#e07216] flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-bold text-[#1b426e] hover:text-[#143355] flex items-center gap-1 cursor-pointer"
                       >
                         <span>Ver Reporte</span>
                         <span className="text-sm">→</span>
@@ -9533,7 +9533,7 @@ export default function AdminDashboard() {
                   {/* Reporte 5: Cuentas por Pagar (Proveedores) */}
                   <div
                     onClick={() => setCurrentView("antiguedad-saldos-proveedores")}
-                    className="p-5 rounded-xl border border-slate-200 hover:border-[#f6821f] hover:shadow-md transition bg-white flex flex-col justify-between group cursor-pointer"
+                    className="p-5 rounded-xl border border-slate-200 hover:border-[#1b426e] hover:shadow-md transition bg-white flex flex-col justify-between group cursor-pointer"
                   >
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center mb-3 group-hover:scale-105 transition">
@@ -9542,7 +9542,7 @@ export default function AdminDashboard() {
                         </svg>
                       </div>
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#f6821f] transition">Antigüedad de Saldos Proveedores</h3>
+                        <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#1b426e] transition">Antigüedad de Saldos Proveedores</h3>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">Cuentas por Pagar</span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">Estratificación de cuentas por pagar a crédito, facturas de compra y compromisos por vencer.</p>
@@ -9555,7 +9555,7 @@ export default function AdminDashboard() {
                           e.stopPropagation();
                           setCurrentView("antiguedad-saldos-proveedores");
                         }}
-                        className="text-xs font-bold text-[#f6821f] hover:text-[#e07216] flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-bold text-[#1b426e] hover:text-[#143355] flex items-center gap-1 cursor-pointer"
                       >
                         <span>Ver Reporte</span>
                         <span className="text-sm">→</span>
@@ -9564,19 +9564,19 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Reporte 6: Libro Mayor y Plan de Cuentas */}
-                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#f6821f]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
+                  <div className="p-5 rounded-xl border border-slate-200 hover:border-[#1b426e]/50 hover:shadow-xs transition bg-white flex flex-col justify-between group">
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                         </svg>
                       </div>
-                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#f6821f] transition">Libro Mayor / Catálogo Contable</h3>
+                      <h3 className="font-semibold text-sm text-slate-900 group-hover:text-[#1b426e] transition">Libro Mayor / Catálogo Contable</h3>
                       <p className="text-xs text-slate-500 mt-1">Estructura completa del catálogo contable y saldos acumulados por cuenta.</p>
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">{accounts.length} cuentas activas</span>
-                      <button className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer">Descargar Excel</button>
+                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar Excel</button>
                     </div>
                   </div>
                 </div>
@@ -9721,7 +9721,7 @@ export default function AdminDashboard() {
                           onClick={() => setConfigSubTab(tab.id as any)}
                           className={`w-full text-left px-5 py-3 transition font-medium cursor-pointer ${
                             isActive
-                              ? "bg-[#fff7ed] text-[#f6821f] font-semibold border-l-4 border-[#f6821f]"
+                              ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-4 border-[#1b426e]"
                               : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 border-l-4 border-transparent"
                           }`}
                         >
@@ -9787,16 +9787,16 @@ export default function AdminDashboard() {
                           /* Generic Fallback Box - Left Aligned */
                           <div
                             onClick={() => fileInputRef.current?.click()}
-                            className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[#f6821f] bg-slate-50/80 hover:bg-[#fff7ed]/50 cursor-pointer transition group max-w-sm"
+                            className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[#1b426e] bg-slate-50/80 hover:bg-[#fff7ed]/50 cursor-pointer transition group max-w-sm"
                             title="Haz clic para subir el logotipo oficial de la empresa"
                           >
-                            <div className="w-12 h-12 rounded-xl bg-slate-200/80 group-hover:bg-[#f6821f]/10 text-slate-500 group-hover:text-[#f6821f] flex items-center justify-center shrink-0 transition">
+                            <div className="w-12 h-12 rounded-xl bg-slate-200/80 group-hover:bg-[#1b426e]/10 text-slate-500 group-hover:text-[#1b426e] flex items-center justify-center shrink-0 transition">
                               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                               </svg>
                             </div>
                             <div className="flex flex-col text-left">
-                              <span className="text-xs font-bold text-slate-800 group-hover:text-[#f6821f] transition">
+                              <span className="text-xs font-bold text-slate-800 group-hover:text-[#1b426e] transition">
                                 + Agregar logotipo
                               </span>
                               <span className="text-[11px] text-slate-400 mt-0.5">
@@ -9820,7 +9820,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium">{companySettings.nombre}</span>
                             <button
                               onClick={() => startEditConfig("nombre", "Nombre de la empresa")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9831,7 +9831,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium whitespace-pre-line">{companySettings.direccion}</span>
                             <button
                               onClick={() => startEditConfig("direccion", "Dirección de la empresa")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9842,7 +9842,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium">{companySettings.email}</span>
                             <button
                               onClick={() => startEditConfig("email", "Correo electrónico")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9853,7 +9853,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium font-mono">{companySettings.telefono}</span>
                             <button
                               onClick={() => startEditConfig("telefono", "Teléfono de contacto")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9866,7 +9866,7 @@ export default function AdminDashboard() {
                             </span>
                             <button
                               onClick={() => startEditConfig("sitioWeb", "Sitio web")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9887,7 +9887,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setMonedasSettings((prev) => ({ ...prev, monedaPrincipal: val })),
                                 })
                               }
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9907,7 +9907,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={editingConfigValue || companySettings.sector}
                                     onChange={(e) => setEditingConfigValue(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border-2 border-[#f6821f] text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#f6821f] cursor-pointer shadow-xs font-medium"
+                                    className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border-2 border-[#1b426e] text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#1b426e] cursor-pointer shadow-xs font-medium"
                                   >
                                     {BUSINESS_SECTOR_OPTIONS.map((sec) => (
                                       <option key={sec} value={sec}>
@@ -9928,7 +9928,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={saveConfigField}
-                                  className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-[#f6821f] hover:bg-[#e07216] transition cursor-pointer shadow-xs"
+                                  className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-[#1b426e] hover:bg-[#143355] transition cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -9940,7 +9940,7 @@ export default function AdminDashboard() {
                               <span className="flex-1 text-slate-700 font-medium">{companySettings.sector}</span>
                               <button
                                 onClick={() => startEditConfig("sector", "Sector de la empresa")}
-                                className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                                className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                               >
                                 Editar
                               </button>
@@ -9962,7 +9962,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium">{companySettings.nombreLegal}</span>
                             <button
                               onClick={() => startEditConfig("nombreLegal", "Nombre legal")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -9982,7 +9982,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={editingConfigValue || companySettings.tipoEmpresa}
                                     onChange={(e) => setEditingConfigValue(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border-2 border-[#f6821f] text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#f6821f] cursor-pointer shadow-xs font-medium"
+                                    className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border-2 border-[#1b426e] text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#1b426e] cursor-pointer shadow-xs font-medium"
                                   >
                                     {COMPANY_TYPE_OPTIONS.map((opt) => (
                                       <option key={opt} value={opt}>
@@ -10003,7 +10003,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={saveConfigField}
-                                  className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-[#f6821f] hover:bg-[#e07216] transition cursor-pointer shadow-xs"
+                                  className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-[#1b426e] hover:bg-[#143355] transition cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -10015,7 +10015,7 @@ export default function AdminDashboard() {
                               <span className="flex-1 text-slate-700 font-medium">{companySettings.tipoEmpresa}</span>
                               <button
                                 onClick={() => startEditConfig("tipoEmpresa", "Tipo de empresa")}
-                                className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                                className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                               >
                                 Editar
                               </button>
@@ -10027,7 +10027,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium whitespace-pre-line">{companySettings.domicilioLegal}</span>
                             <button
                               onClick={() => startEditConfig("domicilioLegal", "Domicilio legal")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10038,7 +10038,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-mono font-medium">{companySettings.taxId}</span>
                             <button
                               onClick={() => startEditConfig("taxId", "Número de Identificación Fiscal (RTN / TAX ID No.)")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10049,7 +10049,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-mono font-medium">{companySettings.cai}</span>
                             <button
                               onClick={() => startEditConfig("cai", "Código de Autorización de Impresión (CAI)")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10060,7 +10060,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-mono font-medium">{companySettings.rangoAutorizado}</span>
                             <button
                               onClick={() => startEditConfig("rangoAutorizado", "Rango de Facturación Autorizado")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10073,7 +10073,7 @@ export default function AdminDashboard() {
                             </span>
                             <button
                               onClick={() => startEditConfig("fechaLimiteEmision", "Fecha Límite de Emisión")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10094,7 +10094,7 @@ export default function AdminDashboard() {
                             <span className="flex-1 text-slate-700 font-medium">{companySettings.emailCliente}</span>
                             <button
                               onClick={() => startEditConfig("emailCliente", "Correo de contacto del cliente")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10107,7 +10107,7 @@ export default function AdminDashboard() {
                             </span>
                             <button
                               onClick={() => startEditConfig("direccionCliente", "Dirección del cliente")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10178,7 +10178,7 @@ export default function AdminDashboard() {
                                           type="checkbox"
                                           checked={reportHeaderLogo}
                                           onChange={(e) => setReportHeaderLogo(e.target.checked)}
-                                          className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                          className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                         />
                                         <span className="text-xs text-slate-700">Logotipo de la empresa</span>
                                       </label>
@@ -10187,7 +10187,7 @@ export default function AdminDashboard() {
                                           type="checkbox"
                                           checked={reportHeaderPeriod}
                                           onChange={(e) => setReportHeaderPeriod(e.target.checked)}
-                                          className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                          className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                         />
                                         <span className="text-xs text-slate-700">Período del informe</span>
                                       </label>
@@ -10196,7 +10196,7 @@ export default function AdminDashboard() {
                                           type="checkbox"
                                           checked={reportHeaderLegalName}
                                           onChange={(e) => setReportHeaderLegalName(e.target.checked)}
-                                          className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                          className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                         />
                                         <span className="text-xs text-slate-700">Razón social</span>
                                       </label>
@@ -10211,7 +10211,7 @@ export default function AdminDashboard() {
                                         <select
                                           value={reportHeaderAlignment}
                                           onChange={(e) => setReportHeaderAlignment(e.target.value as any)}
-                                          className="w-full appearance-none pr-8 pl-3 py-1.5 text-xs rounded-lg border-2 border-emerald-800 text-slate-800 bg-white focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f] cursor-pointer font-medium shadow-2xs"
+                                          className="w-full appearance-none pr-8 pl-3 py-1.5 text-xs rounded-lg border-2 border-emerald-800 text-slate-800 bg-white focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e] cursor-pointer font-medium shadow-2xs"
                                         >
                                           <option value="Izquierda">Izquierda</option>
                                           <option value="Centro">Centro</option>
@@ -10256,7 +10256,7 @@ export default function AdminDashboard() {
                                           type="checkbox"
                                           checked={reportFooterDate}
                                           onChange={(e) => setReportFooterDate(e.target.checked)}
-                                          className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                          className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                         />
                                         <span className="text-xs text-slate-700">Fecha de preparación</span>
                                       </label>
@@ -10265,7 +10265,7 @@ export default function AdminDashboard() {
                                           type="checkbox"
                                           checked={reportFooterTime}
                                           onChange={(e) => setReportFooterTime(e.target.checked)}
-                                          className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                          className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                         />
                                         <span className="text-xs text-slate-700">Hora de preparación</span>
                                       </label>
@@ -10274,7 +10274,7 @@ export default function AdminDashboard() {
                                           type="checkbox"
                                           checked={reportFooterMethod}
                                           onChange={(e) => setReportFooterMethod(e.target.checked)}
-                                          className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                          className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                         />
                                         <span className="text-xs text-slate-700">Método de contabilización de los informes</span>
                                       </label>
@@ -10289,7 +10289,7 @@ export default function AdminDashboard() {
                                         <select
                                           value={reportFooterAlignment}
                                           onChange={(e) => setReportFooterAlignment(e.target.value as any)}
-                                          className="w-full appearance-none pr-8 pl-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f] cursor-pointer font-medium shadow-2xs"
+                                          className="w-full appearance-none pr-8 pl-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e] cursor-pointer font-medium shadow-2xs"
                                         >
                                           <option value="Izquierda">Izquierda</option>
                                           <option value="Centro">Centro</option>
@@ -10333,7 +10333,7 @@ export default function AdminDashboard() {
                                         type="checkbox"
                                         checked={reportExpandSubaccounts}
                                         onChange={(e) => setReportExpandSubaccounts(e.target.checked)}
-                                        className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                        className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                       />
                                       <span>Expandir subcuentas de primer nivel</span>
                                     </label>
@@ -10342,7 +10342,7 @@ export default function AdminDashboard() {
                                         type="checkbox"
                                         checked={reportShowGroupTotals}
                                         onChange={(e) => setReportShowGroupTotals(e.target.checked)}
-                                        className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                        className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                       />
                                       <span>Mostrar totales de agrupación</span>
                                     </label>
@@ -10379,7 +10379,7 @@ export default function AdminDashboard() {
                                           value="hyphen"
                                           checked={reportEmptyCellFormat === "hyphen"}
                                           onChange={(e) => setReportEmptyCellFormat(e.target.value)}
-                                          className="text-[#f6821f] focus:ring-[#f6821f]"
+                                          className="text-[#1b426e] focus:ring-[#1b426e]"
                                         />
                                         <span>Guion (-)</span>
                                       </label>
@@ -10390,7 +10390,7 @@ export default function AdminDashboard() {
                                           value="zero"
                                           checked={reportEmptyCellFormat === "zero"}
                                           onChange={(e) => setReportEmptyCellFormat(e.target.value)}
-                                          className="text-[#f6821f] focus:ring-[#f6821f]"
+                                          className="text-[#1b426e] focus:ring-[#1b426e]"
                                         />
                                         <span>$0.00</span>
                                       </label>
@@ -10401,7 +10401,7 @@ export default function AdminDashboard() {
                                           value="blank"
                                           checked={reportEmptyCellFormat === "blank"}
                                           onChange={(e) => setReportEmptyCellFormat(e.target.value)}
-                                          className="text-[#f6821f] focus:ring-[#f6821f]"
+                                          className="text-[#1b426e] focus:ring-[#1b426e]"
                                         />
                                         <span>En blanco</span>
                                       </label>
@@ -10438,7 +10438,7 @@ export default function AdminDashboard() {
                                       <select
                                         value={gridBorderSetting}
                                         onChange={(e) => setGridBorderSetting(e.target.value)}
-                                        className="w-full appearance-none pr-8 pl-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f] cursor-pointer font-medium shadow-2xs"
+                                        className="w-full appearance-none pr-8 pl-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e] cursor-pointer font-medium shadow-2xs"
                                       >
                                         <option value="Predeterminado">Predeterminado</option>
                                         <option value="Líneas horizontales">Líneas horizontales</option>
@@ -10491,7 +10491,7 @@ export default function AdminDashboard() {
                                             type="checkbox"
                                             checked={reportDivideBy1000}
                                             onChange={(e) => setReportDivideBy1000(e.target.checked)}
-                                            className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                           />
                                           <span className="text-xs text-slate-700">Dividir por 1000</span>
                                         </label>
@@ -10500,7 +10500,7 @@ export default function AdminDashboard() {
                                             type="checkbox"
                                             checked={reportHideZeroAmounts}
                                             onChange={(e) => setReportHideZeroAmounts(e.target.checked)}
-                                            className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                           />
                                           <span className="text-xs text-slate-700">No mostrar importes en cero</span>
                                         </label>
@@ -10511,7 +10511,7 @@ export default function AdminDashboard() {
                                             type="checkbox"
                                             checked={reportHideCurrencySymbol}
                                             onChange={(e) => setReportHideCurrencySymbol(e.target.checked)}
-                                            className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                           />
                                           <span className="text-xs text-slate-700">No mostrar símbolo de divisa</span>
                                         </label>
@@ -10528,7 +10528,7 @@ export default function AdminDashboard() {
                                           <select
                                             value={reportNegativeNumberFormat}
                                             onChange={(e) => setReportNegativeNumberFormat(e.target.value)}
-                                            className="w-full appearance-none pr-7 pl-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f] cursor-pointer font-medium shadow-2xs"
+                                            className="w-full appearance-none pr-7 pl-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e] cursor-pointer font-medium shadow-2xs"
                                           >
                                             <option value="-100">-100</option>
                                             <option value="(100)">(100)</option>
@@ -10546,7 +10546,7 @@ export default function AdminDashboard() {
                                             type="checkbox"
                                             checked={reportNegativeInRed}
                                             onChange={(e) => setReportNegativeInRed(e.target.checked)}
-                                            className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                           />
                                           <span className="text-xs text-slate-700">Mostrar en rojo</span>
                                         </label>
@@ -10588,7 +10588,7 @@ export default function AdminDashboard() {
                                                 setReportDecimalPlaces(Number(e.target.value));
                                                 setReportDecimalMode("decimals");
                                               }}
-                                              className="w-full appearance-none pr-6 pl-2.5 py-1 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#f6821f] cursor-pointer font-medium text-center shadow-2xs"
+                                              className="w-full appearance-none pr-6 pl-2.5 py-1 text-xs rounded-lg border border-slate-300 text-slate-800 bg-white focus:outline-none focus:border-[#1b426e] cursor-pointer font-medium text-center shadow-2xs"
                                             >
                                               <option value={0}>0</option>
                                               <option value={1}>1</option>
@@ -10636,7 +10636,7 @@ export default function AdminDashboard() {
                                         type="checkbox"
                                         checked={reportCompactView}
                                         onChange={(e) => setReportCompactView(e.target.checked)}
-                                        className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                        className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                       />
                                       <span>Diseño compacto</span>
                                     </label>
@@ -10645,7 +10645,7 @@ export default function AdminDashboard() {
                                         type="checkbox"
                                         checked={reportWrapText}
                                         onChange={(e) => setReportWrapText(e.target.checked)}
-                                        className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                        className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                       />
                                       <span>Ajuste automático de texto largo</span>
                                     </label>
@@ -10690,7 +10690,7 @@ export default function AdminDashboard() {
                                   {companyLogo ? (
                                     <img src={companyLogo} alt="Logo" className="h-9 object-contain" />
                                   ) : (
-                                    <div className="w-8 h-8 rounded-lg bg-[#fff7ed] border border-[#f6821f]/30 flex items-center justify-center font-bold text-[#f6821f] text-sm shadow-xs">
+                                    <div className="w-8 h-8 rounded-lg bg-[#fff7ed] border border-[#1b426e]/30 flex items-center justify-center font-bold text-[#1b426e] text-sm shadow-xs">
                                       W
                                     </div>
                                   )}
@@ -10927,7 +10927,7 @@ export default function AdminDashboard() {
                             setReportSavedNotification(true);
                             setTimeout(() => setReportSavedNotification(false), 3000);
                           }}
-                          className="px-6 py-2 rounded-xl text-xs font-semibold text-white bg-[#f6821f] hover:bg-[#e07216] transition cursor-pointer shadow-xs"
+                          className="px-6 py-2 rounded-xl text-xs font-semibold text-white bg-[#1b426e] hover:bg-[#143355] transition cursor-pointer shadow-xs"
                         >
                           Guardar
                         </button>
@@ -10957,7 +10957,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setContabilidadSettings((prev) => ({ ...prev, primerMesFiscal: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10976,7 +10976,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setContabilidadSettings((prev) => ({ ...prev, primerMesImpuesto: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -10995,7 +10995,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setContabilidadSettings((prev) => ({ ...prev, metodoContabilidad: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11014,7 +11014,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setContabilidadSettings((prev) => ({ ...prev, cierreLibros: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11033,7 +11033,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setContabilidadSettings((prev) => ({ ...prev, numerosCuenta: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11060,7 +11060,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => startEditConfig("contadorNombre", "Nombre del Contador General")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11073,7 +11073,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => startEditConfig("contadorTitulo", "Cargo o Título Profesional del Contador")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11088,7 +11088,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => startEditConfig("contadorColegiacion", "Número de Colegiación / Registro Profesional")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11103,7 +11103,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => startEditConfig("contadorTelefono", "Teléfono de contacto del Contador")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11118,7 +11118,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => startEditConfig("contadorEmail", "Correo electrónico del Contador")}
-                              className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer shrink-0"
+                              className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -11168,7 +11168,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={salesSettings.preferidofacturaCondiciones}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, preferidofacturaCondiciones: e.target.value }))}
-                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                   >
                                     <option value="Net 30">Net 30</option>
                                     <option value="Net 15">Net 15</option>
@@ -11181,7 +11181,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={salesSettings.metodoEntregaPreferido}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, metodoEntregaPreferido: e.target.value }))}
-                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                   >
                                     <option value="Ninguno">Ninguno</option>
                                     <option value="Imprimir más tarde">Imprimir más tarde</option>
@@ -11196,7 +11196,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.envio}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, envio: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="font-semibold text-slate-800">Envío</span>
                                 </label>
@@ -11210,7 +11210,7 @@ export default function AdminDashboard() {
                                       type="checkbox"
                                       checked={salesSettings.numerosTransaccionesPersonalizados}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, numerosTransaccionesPersonalizados: e.target.checked }))}
-                                      className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                      className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                     />
                                     <span>Números de transacciones personalizados</span>
                                   </label>
@@ -11219,7 +11219,7 @@ export default function AdminDashboard() {
                                       type="checkbox"
                                       checked={salesSettings.fechaServicio}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, fechaServicio: e.target.checked }))}
-                                      className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                      className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                     />
                                     <span>Fecha del servicio</span>
                                   </label>
@@ -11228,7 +11228,7 @@ export default function AdminDashboard() {
                                       type="checkbox"
                                       checked={salesSettings.descuento}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, descuento: e.target.checked }))}
-                                      className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                      className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                     />
                                     <span>Descuento</span>
                                   </label>
@@ -11237,7 +11237,7 @@ export default function AdminDashboard() {
                                       type="checkbox"
                                       checked={salesSettings.deposito}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, deposito: e.target.checked }))}
-                                      className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                      className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                     />
                                     <span>Depósito</span>
                                   </label>
@@ -11246,7 +11246,7 @@ export default function AdminDashboard() {
                                       type="checkbox"
                                       checked={salesSettings.etiquetas}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, etiquetas: e.target.checked }))}
-                                      className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                      className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                     />
                                     <span>Etiquetas</span>
                                   </label>
@@ -11268,7 +11268,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11320,7 +11320,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("contenidoFormulario")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11355,7 +11355,7 @@ export default function AdminDashboard() {
                                       step={1}
                                       value={salesSettings.tasaIsvGeneral}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, tasaIsvGeneral: parseFloat(e.target.value) || 0 }))}
-                                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none pr-8"
+                                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none pr-8"
                                     />
                                     <span className="absolute right-3 top-1.5 text-xs text-slate-400 font-bold">%</span>
                                   </div>
@@ -11367,7 +11367,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={salesSettings.preciosIncluyenIsv ? "incluido" : "excluido"}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, preciosIncluyenIsv: e.target.value === "incluido" }))}
-                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                   >
                                     <option value="excluido">No incluido en precios (Se agrega a la base gravada)</option>
                                     <option value="incluido">Incluido en precios unitarios</option>
@@ -11382,7 +11382,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.isvPredeterminado}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, isvPredeterminado: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="font-semibold text-slate-800">Aplicar I.S.V. por defecto en facturas nuevas</span>
                                 </label>
@@ -11391,7 +11391,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.permitirIsv18}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, permitirIsv18: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Habilitar opción de I.S.V. 18% (Tasa especial para licores, boletos de primera clase, etc.)</span>
                                 </label>
@@ -11412,7 +11412,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11445,7 +11445,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("impuestosIsv")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11474,7 +11474,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.mostrarColumnaProductoServicio}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, mostrarColumnaProductoServicio: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="font-medium text-slate-800">Mostrar la columna Producto/Servicio en los formularios de ventas</span>
                                 </label>
@@ -11484,7 +11484,7 @@ export default function AdminDashboard() {
                                       type="checkbox"
                                       checked={salesSettings.mostrarColumnaSku}
                                       onChange={(e) => setSalesSettings((prev) => ({ ...prev, mostrarColumnaSku: e.target.checked }))}
-                                      className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                      className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                     />
                                     <span className="text-slate-700">Mostrar columna de SKU</span>
                                   </label>
@@ -11494,7 +11494,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.activarReglasPrecios}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, activarReglasPrecios: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Activar reglas de precios</span>
                                 </label>
@@ -11503,7 +11503,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.seguimientoCantidadPrecio}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, seguimientoCantidadPrecio: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Hacer un seguimiento de la cantidad y el precio/tarifa</span>
                                 </label>
@@ -11512,7 +11512,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.seguimientoExistenciasInventario}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, seguimientoExistenciasInventario: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Realizar seguimiento de las existencias del inventario</span>
                                 </label>
@@ -11524,7 +11524,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={salesSettings.metodoValoracionInventario}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, metodoValoracionInventario: e.target.value }))}
-                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                   >
                                     <option value="Seleccionar método">Seleccionar método</option>
                                     <option value="FIFO (PEPS - Primero en entrar, primero en salir)">FIFO (PEPS)</option>
@@ -11537,7 +11537,7 @@ export default function AdminDashboard() {
                                   <select
                                     value={salesSettings.metodoRecepcionInventario}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, metodoRecepcionInventario: e.target.value }))}
-                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                   >
                                     <option value="Facturas de proveedores y gastos">Facturas de proveedores y gastos</option>
                                     <option value="Órdenes de compra y recepción">Órdenes de compra y recepción</option>
@@ -11551,7 +11551,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.reconocimientoIngresos}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, reconocimientoIngresos: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="font-semibold text-slate-800">Reconocimiento de ingresos</span>
                                 </label>
@@ -11572,7 +11572,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11621,7 +11621,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("productosServicios")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11649,7 +11649,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={salesSettings.facturacionProgresiva}
                                   onChange={(e) => setSalesSettings((prev) => ({ ...prev, facturacionProgresiva: e.target.checked }))}
-                                  className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                  className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                 />
                                 <span className="text-slate-800">Crea varias facturas parciales a partir de una sola cotización</span>
                               </label>
@@ -11668,7 +11668,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11687,7 +11687,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("facturacionProgresiva")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11718,7 +11718,7 @@ export default function AdminDashboard() {
                                   rows={3}
                                   value={salesSettings.mensajePredeterminado}
                                   onChange={(e) => setSalesSettings((prev) => ({ ...prev, mensajePredeterminado: e.target.value }))}
-                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                 />
                               </div>
                               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
@@ -11736,7 +11736,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11755,7 +11755,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("mensajes")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11786,7 +11786,7 @@ export default function AdminDashboard() {
                                   rows={3}
                                   value={salesSettings.recordatoriosConfig}
                                   onChange={(e) => setSalesSettings((prev) => ({ ...prev, recordatoriosConfig: e.target.value }))}
-                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                 />
                               </div>
                               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
@@ -11804,7 +11804,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11823,7 +11823,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("recordatorios")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11852,7 +11852,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.solicitarSolicitudTrabajo}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, solicitarSolicitudTrabajo: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Solicitar una solicitud de trabajo</span>
                                 </label>
@@ -11861,7 +11861,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.solicitarResenas}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, solicitarResenas: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Solicitar reseñas, comentarios o testimonios</span>
                                 </label>
@@ -11870,7 +11870,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={salesSettings.solicitarReferencia}
                                     onChange={(e) => setSalesSettings((prev) => ({ ...prev, solicitarReferencia: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Solicitar una referencia</span>
                                 </label>
@@ -11880,7 +11880,7 @@ export default function AdminDashboard() {
                                 <select
                                   value={salesSettings.frecuenciaEncuesta}
                                   onChange={(e) => setSalesSettings((prev) => ({ ...prev, frecuenciaEncuesta: e.target.value }))}
-                                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                 >
                                   <option value="30 días">30 días</option>
                                   <option value="60 días">60 días</option>
@@ -11903,7 +11903,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -11936,7 +11936,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("encuestaComentarios")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -11967,7 +11967,7 @@ export default function AdminDashboard() {
                                   rows={3}
                                   value={salesSettings.entregaEnLineaOpciones}
                                   onChange={(e) => setSalesSettings((prev) => ({ ...prev, entregaEnLineaOpciones: e.target.value }))}
-                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                 />
                               </div>
                               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
@@ -11985,7 +11985,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -12004,7 +12004,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("entregaEnLinea")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -12032,7 +12032,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={salesSettings.mostrarTablaAntiguedad}
                                   onChange={(e) => setSalesSettings((prev) => ({ ...prev, mostrarTablaAntiguedad: e.target.checked }))}
-                                  className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                  className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                 />
                                 <span className="text-slate-800">Mostrar tabla de antigüedad en la parte inferior del extracto</span>
                               </label>
@@ -12051,7 +12051,7 @@ export default function AdminDashboard() {
                                     setSalesSavedNotification(true);
                                     setTimeout(() => setSalesSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -12070,7 +12070,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingSalesSection("resumenes")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -12128,7 +12128,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={expenseSettings.mostrarTablaArticulosGasto}
                                     onChange={(e) => setExpenseSettings((prev) => ({ ...prev, mostrarTablaArticulosGasto: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Mostrar tabla de artículos el gasto y formularios de compra</span>
                                 </label>
@@ -12137,7 +12137,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={expenseSettings.mostrarCampoEtiquetas}
                                     onChange={(e) => setExpenseSettings((prev) => ({ ...prev, mostrarCampoEtiquetas: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Mostrar campo Etiquetas en los formularios de compras y gastos</span>
                                 </label>
@@ -12146,7 +12146,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={expenseSettings.seguimientoGastosArticulosCliente}
                                     onChange={(e) => setExpenseSettings((prev) => ({ ...prev, seguimientoGastosArticulosCliente: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Realizar seguimiento gastos y artículos por cliente</span>
                                 </label>
@@ -12155,7 +12155,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={expenseSettings.hacerGastosArticulosFacturables}
                                     onChange={(e) => setExpenseSettings((prev) => ({ ...prev, hacerGastosArticulosFacturables: e.target.checked }))}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                   />
                                   <span className="text-slate-800">Hacer gastos y artículos facturables</span>
                                 </label>
@@ -12168,7 +12168,7 @@ export default function AdminDashboard() {
                                 <select
                                   value={expenseSettings.condicionesPagoProveedores}
                                   onChange={(e) => setExpenseSettings((prev) => ({ ...prev, condicionesPagoProveedores: e.target.value }))}
-                                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                 >
                                   <option value="Net 30">Net 30</option>
                                   <option value="Net 15">Net 15</option>
@@ -12192,7 +12192,7 @@ export default function AdminDashboard() {
                                     setExpenseSavedNotification(true);
                                     setTimeout(() => setExpenseSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -12239,7 +12239,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingExpenseSection("facturasGastos")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -12267,7 +12267,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={expenseSettings.usarOrdenesCompra}
                                   onChange={(e) => setExpenseSettings((prev) => ({ ...prev, usarOrdenesCompra: e.target.checked }))}
-                                  className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer"
+                                  className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
                                 />
                                 <span className="text-slate-800">Usar órdenes de compra</span>
                               </label>
@@ -12286,7 +12286,7 @@ export default function AdminDashboard() {
                                     setExpenseSavedNotification(true);
                                     setTimeout(() => setExpenseSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -12307,7 +12307,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingExpenseSection("ordenesCompra")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -12338,7 +12338,7 @@ export default function AdminDashboard() {
                                   rows={3}
                                   value={expenseSettings.mensajeOrdenesCompra}
                                   onChange={(e) => setExpenseSettings((prev) => ({ ...prev, mensajeOrdenesCompra: e.target.value }))}
-                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#f6821f] focus:outline-none"
+                                  className="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 focus:border-[#1b426e] focus:outline-none"
                                 />
                               </div>
                               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
@@ -12356,7 +12356,7 @@ export default function AdminDashboard() {
                                     setExpenseSavedNotification(true);
                                     setTimeout(() => setExpenseSavedNotification(false), 3000);
                                   }}
-                                  className="px-4 py-1.5 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-xs"
+                                  className="px-4 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-xs"
                                 >
                                   Guardar
                                 </button>
@@ -12377,7 +12377,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingExpenseSection("mensajes")}
-                                  className="text-xs font-semibold text-[#f6821f] hover:underline cursor-pointer"
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
                                 >
                                   Editar
                                 </button>
@@ -12411,7 +12411,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setHorasSettings((prev) => ({ ...prev, primerDia: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12430,7 +12430,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setHorasSettings((prev) => ({ ...prev, jornadaMaxima: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12449,7 +12449,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setHorasSettings((prev) => ({ ...prev, aprobacionHorasExtra: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12481,7 +12481,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setMonedasSettings((prev) => ({ ...prev, monedaPrincipal: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12500,7 +12500,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setMonedasSettings((prev) => ({ ...prev, multidivisa: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12527,7 +12527,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setMonedasSettings((prev) => ({ ...prev, bancoPrincipal: val })),
                                 });
                               }}
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12546,7 +12546,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setMonedasSettings((prev) => ({ ...prev, transferenciasAch: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12570,13 +12570,13 @@ export default function AdminDashboard() {
                         {/* Columna 1 */}
                         <div className="space-y-7">
                           {/* Item: Importar datos */}
-                          <div className="p-3.5 rounded-xl bg-orange-50/70 border border-[#f6821f]/30">
+                          <div className="p-3.5 rounded-xl bg-orange-50/70 border border-[#1b426e]/30">
                             <button
                               type="button"
                               onClick={() => setConfigSubTab("importar")}
-                              className="font-bold text-sm text-[#f6821f] hover:underline cursor-pointer text-left mb-1 flex items-center gap-2"
+                              className="font-bold text-sm text-[#1b426e] hover:underline cursor-pointer text-left mb-1 flex items-center gap-2"
                             >
-                              <Download className="w-4 h-4 text-[#f6821f] shrink-0" />
+                              <Download className="w-4 h-4 text-[#1b426e] shrink-0" />
                               <span>Importar datos (Clientes, Proveedores, Inventario, Catálogo)</span>
                             </button>
                             <p className="text-xs text-slate-600 leading-relaxed">
@@ -12739,7 +12739,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setAvanzadasSettings((prev) => ({ ...prev, zonaHoraria: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12758,7 +12758,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setAvanzadasSettings((prev) => ({ ...prev, idioma: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12777,7 +12777,7 @@ export default function AdminDashboard() {
                                   onSave: (val) => setAvanzadasSettings((prev) => ({ ...prev, cierreSesionInactividad: val })),
                                 })
                               }
-                              className="text-[#f6821f] font-semibold hover:underline cursor-pointer shrink-0"
+                              className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
                             >
                               Editar
                             </button>
@@ -12877,7 +12877,7 @@ export default function AdminDashboard() {
                               }}
                               className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between h-36 ${
                                 isSelected
-                                  ? `${cat.color} ring-2 ring-[#f6821f] font-semibold shadow-xs`
+                                  ? `${cat.color} ring-2 ring-[#1b426e] font-semibold shadow-xs`
                                   : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
                               }`}
                             >
@@ -12973,7 +12973,7 @@ export default function AdminDashboard() {
                                 ? "Ejemplo:\nTextiles Búfalo S.A., 08019012345678, compras@bufalo.hn, +504 2550-1122, Zip Búfalo\nEmpaques del Norte, 05019009876543, ventas@empaques.hn, +504 9988-7766, San Pedro Sula"
                                 : "Pega las filas de tu tabla separadas por coma o tabulación..."
                             }
-                            className="w-full p-3.5 text-xs font-mono rounded-xl border border-slate-300 bg-slate-50/70 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full p-3.5 text-xs font-mono rounded-xl border border-slate-300 bg-slate-50/70 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -13039,7 +13039,7 @@ export default function AdminDashboard() {
                                 setImportPreviewRows([]);
                               }, 1000);
                             }}
-                            className="px-6 py-2.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
+                            className="px-6 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
                           >
                             {isImporting ? (
                               <>
@@ -13081,7 +13081,7 @@ export default function AdminDashboard() {
                           required
                           value={editingBank.name}
                           onChange={(e) => setEditingBank({ ...editingBank, name: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                         />
                       </div>
 
@@ -13093,7 +13093,7 @@ export default function AdminDashboard() {
                             required
                             value={editingBank.accountNumber}
                             onChange={(e) => setEditingBank({ ...editingBank, accountNumber: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
                         <div>
@@ -13101,7 +13101,7 @@ export default function AdminDashboard() {
                           <select
                             value={editingBank.currency}
                             onChange={(e) => setEditingBank({ ...editingBank, currency: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           >
                             <option value="USD">USD ($)</option>
                             <option value="HNL">HNL (L)</option>
@@ -13118,7 +13118,7 @@ export default function AdminDashboard() {
                             step="0.01"
                             value={editingBank.bankBalance}
                             onChange={(e) => setEditingBank({ ...editingBank, bankBalance: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
                         <div>
@@ -13128,7 +13128,7 @@ export default function AdminDashboard() {
                             step="0.01"
                             value={editingBank.bookBalance}
                             onChange={(e) => setEditingBank({ ...editingBank, bookBalance: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
                       </div>
@@ -13143,7 +13143,7 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           type="submit"
-                          className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20"
+                          className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20"
                         >
                           Guardar cambios
                         </button>
@@ -13175,7 +13175,7 @@ export default function AdminDashboard() {
                         <select
                           value={paramEditModal.value}
                           onChange={(e) => setParamEditModal((prev) => (prev ? { ...prev, value: e.target.value } : null))}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                         >
                           {paramEditModal.options.map((opt) => (
                             <option key={opt} value={opt}>
@@ -13188,7 +13188,7 @@ export default function AdminDashboard() {
                           type="text"
                           value={paramEditModal.value}
                           onChange={(e) => setParamEditModal((prev) => (prev ? { ...prev, value: e.target.value } : null))}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                         />
                       )}
                     </div>
@@ -13207,7 +13207,7 @@ export default function AdminDashboard() {
                           paramEditModal.onSave(paramEditModal.value);
                           setParamEditModal(null);
                         }}
-                        className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20"
+                        className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20"
                       >
                         Guardar cambios
                       </button>
@@ -13260,11 +13260,11 @@ export default function AdminDashboard() {
                             name="catName"
                             type="text"
                             placeholder="Nueva categoría (ej. Empaque Flexográfico)..."
-                            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-xs"
+                            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs"
                           >
                             + Agregar
                           </button>
@@ -13313,18 +13313,18 @@ export default function AdminDashboard() {
                             type="text"
                             required
                             placeholder="Nombre del local (ej. Planta N.º 2 Zip Búfalo)..."
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <input
                             name="locAddr"
                             type="text"
                             placeholder="Dirección física (ej. Villanueva, Cortés)..."
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <div className="flex justify-end">
                             <button
                               type="submit"
-                              className="px-4 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-xs"
+                              className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs"
                             >
                               + Agregar ubicación
                             </button>
@@ -13376,11 +13376,11 @@ export default function AdminDashboard() {
                             type="text"
                             required
                             placeholder="Nuevo método (ej. Depósito directo)..."
-                            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <select
                             name="pmType"
-                            className="px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           >
                             <option value="Efectivo">Efectivo</option>
                             <option value="Cheque">Cheque</option>
@@ -13389,7 +13389,7 @@ export default function AdminDashboard() {
                           </select>
                           <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-xs"
+                            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs"
                           >
                             + Agregar
                           </button>
@@ -13441,18 +13441,18 @@ export default function AdminDashboard() {
                             type="text"
                             required
                             placeholder="Nombre (ej. Neto 45 días)..."
-                            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <input
                             name="termDays"
                             type="number"
                             defaultValue="30"
                             placeholder="Días"
-                            className="w-20 px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-20 px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-xs"
+                            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs"
                           >
                             + Agregar
                           </button>
@@ -13512,11 +13512,11 @@ export default function AdminDashboard() {
                               type="text"
                               required
                               placeholder="Nombre plantilla..."
-                              className="col-span-2 px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                              className="col-span-2 px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             />
                             <select
                               name="recType"
-                              className="px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                              className="px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             >
                               <option value="Gasto">Gasto</option>
                               <option value="Ingreso">Ingreso</option>
@@ -13528,11 +13528,11 @@ export default function AdminDashboard() {
                               type="number"
                               step="0.01"
                               placeholder="Monto ($ / L)..."
-                              className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                              className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                             />
                             <button
                               type="submit"
-                              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-xs"
+                              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs"
                             >
                               + Guardar plantilla
                             </button>
@@ -13588,18 +13588,18 @@ export default function AdminDashboard() {
                             type="text"
                             required
                             placeholder="Nombre de la clase (ej. División Flexografía)..."
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <input
                             name="clsDesc"
                             type="text"
                             placeholder="Descripción de la línea o segmento..."
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                           <div className="flex justify-end">
                             <button
                               type="submit"
-                              className="px-4 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-xs"
+                              className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs"
                             >
                               + Agregar clase
                             </button>
@@ -13660,7 +13660,7 @@ export default function AdminDashboard() {
                               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                                 DEL (8 dígitos iniciales)
                               </label>
-                              <div className="flex items-center rounded-xl bg-slate-50 border border-slate-300 focus-within:border-[#f6821f] focus-within:ring-1 focus-within:ring-[#f6821f] overflow-hidden">
+                              <div className="flex items-center rounded-xl bg-slate-50 border border-slate-300 focus-within:border-[#1b426e] focus-within:ring-1 focus-within:ring-[#1b426e] overflow-hidden">
                                 <span className="px-2.5 py-2 font-mono text-[11px] text-slate-500 bg-slate-100 border-r border-slate-200 select-none font-semibold">
                                   {rangoPrefijo}
                                 </span>
@@ -13683,7 +13683,7 @@ export default function AdminDashboard() {
                               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                                 AL (8 dígitos finales)
                               </label>
-                              <div className="flex items-center rounded-xl bg-slate-50 border border-slate-300 focus-within:border-[#f6821f] focus-within:ring-1 focus-within:ring-[#f6821f] overflow-hidden">
+                              <div className="flex items-center rounded-xl bg-slate-50 border border-slate-300 focus-within:border-[#1b426e] focus-within:ring-1 focus-within:ring-[#1b426e] overflow-hidden">
                                 <span className="px-2.5 py-2 font-mono text-[11px] text-slate-500 bg-slate-100 border-r border-slate-200 select-none font-semibold">
                                   {rangoPrefijo}
                                 </span>
@@ -13717,7 +13717,7 @@ export default function AdminDashboard() {
                           <p className="text-[11px] text-slate-500">
                             Selecciona la fecha límite de emisión autorizada por el SAR:
                           </p>
-                          <div className="relative flex items-center w-full rounded-xl bg-slate-50 border border-slate-300 focus-within:border-[#f6821f] focus-within:ring-1 focus-within:ring-[#f6821f] focus-within:bg-white transition shadow-2xs">
+                          <div className="relative flex items-center w-full rounded-xl bg-slate-50 border border-slate-300 focus-within:border-[#1b426e] focus-within:ring-1 focus-within:ring-[#1b426e] focus-within:bg-white transition shadow-2xs">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -13797,14 +13797,14 @@ export default function AdminDashboard() {
                           rows={3}
                           value={editingConfigValue}
                           onChange={(e) => setEditingConfigValue(e.target.value)}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                         />
                       ) : (
                         <input
                           type="text"
                           value={editingConfigValue}
                           onChange={(e) => setEditingConfigValue(e.target.value)}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                         />
                       )}
                     </div>
@@ -13820,7 +13820,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={saveConfigField}
-                        className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20"
+                        className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20"
                       >
                         Guardar cambios
                       </button>
@@ -13903,7 +13903,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Historial de Facturas Emitidas
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         Facturación Fiscal (SAR)
                       </span>
                     </div>
@@ -13916,7 +13916,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => openInvoiceEditor()}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                     >
                       <span className="text-sm leading-none">+</span>
                       <span>Crear factura</span>
@@ -13968,20 +13968,20 @@ export default function AdminDashboard() {
                 {/* Pendiente de Cobro */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-[#f6821f]">Pendiente de Cobro</span>
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                    <span className="text-xs font-medium text-[#1b426e]">Pendiente de Cobro</span>
+                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                   </div>
                   <div className="mt-2">
-                    <span className="text-2xl sm:text-3xl font-black text-[#f6821f] tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-black text-[#1b426e] tracking-tight">
                       ${totalPendientes.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">{facturasPendientes.length} factura pendiente</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                 </div>
 
                 {/* Total Facturas */}
@@ -14011,7 +14011,7 @@ export default function AdminDashboard() {
                       placeholder="Buscar por N.º de factura, cliente..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     />
                     <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -14115,7 +14115,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Órdenes de Compra
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         Gestión de Compras (PO)
                       </span>
                     </div>
@@ -14128,7 +14128,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => openPurchaseOrderEditor()}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                     >
                       <span className="text-sm leading-none">+</span>
                       <span>Crear orden de compra</span>
@@ -14180,20 +14180,20 @@ export default function AdminDashboard() {
                 {/* Pendiente de Recibir */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-[#f6821f]">Pendiente de Recibir</span>
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                    <span className="text-xs font-medium text-[#1b426e]">Pendiente de Recibir</span>
+                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                   </div>
                   <div className="mt-2">
-                    <span className="text-2xl sm:text-3xl font-black text-[#f6821f] tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-black text-[#1b426e] tracking-tight">
                       ${totalPOPendientes.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">{poPendientes.length} órdenes en tránsito</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                 </div>
 
                 {/* Órdenes Registradas */}
@@ -14223,7 +14223,7 @@ export default function AdminDashboard() {
                       placeholder="Buscar por N.º de orden, proveedor, categoría..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     />
                     <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -14386,7 +14386,7 @@ export default function AdminDashboard() {
                       <h2 className="text-xl font-bold text-slate-900">
                         Facturas de Compra (Entradas de Inventario)
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                         Entradas de Stock
                       </span>
                     </div>
@@ -14399,7 +14399,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={openCreatePurchaseInvoice}
-                      className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                     >
                       <span className="text-sm leading-none">+</span>
                       <span>Registrar Factura de Compra</span>
@@ -14484,7 +14484,7 @@ export default function AdminDashboard() {
                       onClick={() => setPurchaseInvoicesFilter("TODAS")}
                       className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer ${
                         purchaseInvoicesFilter === "TODAS"
-                          ? "bg-[#f6821f] text-white shadow-xs"
+                          ? "bg-[#1b426e] text-white shadow-xs"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
@@ -14520,7 +14520,7 @@ export default function AdminDashboard() {
                       placeholder="Buscar por N° factura proveedor, OC o proveedor..."
                       value={purchaseInvoicesSearch}
                       onChange={(e) => setPurchaseInvoicesSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     />
                     <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -14656,7 +14656,7 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={openNewVendorReturn}
-                    className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                    className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -14671,7 +14671,7 @@ export default function AdminDashboard() {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-slate-500">Monto Total Devoluciones</span>
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -14686,7 +14686,7 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">USD en crédito/reembolso</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
@@ -14752,7 +14752,7 @@ export default function AdminDashboard() {
                         onClick={() => setVendorReturnsFilter(filterOpt)}
                         className={`px-3 py-1.5 rounded-xl font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 ${
                           vendorReturnsFilter === filterOpt
-                            ? "bg-[#f6821f] text-white shadow-xs"
+                            ? "bg-[#1b426e] text-white shadow-xs"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
@@ -14775,7 +14775,7 @@ export default function AdminDashboard() {
                     placeholder="Buscar por N° dev, proveedor, factura o motivo..."
                     value={vendorReturnsSearch}
                     onChange={(e) => setVendorReturnsSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                   <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -14867,7 +14867,7 @@ export default function AdminDashboard() {
                                   <button
                                     type="button"
                                     onClick={() => openEditVendorReturn(vr)}
-                                    className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-orange-100 text-[#f6821f] font-semibold cursor-pointer transition text-[11px] border border-orange-200"
+                                    className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-orange-100 text-[#1b426e] font-semibold cursor-pointer transition text-[11px] border border-orange-200"
                                   >
                                     Editar
                                   </button>
@@ -14961,7 +14961,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={handleSavePurchaseInvoice}
                     disabled={purchaseInvoiceLoading}
-                    className="px-6 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-2"
                   >
                     <span>{purchaseInvoiceLoading ? "Procesando..." : "Registrar Factura & Ingresar a Inventario"}</span>
                   </button>
@@ -14995,7 +14995,7 @@ export default function AdminDashboard() {
                         value={purchaseInvoiceForm.invoiceNumber}
                         onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, invoiceNumber: e.target.value })}
                         placeholder="FPROV-2026-089"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                         required
                       />
                     </div>
@@ -15006,7 +15006,7 @@ export default function AdminDashboard() {
                         value={purchaseInvoiceForm.purchaseOrderNumber}
                         onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, purchaseOrderNumber: e.target.value })}
                         placeholder="OC-2026-012"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono text-slate-800 focus:outline-none focus:border-[#1b426e]"
                       />
                     </div>
                     <div>
@@ -15014,7 +15014,7 @@ export default function AdminDashboard() {
                       <select
                         value={purchaseInvoiceForm.vendorName}
                         onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, vendorName: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                         required
                       >
                         {vendors.map((v) => (
@@ -15033,7 +15033,7 @@ export default function AdminDashboard() {
                         type="date"
                         value={purchaseInvoiceForm.issueDate}
                         onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, issueDate: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#1b426e]"
                       />
                     </div>
                     <div>
@@ -15042,7 +15042,7 @@ export default function AdminDashboard() {
                         type="date"
                         value={purchaseInvoiceForm.dueDate}
                         onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, dueDate: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#1b426e]"
                       />
                     </div>
                     <div>
@@ -15050,7 +15050,7 @@ export default function AdminDashboard() {
                       <select
                         value={purchaseInvoiceForm.currency}
                         onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, currency: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                       >
                         <option value="USD">USD ($ - Dólar Estadounidense)</option>
                         <option value="HNL">HNL (L - Lempira Hondureño)</option>
@@ -15084,7 +15084,7 @@ export default function AdminDashboard() {
                           ],
                         });
                       }}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#fff7ed] text-[#f6821f] border border-[#f6821f]/30 font-bold hover:bg-[#f6821f] hover:text-white transition cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-[#fff7ed] text-[#1b426e] border border-[#1b426e]/30 font-bold hover:bg-[#1b426e] hover:text-white transition cursor-pointer"
                     >
                       + Agregar Insumo
                     </button>
@@ -15218,7 +15218,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex justify-between w-64 text-slate-900 font-bold text-sm border-t border-slate-300 pt-1 mt-1">
                       <span>TOTAL FACTURA COMPRA:</span>
-                      <span className="font-mono text-[#f6821f]">
+                      <span className="font-mono text-[#1b426e]">
                         ${(purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0) * 1.15).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
                       </span>
                     </div>
@@ -15233,7 +15233,7 @@ export default function AdminDashboard() {
                     value={purchaseInvoiceForm.notes}
                     onChange={(e) => setPurchaseInvoiceForm({ ...purchaseInvoiceForm, notes: e.target.value })}
                     placeholder="Detalles sobre estado de empaque, transporte o inspección de calidad al recibir insumos..."
-                    className="w-full p-3 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:border-[#f6821f] resize-none"
+                    className="w-full p-3 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:border-[#1b426e] resize-none"
                   />
                 </div>
               </div>
@@ -15512,7 +15512,7 @@ export default function AdminDashboard() {
                         onClick={() => setActiveInvoiceTab(tab)}
                         className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer ${
                           activeInvoiceTab === tab
-                            ? "bg-[#fff7ed] text-[#f6821f] border border-[#f6821f]/30"
+                            ? "bg-[#fff7ed] text-[#1b426e] border border-[#1b426e]/30"
                             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                         }`}
                       >
@@ -15529,11 +15529,11 @@ export default function AdminDashboard() {
                     onClick={() => setShowInvoiceOptionsSidebar(!showInvoiceOptionsSidebar)}
                     className={`flex items-center gap-1 cursor-pointer font-semibold text-xs px-3 py-1.5 rounded-lg border transition ${
                       showInvoiceOptionsSidebar
-                        ? "bg-[#fff7ed] text-[#f6821f] border-[#f6821f]/40 shadow-2xs"
+                        ? "bg-[#fff7ed] text-[#1b426e] border-[#1b426e]/40 shadow-2xs"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200"
                     }`}
                   >
-                    <svg className="w-3.5 h-3.5 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     </svg>
                     <span>Administrar</span>
@@ -15570,7 +15570,7 @@ export default function AdminDashboard() {
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-100 pb-6">
                         {/* Company Info */}
                         <div className="space-y-1 text-xs text-slate-600 max-w-md">
-                          <h2 className="text-xl font-black text-[#f6821f] tracking-tight mb-2">FACTURA</h2>
+                          <h2 className="text-xl font-black text-[#1b426e] tracking-tight mb-2">FACTURA</h2>
                           <p className="font-bold text-slate-900 uppercase">{companySettings.nombre}</p>
                           <p>{companySettings.email} • {companySettings.telefono}</p>
                           <p>{companySettings.direccion}</p>
@@ -15622,7 +15622,7 @@ export default function AdminDashboard() {
                                 deliveryAddress: selected ? selected.address || "" : "",
                               });
                             }}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] font-semibold cursor-pointer shadow-2xs"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                           >
                             <option value="">-- Seleccionar o agregar Cliente --</option>
                             {customers.map((c) => (
@@ -15646,7 +15646,7 @@ export default function AdminDashboard() {
                                 value={invoiceForm.deliveredTo}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, deliveredTo: e.target.value })}
                                 placeholder={invoiceForm.customerName || "Nombre receptor"}
-                                className="w-full px-2.5 py-1 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                className="w-full px-2.5 py-1 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#1b426e]"
                               />
                             </div>
                             <div>
@@ -15656,7 +15656,7 @@ export default function AdminDashboard() {
                                 value={invoiceForm.deliveryAddress}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, deliveryAddress: e.target.value })}
                                 placeholder="Planta principal / Destino"
-                                className="w-full px-2.5 py-1 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                className="w-full px-2.5 py-1 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#1b426e]"
                               />
                             </div>
                           </div>
@@ -15671,7 +15671,7 @@ export default function AdminDashboard() {
                               value={invoiceForm.invoiceNumber}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceNumber: e.target.value })}
                               placeholder="00000001 o 1001"
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -15680,7 +15680,7 @@ export default function AdminDashboard() {
                             <select
                               value={invoiceForm.status || "Pendiente"}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, status: e.target.value })}
-                              className={`w-full px-3 py-1.5 rounded-xl font-bold text-xs focus:outline-none focus:border-[#f6821f] cursor-pointer border ${
+                              className={`w-full px-3 py-1.5 rounded-xl font-bold text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer border ${
                                 invoiceForm.status === "Cobrada"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-300"
                                   : "bg-amber-50 text-amber-700 border-amber-300"
@@ -15696,7 +15696,7 @@ export default function AdminDashboard() {
                             <select
                               value={invoiceForm.paymentTerms}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, paymentTerms: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer"
                             >
                               <option value="Contado">Contado</option>
                               <option value="Neto 15">Neto 15 días</option>
@@ -15711,7 +15711,7 @@ export default function AdminDashboard() {
                               type="date"
                               value={invoiceForm.invoiceDate}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceDate: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -15721,7 +15721,7 @@ export default function AdminDashboard() {
                               type="date"
                               value={invoiceForm.dueDate}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, dueDate: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
                         </div>
@@ -15757,7 +15757,7 @@ export default function AdminDashboard() {
                                       type="date"
                                       value={line.serviceDate}
                                       onChange={(e) => updateInvoiceLine(line.id, "serviceDate", e.target.value)}
-                                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#f6821f]"
+                                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3">
@@ -15767,7 +15767,7 @@ export default function AdminDashboard() {
                                       placeholder="Buscar artículo..."
                                       value={line.productName}
                                       onChange={(e) => updateInvoiceLine(line.id, "productName", e.target.value)}
-                                      className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                                      className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                                     />
                                     <datalist id={`inventory-list-${line.id}`}>
                                       {inventory.map((item) => (
@@ -15775,7 +15775,7 @@ export default function AdminDashboard() {
                                       ))}
                                     </datalist>
                                   </td>
-                                  <td className="p-3 font-mono text-[11px] text-[#f6821f] font-semibold">
+                                  <td className="p-3 font-mono text-[11px] text-[#1b426e] font-semibold">
                                     {line.sku || "—"}
                                   </td>
                                   <td className="p-3">
@@ -15784,7 +15784,7 @@ export default function AdminDashboard() {
                                       placeholder="Descripción de la línea..."
                                       value={line.description}
                                       onChange={(e) => updateInvoiceLine(line.id, "description", e.target.value)}
-                                      className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-[#f6821f]"
+                                      className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3 text-right">
@@ -15793,7 +15793,7 @@ export default function AdminDashboard() {
                                       min="1"
                                       value={line.quantity}
                                       onChange={(e) => updateInvoiceLine(line.id, "quantity", e.target.value)}
-                                      className="w-16 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:outline-none focus:border-[#f6821f]"
+                                      className="w-16 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3 text-right">
@@ -15802,7 +15802,7 @@ export default function AdminDashboard() {
                                       step="0.01"
                                       value={line.rate}
                                       onChange={(e) => updateInvoiceLine(line.id, "rate", e.target.value)}
-                                      className="w-20 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:outline-none focus:border-[#f6821f]"
+                                      className="w-20 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3 text-right font-bold text-slate-900 font-mono">
@@ -15860,7 +15860,7 @@ export default function AdminDashboard() {
                               type="text"
                               value={invoiceForm.paymentInstructions}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, paymentInstructions: e.target.value })}
-                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -15870,7 +15870,7 @@ export default function AdminDashboard() {
                               rows={3}
                               value={invoiceForm.customerNote}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, customerNote: e.target.value })}
-                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -15880,7 +15880,7 @@ export default function AdminDashboard() {
                               rows={2}
                               value={invoiceForm.statementNote}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, statementNote: e.target.value })}
-                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
                         </div>
@@ -15919,7 +15919,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={invoiceForm.applyIsv15}
                                   onChange={(e) => setInvoiceForm({ ...invoiceForm, applyIsv15: e.target.checked })}
-                                  className="rounded text-[#f6821f]"
+                                  className="rounded text-[#1b426e]"
                                 />
                                 <span>I.S.V. {salesSettings?.tasaIsvGeneral ?? 15}%</span>
                               </label>
@@ -15929,7 +15929,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={invoiceForm.applyIsv18}
                                     onChange={(e) => setInvoiceForm({ ...invoiceForm, applyIsv18: e.target.checked })}
-                                    className="rounded text-[#f6821f]"
+                                    className="rounded text-[#1b426e]"
                                   />
                                   <span>I.S.V. 18%</span>
                                 </label>
@@ -15941,7 +15941,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={invoiceForm.isExonerated}
                                   onChange={(e) => setInvoiceForm({ ...invoiceForm, isExonerated: e.target.checked })}
-                                  className="rounded text-[#f6821f]"
+                                  className="rounded text-[#1b426e]"
                                 />
                                 <span>Exonerado</span>
                               </label>
@@ -15950,7 +15950,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={invoiceForm.isExempt}
                                   onChange={(e) => setInvoiceForm({ ...invoiceForm, isExempt: e.target.checked })}
-                                  className="rounded text-[#f6821f]"
+                                  className="rounded text-[#1b426e]"
                                 />
                                 <span>Exento</span>
                               </label>
@@ -16047,9 +16047,9 @@ export default function AdminDashboard() {
                         <p className="font-semibold text-slate-900">Estimado cliente,</p>
                         <p>Le adjuntamos la Factura N.º <strong>{formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)}</strong> correspondiente a su orden de empaque/impresión flexográfica.</p>
                         
-                        <div className="my-4 p-4 rounded-xl bg-[#fff7ed] border border-[#f6821f]/30 flex justify-between items-center">
+                        <div className="my-4 p-4 rounded-xl bg-[#fff7ed] border border-[#1b426e]/30 flex justify-between items-center">
                           <div>
-                            <span className="text-xs font-bold text-[#f6821f] block">Monto Total a Pagar</span>
+                            <span className="text-xs font-bold text-[#1b426e] block">Monto Total a Pagar</span>
                             <span className="text-xl font-bold text-slate-900">{invoiceCurrencySymbol} {invoiceTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {invoiceCurrencySymbol === "L" ? "HNL" : invoiceCurrencySymbol === "€" ? "EUR" : "USD"}</span>
                           </div>
                           <span className="text-xs font-semibold text-slate-600">Vence: {invoiceForm.dueDate}</span>
@@ -16081,7 +16081,7 @@ export default function AdminDashboard() {
                             type="button"
                             onClick={downloadInvoicePDF}
                             disabled={isGeneratingPDF}
-                            className="px-3.5 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                            className="px-3.5 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-xs"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>{isGeneratingPDF ? "Descargando..." : "Descargar PDF"}</span>
@@ -16376,7 +16376,7 @@ export default function AdminDashboard() {
                                   onChange={(e) => {
                                     const p = e.target.value;
                                     if (p === "Estándar Wayne Orange") {
-                                      setInvoiceDesign({ ...invoiceDesign, preset: p, template: "Moderno", color: "#f6821f", font: "Helvetica Neue" });
+                                      setInvoiceDesign({ ...invoiceDesign, preset: p, template: "Moderno", color: "#1b426e", font: "Helvetica Neue" });
                                     } else if (p === "Minimalista") {
                                       setInvoiceDesign({ ...invoiceDesign, preset: p, template: "Standard", color: "#555555", font: "Inter" });
                                     } else if (p === "Corporativo Industrial") {
@@ -16385,7 +16385,7 @@ export default function AdminDashboard() {
                                       setInvoiceDesign({ ...invoiceDesign, preset: p });
                                     }
                                   }}
-                                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer font-medium"
+                                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer font-medium"
                                 >
                                   <option value="Estándar Wayne Orange">Estándar Wayne Orange</option>
                                   <option value="Minimalista">Minimalista</option>
@@ -16420,7 +16420,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={invoiceDesign.showTotal}
                                   onChange={(e) => setInvoiceDesign({ ...invoiceDesign, showTotal: e.target.checked })}
-                                  className="w-4 h-4 accent-[#f6821f] cursor-pointer"
+                                  className="w-4 h-4 accent-[#1b426e] cursor-pointer"
                                 />
                               </label>
                               <label className="flex items-center justify-between cursor-pointer">
@@ -16429,7 +16429,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={invoiceDesign.showBankDeposit}
                                   onChange={(e) => setInvoiceDesign({ ...invoiceDesign, showBankDeposit: e.target.checked })}
-                                  className="w-4 h-4 accent-[#f6821f] cursor-pointer"
+                                  className="w-4 h-4 accent-[#1b426e] cursor-pointer"
                                 />
                               </label>
                               <label className="flex items-center justify-between cursor-pointer">
@@ -16438,7 +16438,7 @@ export default function AdminDashboard() {
                                   type="checkbox"
                                   checked={invoiceDesign.showEarlyDiscount}
                                   onChange={(e) => setInvoiceDesign({ ...invoiceDesign, showEarlyDiscount: e.target.checked })}
-                                  className="w-4 h-4 accent-[#f6821f] cursor-pointer"
+                                  className="w-4 h-4 accent-[#1b426e] cursor-pointer"
                                 />
                               </label>
                             </div>
@@ -16471,8 +16471,8 @@ export default function AdminDashboard() {
                                   <span className="font-bold text-slate-900">Plantilla modernizada</span>
                                   <button
                                     type="button"
-                                    onClick={() => setInvoiceDesign({ ...invoiceDesign, template: "Moderno", color: "#f6821f", font: "Helvetica Neue", printerFriendly: false })}
-                                    className="text-[11px] text-[#f6821f] hover:underline font-medium cursor-pointer"
+                                    onClick={() => setInvoiceDesign({ ...invoiceDesign, template: "Moderno", color: "#1b426e", font: "Helvetica Neue", printerFriendly: false })}
+                                    className="text-[11px] text-[#1b426e] hover:underline font-medium cursor-pointer"
                                   >
                                     Restablecer
                                   </button>
@@ -16484,7 +16484,7 @@ export default function AdminDashboard() {
                                     name="invoiceTemplate"
                                     checked={invoiceDesign.template === "Moderno"}
                                     onChange={() => setInvoiceDesign({ ...invoiceDesign, template: "Moderno" })}
-                                    className="w-4 h-4 accent-[#f6821f] cursor-pointer"
+                                    className="w-4 h-4 accent-[#1b426e] cursor-pointer"
                                   />
                                   <span className="font-medium text-slate-800">Moderno</span>
                                 </label>
@@ -16502,7 +16502,7 @@ export default function AdminDashboard() {
                                     name="invoiceTemplate"
                                     checked={invoiceDesign.template === "Standard"}
                                     onChange={() => setInvoiceDesign({ ...invoiceDesign, template: "Standard" })}
-                                    className="w-4 h-4 accent-[#f6821f] cursor-pointer"
+                                    className="w-4 h-4 accent-[#1b426e] cursor-pointer"
                                   />
                                   <span className="font-medium text-slate-800">Standard</span>
                                 </label>
@@ -16521,7 +16521,7 @@ export default function AdminDashboard() {
                                     type="button"
                                     onClick={() => setInvoiceDesign({ ...invoiceDesign, printerFriendly: !invoiceDesign.printerFriendly })}
                                     className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer ${
-                                      invoiceDesign.printerFriendly ? "bg-[#f6821f]" : "bg-slate-300"
+                                      invoiceDesign.printerFriendly ? "bg-[#1b426e]" : "bg-slate-300"
                                     }`}
                                   >
                                     <div
@@ -16542,7 +16542,7 @@ export default function AdminDashboard() {
                                     type="text"
                                     value={invoiceDesign.color}
                                     onChange={(e) => setInvoiceDesign({ ...invoiceDesign, color: e.target.value })}
-                                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#1b426e]"
                                   />
                                 </div>
 
@@ -16550,7 +16550,7 @@ export default function AdminDashboard() {
                                 <div className="grid grid-cols-6 gap-2 pt-1">
                                   {[
                                     "#555555", "#000000", "#78889b", "#3e4d55", "#79bd58", "#148c96",
-                                    "#0077c8", "#92bc26", "#276918", "#964a3d", "#f6821f", "#8d0a20",
+                                    "#0077c8", "#92bc26", "#276918", "#964a3d", "#1b426e", "#8d0a20",
                                     "#701235", "#f4739e", "#a1006b", "#532353"
                                   ].map((c) => (
                                     <button
@@ -16558,7 +16558,7 @@ export default function AdminDashboard() {
                                       type="button"
                                       onClick={() => setInvoiceDesign({ ...invoiceDesign, color: c })}
                                       className={`w-7 h-7 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center ${
-                                        invoiceDesign.color.toLowerCase() === c.toLowerCase() ? "ring-2 ring-offset-2 ring-[#f6821f]" : ""
+                                        invoiceDesign.color.toLowerCase() === c.toLowerCase() ? "ring-2 ring-offset-2 ring-[#1b426e]" : ""
                                       }`}
                                       style={{ backgroundColor: c }}
                                     />
@@ -16574,7 +16574,7 @@ export default function AdminDashboard() {
                                 <select
                                   value={invoiceDesign.font}
                                   onChange={(e) => setInvoiceDesign({ ...invoiceDesign, font: e.target.value })}
-                                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] font-medium cursor-pointer"
+                                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium cursor-pointer"
                                 >
                                   <option value="Helvetica Neue">Helvetica Neue</option>
                                   <option value="Inter">Inter</option>
@@ -16686,14 +16686,14 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => handleSaveInvoiceRecord(false)}
-                      className="px-4 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer"
+                      className="px-4 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer"
                     >
                       Guardar
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowInvoiceSaveDropdown(!showInvoiceSaveDropdown)}
-                      className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                      className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                     >
                       <svg
                         className={`w-3.5 h-3.5 transition-transform ${showInvoiceSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -16713,7 +16713,7 @@ export default function AdminDashboard() {
                             setShowInvoiceSaveDropdown(false);
                             handleSaveInvoiceRecord(true);
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Guardar y cerrar
                         </button>
@@ -16727,7 +16727,7 @@ export default function AdminDashboard() {
                               lines: [],
                             }));
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Guardar y crear nueva
                         </button>
@@ -16775,7 +16775,7 @@ export default function AdminDashboard() {
                             setShowInvoiceSendDropdown(false);
                             setActiveInvoiceTab("Vista de PDF");
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Vista previa PDF
                         </button>
@@ -16785,7 +16785,7 @@ export default function AdminDashboard() {
                             setShowInvoiceSendDropdown(false);
                             setActiveInvoiceTab("Vista de correo electrónico");
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Vista previa correo
                         </button>
@@ -16806,7 +16806,7 @@ export default function AdminDashboard() {
                 {/* Header */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-6">
                   <div>
-                    <h1 className="text-2xl font-black text-[#f6821f] tracking-tight">WAYNE TRADEMARK</h1>
+                    <h1 className="text-2xl font-black text-[#1b426e] tracking-tight">WAYNE TRADEMARK</h1>
                     <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                     <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                     <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
@@ -16878,7 +16878,7 @@ export default function AdminDashboard() {
                       <span>ISV (15%):</span>
                       <span className="font-bold text-slate-900">${(selectedPrintNote?.tax || 0).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-baseline text-[#f6821f] border-t-2 border-slate-900 pt-2">
+                    <div className="flex justify-between items-baseline text-[#1b426e] border-t-2 border-slate-900 pt-2">
                       <span className="text-xs font-bold uppercase tracking-wider">TOTAL AJUSTADO:</span>
                       <span className="text-2xl font-bold">${(selectedPrintNote?.total || 0).toFixed(2)} USD</span>
                     </div>
@@ -16923,9 +16923,9 @@ export default function AdminDashboard() {
               >
                 <div>
                   {/* Header */}
-                  <div className="flex justify-between items-start border-b-2 border-[#f6821f] pb-6 mb-6">
+                  <div className="flex justify-between items-start border-b-2 border-[#1b426e] pb-6 mb-6">
                     <div>
-                      <h1 className="text-2xl font-black tracking-tight text-[#f6821f]">WAYNE TRADEMARK</h1>
+                      <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">WAYNE TRADEMARK</h1>
                       <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                       <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                       <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
@@ -16968,7 +16968,7 @@ export default function AdminDashboard() {
                   {/* Items Table */}
                   <table className="w-full text-left border-collapse mb-6">
                     <thead>
-                      <tr className="border-b-2 border-[#f6821f] text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
+                      <tr className="border-b-2 border-[#1b426e] text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
                         <th className="py-2.5 px-3">#</th>
                         <th className="py-2.5 px-3">Insumo / Descripción</th>
                         <th className="py-2.5 px-3">SKU</th>
@@ -17026,7 +17026,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="border-t border-slate-100 my-0.5" />
                       <div className="pt-1">
-                        <div className="flex justify-between items-center py-2.5 px-3.5 shadow-xs rounded-xl bg-[#f6821f] text-white">
+                        <div className="flex justify-between items-center py-2.5 px-3.5 shadow-xs rounded-xl bg-[#1b426e] text-white">
                           <span className="font-black text-xs uppercase tracking-wider">Total Orden USD</span>
                           <span className="font-mono font-black text-base">${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
@@ -17068,7 +17068,7 @@ export default function AdminDashboard() {
                         onClick={() => setActivePOTab(tab)}
                         className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer ${
                           activePOTab === tab
-                            ? "bg-[#fff7ed] text-[#f6821f] border border-[#f6821f]/30"
+                            ? "bg-[#fff7ed] text-[#1b426e] border border-[#1b426e]/30"
                             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                         }`}
                       >
@@ -17109,7 +17109,7 @@ export default function AdminDashboard() {
                       {/* HEADER ROW */}
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-100 pb-6">
                         <div className="space-y-1 text-xs text-slate-600 max-w-md">
-                          <h2 className="text-xl font-black text-[#f6821f] tracking-tight mb-2">ORDEN DE COMPRA</h2>
+                          <h2 className="text-xl font-black text-[#1b426e] tracking-tight mb-2">ORDEN DE COMPRA</h2>
                           <p className="font-bold text-slate-900 uppercase">{companySettings.nombre}</p>
                           <p>{companySettings.email} • {companySettings.telefono}</p>
                           <p>{companySettings.direccion}</p>
@@ -17159,7 +17159,7 @@ export default function AdminDashboard() {
                                 vendorAddress: selected ? selected.address || "Dirección no especificada" : "San Pedro Sula",
                               });
                             }}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] font-semibold cursor-pointer shadow-2xs"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                           >
                             {vendors.map((v) => (
                               <option key={v.id} value={v.name}>
@@ -17183,7 +17183,7 @@ export default function AdminDashboard() {
                               type="text"
                               value={poForm.num}
                               onChange={(e) => setPOForm({ ...poForm, num: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -17194,7 +17194,7 @@ export default function AdminDashboard() {
                               value={poForm.category}
                               onChange={(e) => setPOForm({ ...poForm, category: e.target.value })}
                               placeholder="Ej. Tintas, Cartón"
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -17204,7 +17204,7 @@ export default function AdminDashboard() {
                               type="date"
                               value={poForm.date}
                               onChange={(e) => setPOForm({ ...poForm, date: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -17214,7 +17214,7 @@ export default function AdminDashboard() {
                               type="date"
                               value={poForm.expectedDate}
                               onChange={(e) => setPOForm({ ...poForm, expectedDate: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
                         </div>
@@ -17227,7 +17227,7 @@ export default function AdminDashboard() {
                           <button
                             type="button"
                             onClick={handleAddPOLine}
-                            className="px-3 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f6821f] font-bold text-xs transition cursor-pointer border border-[#fed7aa] flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-bold text-xs transition cursor-pointer border border-[#fed7aa] flex items-center gap-1"
                           >
                             <span>+ Añadir línea</span>
                           </button>
@@ -17257,7 +17257,7 @@ export default function AdminDashboard() {
                                       value={line.productName}
                                       onChange={(e) => handlePOLineChange(line.id, "productName", e.target.value)}
                                       placeholder="Nombre del insumo..."
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f] font-medium"
+                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium"
                                     />
                                   </td>
                                   <td className="p-3">
@@ -17266,7 +17266,7 @@ export default function AdminDashboard() {
                                       value={line.sku}
                                       onChange={(e) => handlePOLineChange(line.id, "sku", e.target.value)}
                                       placeholder="SKU-001"
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3">
@@ -17275,7 +17275,7 @@ export default function AdminDashboard() {
                                       value={line.description}
                                       onChange={(e) => handlePOLineChange(line.id, "description", e.target.value)}
                                       placeholder="Detalle o lote..."
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3 text-right">
@@ -17283,7 +17283,7 @@ export default function AdminDashboard() {
                                       type="number"
                                       value={line.quantity}
                                       onChange={(e) => handlePOLineChange(line.id, "quantity", Number(e.target.value))}
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#f6821f] font-bold"
+                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#1b426e] font-bold"
                                     />
                                   </td>
                                   <td className="p-3 text-right">
@@ -17292,7 +17292,7 @@ export default function AdminDashboard() {
                                       step="0.01"
                                       value={line.rate}
                                       onChange={(e) => handlePOLineChange(line.id, "rate", Number(e.target.value))}
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#f6821f]"
+                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
                                   <td className="p-3 text-right font-bold text-slate-900">
@@ -17327,7 +17327,7 @@ export default function AdminDashboard() {
                               value={poForm.notes}
                               onChange={(e) => setPOForm({ ...poForm, notes: e.target.value })}
                               placeholder="Condiciones de recepción, horario de almacén..."
-                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
                         </div>
@@ -17379,9 +17379,9 @@ export default function AdminDashboard() {
                       <div className="w-[8.5in] min-h-[11in] bg-white border border-slate-300 rounded-xs shadow-2xl p-12 flex flex-col justify-between animate-in fade-in duration-150 text-xs text-slate-800 shrink-0">
                         <div className="space-y-6">
                           {/* Header */}
-                          <div className="flex justify-between items-start border-b-2 border-[#f6821f] pb-6">
+                          <div className="flex justify-between items-start border-b-2 border-[#1b426e] pb-6">
                             <div>
-                              <h1 className="text-2xl font-black tracking-tight text-[#f6821f]">WAYNE TRADEMARK</h1>
+                              <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">WAYNE TRADEMARK</h1>
                               <p className="font-bold text-slate-900 mt-1">{companySettings.nombre}</p>
                               <p className="text-slate-500">{companySettings.direccion}</p>
                               <p className="text-slate-500">RTN: {companySettings.taxId}</p>
@@ -17424,7 +17424,7 @@ export default function AdminDashboard() {
                           {/* Items Table */}
                           <table className="w-full text-left border-collapse mb-6">
                             <thead>
-                              <tr className="border-b-2 border-[#f6821f] text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
+                              <tr className="border-b-2 border-[#1b426e] text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
                                 <th className="py-2.5 px-3">#</th>
                                 <th className="py-2.5 px-3">Insumo / Descripción</th>
                                 <th className="py-2.5 px-3">SKU</th>
@@ -17482,7 +17482,7 @@ export default function AdminDashboard() {
                               </div>
                               <div className="border-t border-slate-100 my-0.5" />
                               <div className="pt-1">
-                                <div className="flex justify-between items-center py-2.5 px-3.5 shadow-xs rounded-xl bg-[#f6821f] text-white">
+                                <div className="flex justify-between items-center py-2.5 px-3.5 shadow-xs rounded-xl bg-[#1b426e] text-white">
                                   <span className="font-black text-xs uppercase tracking-wider">Total Orden USD</span>
                                   <span className="font-mono font-black text-base">${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
@@ -17569,14 +17569,14 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => handleSavePOEditor()}
-                      className="px-5 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1"
+                      className="px-5 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1"
                     >
                       Guardar y aprobar
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowPOSaveDropdown(!showPOSaveDropdown)}
-                      className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                      className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                     >
                       <svg
                         className={`w-3.5 h-3.5 transition-transform ${showPOSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -17597,7 +17597,7 @@ export default function AdminDashboard() {
                             handleSavePOEditor("Aprobada");
                             closePurchaseOrderEditor();
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Guardar y cerrar
                         </button>
@@ -17608,7 +17608,7 @@ export default function AdminDashboard() {
                             handleSavePOEditor("Pendiente");
                             closePurchaseOrderEditor();
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Guardar como borrador
                         </button>
@@ -17656,7 +17656,7 @@ export default function AdminDashboard() {
                             setShowPOSendDropdown(false);
                             setActivePOTab("Vista de PDF");
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Vista previa PDF
                         </button>
@@ -17666,7 +17666,7 @@ export default function AdminDashboard() {
                             setShowPOSendDropdown(false);
                             setActivePOTab("Vista de correo");
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Vista previa correo
                         </button>
@@ -17774,11 +17774,11 @@ export default function AdminDashboard() {
 
                             <div className="space-y-2 pt-1">
                               <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#f6821f]" />
+                                <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#1b426e]" />
                                 <span>Requiere certificado de calidad del lote</span>
                               </label>
                               <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#f6821f]" />
+                                <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#1b426e]" />
                                 <span>Notificar a almacén vía correo al despachar</span>
                               </label>
                             </div>
@@ -17835,11 +17835,11 @@ export default function AdminDashboard() {
                         </button>
                         {activePOOptionSection === "adjuntos" && (
                           <div className="pt-3 space-y-3 text-xs text-slate-600 animate-in fade-in duration-150">
-                            <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-[#f6821f] transition cursor-pointer bg-slate-50/50">
+                            <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-[#1b426e] transition cursor-pointer bg-slate-50/50">
                               <svg className="w-6 h-6 text-slate-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                               </svg>
-                              <span className="font-semibold text-[#f6821f] text-xs">Adjuntar ficha técnica / contrato</span>
+                              <span className="font-semibold text-[#1b426e] text-xs">Adjuntar ficha técnica / contrato</span>
                               <p className="text-[10px] text-slate-400 mt-0.5">PDF, PNG, JPG hasta 15MB</p>
                             </div>
                           </div>
@@ -17853,7 +17853,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => setShowPOOptionsSidebar(false)}
-                        className="w-full py-2 bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                        className="w-full py-2 bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
                       >
                         Aplicar y cerrar
                       </button>
@@ -17882,7 +17882,7 @@ export default function AdminDashboard() {
                     <span>Regresar</span>
                   </button>
                   <h1 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                     </svg>
                     <span>Depósito bancario</span>
@@ -17927,7 +17927,7 @@ export default function AdminDashboard() {
                           <select
                             value={depositForm.account}
                             onChange={(e) => setDepositForm({ ...depositForm, account: e.target.value })}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] font-semibold cursor-pointer shadow-2xs"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                           >
                             <option value="1002 - Banco Ficohsa USD">1002 - Banco Ficohsa USD</option>
                             <option value="1001 - Banco Atlántida HNL">1001 - Banco Atlántida HNL</option>
@@ -17943,7 +17943,7 @@ export default function AdminDashboard() {
                           type="date"
                           value={depositForm.date}
                           onChange={(e) => setDepositForm({ ...depositForm, date: e.target.value })}
-                          className="px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] font-medium shadow-2xs"
+                          className="px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium shadow-2xs"
                         />
                       </div>
 
@@ -17953,7 +17953,7 @@ export default function AdminDashboard() {
                         <select
                           value={depositForm.currency}
                           onChange={(e) => setDepositForm({ ...depositForm, currency: e.target.value })}
-                          className="px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] font-semibold cursor-pointer shadow-2xs"
+                          className="px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                         >
                           <option value="USD">USD Dólar estadounidense ($)</option>
                           <option value="HNL">HNL Lempira hondureño (L)</option>
@@ -17976,7 +17976,7 @@ export default function AdminDashboard() {
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs max-w-6xl mx-auto space-y-4 p-6">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <h2 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                       </svg>
                       <span>Agregar fondos a este depósito</span>
@@ -18010,7 +18010,7 @@ export default function AdminDashboard() {
                                 <select
                                   value={line.receivedFrom}
                                   onChange={(e) => handleDepositLineChange(line.id, "receivedFrom", e.target.value)}
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f] font-medium cursor-pointer"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium cursor-pointer"
                                 >
                                   <option value="">-- Seleccionar cliente --</option>
                                   {customers.map((c) => (
@@ -18024,7 +18024,7 @@ export default function AdminDashboard() {
                                 <select
                                   value={line.account}
                                   onChange={(e) => handleDepositLineChange(line.id, "account", e.target.value)}
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f] font-medium cursor-pointer"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium cursor-pointer"
                                 >
                                   <option value="1100 - Cuentas por Cobrar">1100 - Cuentas por Cobrar</option>
                                   <option value="7000 - Ingresos por Ventas">7000 - Ingresos por Ventas</option>
@@ -18039,14 +18039,14 @@ export default function AdminDashboard() {
                                   value={line.memo}
                                   onChange={(e) => handleDepositLineChange(line.id, "memo", e.target.value)}
                                   placeholder="Descripción del depósito..."
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                                 />
                               </td>
                               <td className="p-3">
                                 <select
                                   value={line.paymentMethod}
                                   onChange={(e) => handleDepositLineChange(line.id, "paymentMethod", e.target.value)}
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f] font-medium cursor-pointer"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium cursor-pointer"
                                 >
                                   <option value="Transferencia bancaria">Transferencia bancaria</option>
                                   <option value="Cheque">Cheque</option>
@@ -18060,7 +18060,7 @@ export default function AdminDashboard() {
                                   value={line.reference}
                                   onChange={(e) => handleDepositLineChange(line.id, "reference", e.target.value)}
                                   placeholder="N.º Ref / Cheque"
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                                 />
                               </td>
                               <td className="p-3 text-right">
@@ -18069,7 +18069,7 @@ export default function AdminDashboard() {
                                   step="0.01"
                                   value={line.amount}
                                   onChange={(e) => handleDepositLineChange(line.id, "amount", e.target.value)}
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#f6821f] font-bold"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#1b426e] font-bold"
                                 />
                               </td>
                               <td className="p-3 text-center">
@@ -18097,7 +18097,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={handleAddDepositLine}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f6821f] font-bold text-xs transition cursor-pointer border border-[#fed7aa] flex items-center gap-1"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-bold text-xs transition cursor-pointer border border-[#fed7aa] flex items-center gap-1"
                       >
                         <span>+ Agregar líneas</span>
                       </button>
@@ -18128,17 +18128,17 @@ export default function AdminDashboard() {
                         value={depositForm.memo}
                         onChange={(e) => setDepositForm({ ...depositForm, memo: e.target.value })}
                         placeholder="Escribe notas adicionales o detalles del depósito bancario..."
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                       />
                     </div>
 
                     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
                       <label className="block font-bold text-slate-700">Archivos adjuntos</label>
-                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#f6821f] transition cursor-pointer bg-slate-50/50">
+                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#1b426e] transition cursor-pointer bg-slate-50/50">
                         <svg className="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <p className="text-xs font-semibold text-[#f6821f]">Añadir archivo adjunto</p>
+                        <p className="text-xs font-semibold text-[#1b426e]">Añadir archivo adjunto</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">Tamaño máximo de archivo: 20 MB</p>
                       </div>
                     </div>
@@ -18154,7 +18154,7 @@ export default function AdminDashboard() {
                         <select
                           value={depositForm.cashbackAccount}
                           onChange={(e) => setDepositForm({ ...depositForm, cashbackAccount: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                         >
                           <option value="">-- Seleccionar cuenta de reembolso --</option>
                           <option value="1000 - Cash and Cash Equivalents">1000 - Cash and Cash Equivalents</option>
@@ -18170,7 +18170,7 @@ export default function AdminDashboard() {
                             value={depositForm.cashbackMemo}
                             onChange={(e) => setDepositForm({ ...depositForm, cashbackMemo: e.target.value })}
                             placeholder="Notas de reembolso..."
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
                         <div>
@@ -18181,7 +18181,7 @@ export default function AdminDashboard() {
                             value={depositForm.cashbackAmount}
                             onChange={(e) => setDepositForm({ ...depositForm, cashbackAmount: Number(e.target.value) })}
                             placeholder="0.00"
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#f6821f] font-bold"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#1b426e] font-bold"
                           />
                         </div>
                       </div>
@@ -18218,14 +18218,14 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => handleSaveDeposit(false)}
-                    className="px-5 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1"
+                    className="px-5 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1"
                   >
                     Guardar y cerrar
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowDepositSaveDropdown(!showDepositSaveDropdown)}
-                    className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                    className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                   >
                     <svg
                       className={`w-3.5 h-3.5 transition-transform ${showDepositSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -18245,7 +18245,7 @@ export default function AdminDashboard() {
                           setShowDepositSaveDropdown(false);
                           handleSaveDeposit(false);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                       >
                         Guardar y cerrar
                       </button>
@@ -18255,7 +18255,7 @@ export default function AdminDashboard() {
                           setShowDepositSaveDropdown(false);
                           handleSaveDeposit(true);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                       >
                         Guardar y crear nueva
                       </button>
@@ -18285,7 +18285,7 @@ export default function AdminDashboard() {
                     <span>Regresar</span>
                   </button>
                   <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                    <svg className="w-4 h-4 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -18336,7 +18336,7 @@ export default function AdminDashboard() {
                               const selected = vendors.find((v) => v.id === e.target.value);
                               setGastoForm({ ...gastoForm, payeeId: e.target.value, payeeName: selected ? selected.name : "" });
                             }}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 font-medium cursor-pointer"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer"
                           >
                             <option value="">¿A quién le pagaste?</option>
                             {vendors.map((v) => (
@@ -18351,7 +18351,7 @@ export default function AdminDashboard() {
                           <select
                             value={gastoForm.paymentAccount}
                             onChange={(e) => setGastoForm({ ...gastoForm, paymentAccount: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 font-medium cursor-pointer"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer"
                           >
                             <option value="Accrued Liabilities">Accrued Liabilities</option>
                             <option value="1000 - Cash and Cash Equivalents">1000 - Cash and Cash Equivalents</option>
@@ -18372,7 +18372,7 @@ export default function AdminDashboard() {
                             type="date"
                             value={gastoForm.paymentDate}
                             onChange={(e) => setGastoForm({ ...gastoForm, paymentDate: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -18382,7 +18382,7 @@ export default function AdminDashboard() {
                           <select
                             value={gastoForm.paymentMethod}
                             onChange={(e) => setGastoForm({ ...gastoForm, paymentMethod: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                           >
                             <option value="Efectivo">Efectivo</option>
                             <option value="Transferencia Bancaria">Transferencia Bancaria</option>
@@ -18399,7 +18399,7 @@ export default function AdminDashboard() {
                             placeholder="Ej. REF-8849"
                             value={gastoForm.refNumber}
                             onChange={(e) => setGastoForm({ ...gastoForm, refNumber: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
                       </div>
@@ -18443,7 +18443,7 @@ export default function AdminDashboard() {
                                 <select
                                   value={line.category}
                                   onChange={(e) => handleGastoLineChange(line.id, "category", e.target.value)}
-                                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                                 >
                                   <option value="">-- Seleccionar categoría --</option>
                                   <option value="Publicidad y Propaganda">Publicidad y Propaganda</option>
@@ -18462,7 +18462,7 @@ export default function AdminDashboard() {
                                   placeholder="Detalle o descripción del gasto..."
                                   value={line.description}
                                   onChange={(e) => handleGastoLineChange(line.id, "description", e.target.value)}
-                                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-[#1b426e]"
                                 />
                               </td>
                               <td className="p-3 text-right">
@@ -18472,7 +18472,7 @@ export default function AdminDashboard() {
                                   placeholder="0.00"
                                   value={line.amount || ""}
                                   onChange={(e) => handleGastoLineChange(line.id, "amount", Number(e.target.value))}
-                                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 text-right focus:outline-none focus:border-[#f6821f] font-bold"
+                                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 text-right focus:outline-none focus:border-[#1b426e] font-bold"
                                 />
                               </td>
                               <td className="p-3 text-center">
@@ -18541,14 +18541,14 @@ export default function AdminDashboard() {
                         placeholder="Escribe comentarios o notas del gasto..."
                         value={gastoForm.notes}
                         onChange={(e) => setGastoForm({ ...gastoForm, notes: e.target.value })}
-                        className="w-full p-3 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] resize-none"
+                        className="w-full p-3 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] resize-none"
                       />
                     </div>
 
                     {/* Archivos adjuntos */}
                     <div className="max-w-md space-y-2">
                       <label className="block text-xs font-semibold text-slate-600">Archivos adjuntos</label>
-                      <div className="border-2 border-dashed border-slate-200 hover:border-[#f6821f] rounded-xl p-6 text-center space-y-1 cursor-pointer transition bg-slate-50/50 hover:bg-slate-50">
+                      <div className="border-2 border-dashed border-slate-200 hover:border-[#1b426e] rounded-xl p-6 text-center space-y-1 cursor-pointer transition bg-slate-50/50 hover:bg-slate-50">
                         <svg className="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
@@ -18577,14 +18577,14 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => handleSaveGasto(false)}
-                    className="px-5 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1"
+                    className="px-5 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1"
                   >
                     Guardar y cerrar
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowGastoSaveDropdown(!showGastoSaveDropdown)}
-                    className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                    className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                   >
                     <svg
                       className={`w-3.5 h-3.5 transition-transform ${showGastoSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -18604,7 +18604,7 @@ export default function AdminDashboard() {
                           setShowGastoSaveDropdown(false);
                           handleSaveGasto(false);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                       >
                         Guardar y cerrar
                       </button>
@@ -18614,7 +18614,7 @@ export default function AdminDashboard() {
                           setShowGastoSaveDropdown(false);
                           handleSaveGasto(true);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                       >
                         Guardar y crear nuevo
                       </button>
@@ -18677,7 +18677,7 @@ export default function AdminDashboard() {
                         <select
                           value={pagarProveedorForm.account}
                           onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, account: e.target.value })}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 font-medium cursor-pointer shadow-2xs"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer shadow-2xs"
                         >
                           <option value="Seleccionar una cuenta">Seleccionar una cuenta</option>
                           <option value="1000 - Cash and cash equivalents">1000 - Cash and cash equivalents</option>
@@ -18694,7 +18694,7 @@ export default function AdminDashboard() {
                           type="date"
                           value={pagarProveedorForm.paymentDate}
                           onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, paymentDate: e.target.value })}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 shadow-2xs"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 shadow-2xs"
                         />
                       </div>
                     </div>
@@ -18706,7 +18706,7 @@ export default function AdminDashboard() {
                         <select
                           value={pagarProveedorForm.currency}
                           onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, currency: e.target.value })}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 font-medium cursor-pointer shadow-2xs"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer shadow-2xs"
                         >
                           <option value="USD - Dólar estadounidense">USD - Dólar estadou...</option>
                           <option value="HNL - Lempira hondureño">HNL - Lempira hondureño</option>
@@ -18718,7 +18718,7 @@ export default function AdminDashboard() {
                         <select
                           value={pagarProveedorForm.paymentMethod}
                           onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, paymentMethod: e.target.value })}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 font-medium cursor-pointer shadow-2xs"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer shadow-2xs"
                         >
                           <option value="Transferencia Bancaria">Transferencia Bancaria (ACH)</option>
                           <option value="Cheque">Cheque</option>
@@ -18734,7 +18734,7 @@ export default function AdminDashboard() {
                           placeholder="Ej. CHQ-99401"
                           value={pagarProveedorForm.refNumber}
                           onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, refNumber: e.target.value })}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20 shadow-2xs"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 shadow-2xs"
                         />
                       </div>
                     </div>
@@ -18747,7 +18747,7 @@ export default function AdminDashboard() {
                           onClick={() => setShowPagarProveedorFilterPopover(!showPagarProveedorFilterPopover)}
                           className={`px-4 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                             showPagarProveedorFilterPopover
-                              ? "border-[#f6821f] text-[#f6821f] bg-[#fff7ed]"
+                              ? "border-[#1b426e] text-[#1b426e] bg-[#fff7ed]"
                               : "border-slate-300 text-slate-700 bg-white hover:bg-slate-50"
                           }`}
                         >
@@ -18785,7 +18785,7 @@ export default function AdminDashboard() {
                               <select
                                 value={pagarProveedorForm.dueDateFilter}
                                 onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, dueDateFilter: e.target.value })}
-                                className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                               >
                                 <option value="Últimos 365 días">Últimos 365 días</option>
                                 <option value="Este mes">Este mes</option>
@@ -18799,7 +18799,7 @@ export default function AdminDashboard() {
                                 type="date"
                                 value={pagarProveedorForm.dateFrom}
                                 onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, dateFrom: e.target.value })}
-                                className="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                className="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                               />
                             </div>
                             <div className="col-span-3">
@@ -18808,7 +18808,7 @@ export default function AdminDashboard() {
                                 type="date"
                                 value={pagarProveedorForm.dateTo}
                                 onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, dateTo: e.target.value })}
-                                className="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                className="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                               />
                             </div>
                           </div>
@@ -18819,7 +18819,7 @@ export default function AdminDashboard() {
                             <select
                               value={pagarProveedorForm.payeeFilter}
                               onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, payeeFilter: e.target.value })}
-                              className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                             >
                               <option value="Todo">Todo</option>
                               {vendors.map((v) => (
@@ -18835,7 +18835,7 @@ export default function AdminDashboard() {
                                 type="checkbox"
                                 checked={pagarProveedorForm.onlyOverdue}
                                 onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, onlyOverdue: e.target.checked })}
-                                className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f]"
+                                className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]"
                               />
                               <span>Solo estado Vencida</span>
                             </label>
@@ -18862,7 +18862,7 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => setShowPagarProveedorFilterPopover(false)}
-                              className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition cursor-pointer shadow-2xs"
+                              className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition cursor-pointer shadow-2xs"
                             >
                               Aplicar
                             </button>
@@ -18888,7 +18888,7 @@ export default function AdminDashboard() {
                           <button
                             type="button"
                             onClick={() => openPurchaseOrderEditor()}
-                            className="px-6 py-3 rounded-2xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md inline-flex items-center gap-2"
+                            className="px-6 py-3 rounded-2xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md inline-flex items-center gap-2"
                           >
                             Ingresar nueva factura de proveedor
                           </button>
@@ -18906,7 +18906,7 @@ export default function AdminDashboard() {
                                     type="checkbox"
                                     checked={selectedBillIds.length === vendorBills.length && vendorBills.length > 0}
                                     onChange={handleToggleSelectAllBills}
-                                    className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f]"
+                                    className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]"
                                   />
                                 </th>
                                 <th className="p-3">BENEFICIARIO</th>
@@ -18927,7 +18927,7 @@ export default function AdminDashboard() {
                                         type="checkbox"
                                         checked={isSelected}
                                         onChange={() => handleToggleSelectBill(bill.id)}
-                                        className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f]"
+                                        className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]"
                                       />
                                     </td>
                                     <td className="p-3 font-semibold text-slate-800">{bill.vendorName}</td>
@@ -18941,7 +18941,7 @@ export default function AdminDashboard() {
                                         step="0.01"
                                         value={customBillAmounts[bill.id] ?? bill.balanceDue}
                                         onChange={(e) => setCustomBillAmounts({ ...customBillAmounts, [bill.id]: Number(e.target.value) })}
-                                        className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 text-right font-bold focus:outline-none focus:border-[#f6821f]"
+                                        className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 text-right font-bold focus:outline-none focus:border-[#1b426e]"
                                       />
                                     </td>
                                   </tr>
@@ -18967,7 +18967,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="border-l border-slate-200 pl-6">
                     <span className="text-slate-500 font-semibold uppercase text-xs tracking-wider block">TOTAL A PAGAR</span>
-                    <span className="text-3xl font-bold text-[#f6821f]">${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</span>
+                    <span className="text-3xl font-bold text-[#1b426e]">${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</span>
                   </div>
 
                 </div>
@@ -18986,7 +18986,7 @@ export default function AdminDashboard() {
                       type="button"
                       disabled={selectedBillIds.length === 0}
                       onClick={() => handleSavePagarProveedor(false)}
-                      className="px-5 py-2.5 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+                      className="px-5 py-2.5 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -18997,7 +18997,7 @@ export default function AdminDashboard() {
                       type="button"
                       disabled={selectedBillIds.length === 0}
                       onClick={() => setShowPagarProveedorSaveDropdown(!showPagarProveedorSaveDropdown)}
-                      className="px-2.5 py-2.5 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] disabled:bg-slate-400 disabled:cursor-not-allowed text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                      className="px-2.5 py-2.5 rounded-r-lg bg-[#143355] hover:bg-[#d06512] disabled:bg-slate-400 disabled:cursor-not-allowed text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                     >
                       <svg
                         className={`w-3.5 h-3.5 transition-transform ${showPagarProveedorSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -19017,7 +19017,7 @@ export default function AdminDashboard() {
                             setShowPagarProveedorSaveDropdown(false);
                             handleSavePagarProveedor(false);
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Pagar y cerrar
                         </button>
@@ -19027,7 +19027,7 @@ export default function AdminDashboard() {
                             setShowPagarProveedorSaveDropdown(false);
                             handleSavePagarProveedor(true);
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                         >
                           Programar pago
                         </button>
@@ -19110,7 +19110,7 @@ export default function AdminDashboard() {
                           <select
                             value={recibirPagoForm.customerId}
                             onChange={(e) => handleRecibirPagoCustomerChange(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20"
                           >
                             <option value="">Elige un cliente</option>
                             {customers.map((c) => (
@@ -19147,7 +19147,7 @@ export default function AdminDashboard() {
                                   placeholder=""
                                   value={recibirPagoForm.emailCc}
                                   onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, emailCc: e.target.value })}
-                                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                                 />
                               </div>
 
@@ -19158,7 +19158,7 @@ export default function AdminDashboard() {
                                   placeholder=""
                                   value={recibirPagoForm.emailCco}
                                   onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, emailCco: e.target.value })}
-                                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                                 />
                               </div>
 
@@ -19179,14 +19179,14 @@ export default function AdminDashboard() {
                             placeholder="Correo electrónico (separa las direcciones con comas)"
                             value={recibirPagoForm.customerEmail}
                             onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, customerEmail: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]/20"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20"
                           />
                           <label className="mt-2 flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={recibirPagoForm.sendLater}
                               onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, sendLater: e.target.checked })}
-                              className="rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f]"
+                              className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]"
                             />
                             <span>Enviar más adelante</span>
                           </label>
@@ -19197,7 +19197,7 @@ export default function AdminDashboard() {
                           <button
                             type="button"
                             onClick={() => setShowInvoiceSearchModal(true)}
-                            className="w-full px-3 py-2 rounded-lg border border-[#f6821f] text-[#f6821f] hover:bg-[#fff7ed] font-semibold text-xs transition cursor-pointer text-center whitespace-nowrap"
+                            className="w-full px-3 py-2 rounded-lg border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] font-semibold text-xs transition cursor-pointer text-center whitespace-nowrap"
                           >
                             Buscar por n.º de factura
                           </button>
@@ -19213,7 +19213,7 @@ export default function AdminDashboard() {
                             type="date"
                             value={recibirPagoForm.paymentDate}
                             onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, paymentDate: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -19223,7 +19223,7 @@ export default function AdminDashboard() {
                           <select
                             value={recibirPagoForm.paymentMethod}
                             onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, paymentMethod: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           >
                             <option value="Seleccionar método de pago">Seleccionar método de pago</option>
                             <option value="Efectivo">Efectivo</option>
@@ -19243,7 +19243,7 @@ export default function AdminDashboard() {
                             placeholder=""
                             value={recibirPagoForm.referenceNumber}
                             onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, referenceNumber: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -19253,7 +19253,7 @@ export default function AdminDashboard() {
                           <select
                             value={recibirPagoForm.depositAccount}
                             onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, depositAccount: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           >
                             <option value="Cash and cash equivalents">Cash and cash equivalents</option>
                             <option value="Caja General USD">Caja General (USD)</option>
@@ -19276,7 +19276,7 @@ export default function AdminDashboard() {
                               placeholder="0,00"
                               value={recibirPagoForm.amount || ""}
                               onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, amount: parseFloat(e.target.value) || 0 })}
-                              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 font-mono text-right focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 font-mono text-right focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
                         </div>
@@ -19309,7 +19309,7 @@ export default function AdminDashboard() {
                         placeholder="Nota"
                         value={recibirPagoForm.note}
                         onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, note: e.target.value })}
-                        className="w-full p-3 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#f6821f] resize-none"
+                        className="w-full p-3 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] resize-none"
                       />
                     </div>
 
@@ -19318,7 +19318,7 @@ export default function AdminDashboard() {
                       <label className="block text-xs font-semibold text-slate-600">Archivos adjuntos</label>
                       <div
                         onClick={() => paymentFileInputRef.current?.click()}
-                        className="border-2 border-dashed border-slate-200 hover:border-[#f6821f] rounded-xl p-6 text-center space-y-1 cursor-pointer transition bg-slate-50/50 hover:bg-slate-50"
+                        className="border-2 border-dashed border-slate-200 hover:border-[#1b426e] rounded-xl p-6 text-center space-y-1 cursor-pointer transition bg-slate-50/50 hover:bg-slate-50"
                       >
                         <input
                           ref={paymentFileInputRef}
@@ -19370,7 +19370,7 @@ export default function AdminDashboard() {
                   type="button"
                   disabled={recibirPagoLoading}
                   onClick={() => handleSaveRecibirPago(false)}
-                  className="px-4 py-2 rounded-lg border border-[#f6821f] bg-white text-[#f6821f] hover:bg-[#fff7ed] font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg border border-[#1b426e] bg-white text-[#1b426e] hover:bg-[#fff7ed] font-semibold text-xs transition cursor-pointer disabled:opacity-50"
                 >
                   Guardar
                 </button>
@@ -19381,7 +19381,7 @@ export default function AdminDashboard() {
                     type="button"
                     disabled={recibirPagoLoading}
                     onClick={() => handleSaveRecibirPago(true)}
-                    className="px-5 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer flex items-center gap-2 disabled:opacity-50 shadow-md shadow-[#f6821f]/20"
+                    className="px-5 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-2 disabled:opacity-50 shadow-md shadow-[#1b426e]/20"
                   >
                     {recibirPagoLoading ? (
                       <>
@@ -19395,7 +19395,7 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setShowRecibirPagoSaveDropdown(!showRecibirPagoSaveDropdown)}
-                    className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                    className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                   >
                     <svg
                       className={`w-3.5 h-3.5 transition-transform ${showRecibirPagoSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -19415,7 +19415,7 @@ export default function AdminDashboard() {
                           setShowRecibirPagoSaveDropdown(false);
                           handleSaveRecibirPago(true);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                       >
                         Guardar y cerrar
                       </button>
@@ -19425,7 +19425,7 @@ export default function AdminDashboard() {
                           setShowRecibirPagoSaveDropdown(false);
                           handleSaveRecibirPago(false);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                       >
                         Guardar y nuevo
                       </button>
@@ -19449,7 +19449,7 @@ export default function AdminDashboard() {
                     </button>
 
                     <div>
-                      <span className="text-[11px] font-bold text-[#f6821f] uppercase tracking-wider block">Búsqueda Rápida</span>
+                      <span className="text-[11px] font-bold text-[#1b426e] uppercase tracking-wider block">Búsqueda Rápida</span>
                       <h3 className="font-bold text-lg text-slate-900">Buscar por N.º de Factura</h3>
                       <p className="text-xs text-slate-500">Ingresa el número de factura o selecciona una de la lista para importar cliente e importe automáticamente.</p>
                     </div>
@@ -19466,12 +19466,12 @@ export default function AdminDashboard() {
                             handleImportInvoiceData(searchInvoiceNumber);
                           }
                         }}
-                        className="flex-1 px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="flex-1 px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                       <button
                         type="button"
                         onClick={() => handleImportInvoiceData(searchInvoiceNumber)}
-                        className="px-5 py-2.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                        className="px-5 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition cursor-pointer shadow-md shadow-[#1b426e]/20"
                       >
                         Buscar
                       </button>
@@ -19495,11 +19495,11 @@ export default function AdminDashboard() {
                             <div
                               key={inv.num}
                               onClick={() => handleImportInvoiceData(inv.num)}
-                              className="p-3 rounded-xl border border-slate-200 hover:border-[#f6821f] bg-slate-50/50 hover:bg-[#fff7ed] transition cursor-pointer flex items-center justify-between group"
+                              className="p-3 rounded-xl border border-slate-200 hover:border-[#1b426e] bg-slate-50/50 hover:bg-[#fff7ed] transition cursor-pointer flex items-center justify-between group"
                             >
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <span className="font-bold text-xs text-slate-900 group-hover:text-[#f6821f]">Factura #{inv.num}</span>
+                                  <span className="font-bold text-xs text-slate-900 group-hover:text-[#1b426e]">Factura #{inv.num}</span>
                                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                     inv.status === "Pendiente" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
                                   }`}>
@@ -19510,7 +19510,7 @@ export default function AdminDashboard() {
                               </div>
                               <div className="text-right">
                                 <span className="font-bold text-xs text-slate-900 block">${inv.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
-                                <span className="text-[10px] text-[#f6821f] font-semibold group-hover:underline">Seleccionar →</span>
+                                <span className="text-[10px] text-[#1b426e] font-semibold group-hover:underline">Seleccionar →</span>
                               </div>
                             </div>
                           ))}
@@ -19579,7 +19579,7 @@ export default function AdminDashboard() {
             {/* Header (Light theme) */}
             <div className="bg-white border-b border-slate-200 p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#fff7ed] text-[#f6821f] border border-[#fed7aa] flex items-center justify-center shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-[#fff7ed] text-[#1b426e] border border-[#fed7aa] flex items-center justify-center shadow-xs">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
@@ -19686,7 +19686,7 @@ export default function AdminDashboard() {
                         ]
                     ).map((item, i) => (
                       <tr key={i} className="hover:bg-slate-50/80">
-                        <td className="py-3 px-4 font-bold text-[#f6821f]">{item.sku}</td>
+                        <td className="py-3 px-4 font-bold text-[#1b426e]">{item.sku}</td>
                         <td className="py-3 px-4 font-sans text-slate-800 font-medium">{item.desc}</td>
                         <td className="py-3 px-4 text-center font-bold">{item.qty}</td>
                         <td className="py-3 px-4 text-right">${item.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
@@ -19710,7 +19710,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
                     <span>Total Orden ({selectedPurchaseOrder.currency || "USD"}):</span>
-                    <span className="font-mono text-[#f6821f]">${selectedPurchaseOrder.total.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span className="font-mono text-[#1b426e]">${selectedPurchaseOrder.total.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -19751,7 +19751,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setActiveModal(null)}
-                  className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md shadow-[#1b426e]/20"
                 >
                   Cerrar
                 </button>
@@ -19776,7 +19776,7 @@ export default function AdminDashboard() {
             {activeModal === "agregar-cliente" && (
               <div>
                 <div className="mb-4">
-                  <span className="text-[11px] font-semibold text-[#f6821f] uppercase tracking-wider">Acción Rápida</span>
+                  <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">Acción Rápida</span>
                   <h3 className="text-lg font-bold text-slate-900">Agregar Nuevo Cliente</h3>
                   <p className="text-xs text-slate-500">Registrar cliente con código Macola opcional en la base de datos.</p>
                 </div>
@@ -19801,7 +19801,7 @@ export default function AdminDashboard() {
                       placeholder="Ej. Distribuidora Textil S.A."
                       value={customerForm.name}
                       onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -19813,7 +19813,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. CUS-009"
                         value={customerForm.macolaCode}
                         onChange={(e) => setCustomerForm({ ...customerForm, macolaCode: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                     <div>
@@ -19821,7 +19821,7 @@ export default function AdminDashboard() {
                       <select
                         value={customerForm.currency}
                         onChange={(e) => setCustomerForm({ ...customerForm, currency: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       >
                         <option value="USD">USD ($)</option>
                         <option value="HNL">HNL (L)</option>
@@ -19837,7 +19837,7 @@ export default function AdminDashboard() {
                         placeholder="contacto@cliente.com"
                         value={customerForm.email}
                         onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                     <div>
@@ -19847,7 +19847,7 @@ export default function AdminDashboard() {
                         placeholder="+504 2550-0000"
                         value={customerForm.phone}
                         onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                   </div>
@@ -19859,7 +19859,7 @@ export default function AdminDashboard() {
                       placeholder="San Pedro Sula, Honduras"
                       value={customerForm.address}
                       onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -19874,7 +19874,7 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={modalLoading}
-                      className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20 disabled:opacity-50"
+                      className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
                     >
                       {modalLoading ? "Guardando..." : "Guardar Cliente"}
                     </button>
@@ -19889,7 +19889,7 @@ export default function AdminDashboard() {
             {activeModal === "editar-cliente" && editingCustomer && (
               <div>
                 <div className="mb-4">
-                  <span className="text-[11px] font-semibold text-[#f6821f] uppercase tracking-wider">Gestión de Clientes</span>
+                  <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">Gestión de Clientes</span>
                   <h3 className="text-lg font-bold text-slate-900">Editar Cliente</h3>
                   <p className="text-xs text-slate-500">Actualizar información de la empresa o cliente registrado.</p>
                 </div>
@@ -19914,7 +19914,7 @@ export default function AdminDashboard() {
                       placeholder="Ej. Distribuidora Textil S.A."
                       value={customerForm.name}
                       onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -19926,7 +19926,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. CUS-009"
                         value={customerForm.macolaCode}
                         onChange={(e) => setCustomerForm({ ...customerForm, macolaCode: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                     <div>
@@ -19934,7 +19934,7 @@ export default function AdminDashboard() {
                       <select
                         value={customerForm.currency}
                         onChange={(e) => setCustomerForm({ ...customerForm, currency: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       >
                         <option value="USD">USD ($)</option>
                         <option value="HNL">HNL (L)</option>
@@ -19950,7 +19950,7 @@ export default function AdminDashboard() {
                         placeholder="contacto@cliente.com"
                         value={customerForm.email}
                         onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                     <div>
@@ -19960,7 +19960,7 @@ export default function AdminDashboard() {
                         placeholder="+504 2550-0000"
                         value={customerForm.phone}
                         onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                   </div>
@@ -19972,7 +19972,7 @@ export default function AdminDashboard() {
                       placeholder="San Pedro Sula, Honduras"
                       value={customerForm.address}
                       onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -19999,7 +19999,7 @@ export default function AdminDashboard() {
                       <button
                         type="submit"
                         disabled={modalLoading}
-                        className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20 disabled:opacity-50"
+                        className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
                       >
                         {modalLoading ? "Guardando..." : "Guardar cambios"}
                       </button>
@@ -20013,7 +20013,7 @@ export default function AdminDashboard() {
             {activeModal === "editar-proveedor" && editingVendor && (
               <div>
                 <div className="mb-4">
-                  <span className="text-[11px] font-semibold text-[#f6821f] uppercase tracking-wider">Gestión de Proveedores</span>
+                  <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">Gestión de Proveedores</span>
                   <h3 className="text-lg font-bold text-slate-900">Editar Proveedor</h3>
                   <p className="text-xs text-slate-500">Actualizar información del proveedor registrado.</p>
                 </div>
@@ -20038,7 +20038,7 @@ export default function AdminDashboard() {
                       placeholder="Ej. Suministros Industriales S.A."
                       value={vendorForm.name}
                       onChange={(e) => setVendorForm({ ...vendorForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -20050,7 +20050,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. VEN-009"
                         value={vendorForm.macolaCode}
                         onChange={(e) => setVendorForm({ ...vendorForm, macolaCode: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                     <div>
@@ -20058,7 +20058,7 @@ export default function AdminDashboard() {
                       <select
                         value={vendorForm.currency}
                         onChange={(e) => setVendorForm({ ...vendorForm, currency: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       >
                         <option value="USD">USD ($)</option>
                         <option value="HNL">HNL (L)</option>
@@ -20074,7 +20074,7 @@ export default function AdminDashboard() {
                         placeholder="ventas@proveedor.com"
                         value={vendorForm.email}
                         onChange={(e) => setVendorForm({ ...vendorForm, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                     <div>
@@ -20084,7 +20084,7 @@ export default function AdminDashboard() {
                         placeholder="+504 2550-1111"
                         value={vendorForm.phone}
                         onChange={(e) => setVendorForm({ ...vendorForm, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                   </div>
@@ -20096,7 +20096,7 @@ export default function AdminDashboard() {
                       placeholder="Choloma, Cortés, Honduras"
                       value={vendorForm.address}
                       onChange={(e) => setVendorForm({ ...vendorForm, address: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -20123,7 +20123,7 @@ export default function AdminDashboard() {
                       <button
                         type="submit"
                         disabled={modalLoading}
-                        className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20 disabled:opacity-50"
+                        className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
                       >
                         {modalLoading ? "Guardando..." : "Guardar cambios"}
                       </button>
@@ -20170,7 +20170,7 @@ export default function AdminDashboard() {
                     <label className="block font-semibold text-slate-700 mb-1">Proveedor *</label>
                     <select
                       defaultValue={selectedPurchaseOrder?.vendor || "Insumos Flexográficos S.A."}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-medium"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-medium"
                     >
                       <option value="Insumos Flexográficos S.A.">Insumos Flexográficos S.A.</option>
                       <option value="Papelera Hondureña">Papelera Hondureña</option>
@@ -20187,7 +20187,7 @@ export default function AdminDashboard() {
                         required
                         defaultValue={selectedPurchaseOrder?.category || "Tintas Flexo"}
                         placeholder="Ej. Cartón, Tintas, Solventes"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                     <div>
@@ -20198,7 +20198,7 @@ export default function AdminDashboard() {
                         required
                         defaultValue={selectedPurchaseOrder?.total || 6450}
                         placeholder="0.00"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono font-bold"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -20206,14 +20206,14 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block font-semibold text-slate-700 mb-1">Almacén Destino</label>
-                      <select className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900">
+                      <select className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900">
                         <option value="Almacén Central #1">Almacén Central #1</option>
                         <option value="Almacén Materia Prima #2">Almacén Materia Prima #2</option>
                       </select>
                     </div>
                     <div>
                       <label className="block font-semibold text-slate-700 mb-1">Condición de Pago</label>
-                      <select className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900">
+                      <select className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900">
                         <option value="Crédito 30 días">Crédito 30 días</option>
                         <option value="Contado / Inmediato">Contado / Inmediato</option>
                         <option value="Crédito 60 días">Crédito 60 días</option>
@@ -20227,7 +20227,7 @@ export default function AdminDashboard() {
                       <input
                         type="date"
                         defaultValue={selectedPurchaseOrder?.date || new Date().toISOString().split("T")[0]}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                     <div>
@@ -20235,7 +20235,7 @@ export default function AdminDashboard() {
                       <input
                         type="date"
                         defaultValue="2026-09-15"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                   </div>
@@ -20251,7 +20251,7 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={modalLoading}
-                      className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20 disabled:opacity-50"
+                      className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
                     >
                       {modalLoading ? "Guardando..." : selectedPurchaseOrder ? "Guardar cambios" : "Emitir orden"}
                     </button>
@@ -20264,7 +20264,7 @@ export default function AdminDashboard() {
             {activeModal === "editar-producto" && editingProduct && (
               <div>
                 <div className="mb-4">
-                  <span className="text-[11px] font-semibold text-[#f6821f] uppercase tracking-wider">Control de Inventario</span>
+                  <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">Control de Inventario</span>
                   <h3 className="text-lg font-bold text-slate-900">Editar Producto / Insumo</h3>
                   <p className="text-xs text-slate-500">Modificar SKU, descripción, existencias o precios.</p>
                 </div>
@@ -20288,7 +20288,7 @@ export default function AdminDashboard() {
                       required
                       value={productForm.description}
                       onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                     />
                   </div>
 
@@ -20300,7 +20300,7 @@ export default function AdminDashboard() {
                         required
                         value={productForm.sku}
                         onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                     <div>
@@ -20310,7 +20310,7 @@ export default function AdminDashboard() {
                         required
                         value={productForm.quantity}
                         onChange={(e) => setProductForm({ ...productForm, quantity: Number(e.target.value) })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono font-bold"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -20322,7 +20322,7 @@ export default function AdminDashboard() {
                     <select
                       value={productForm.trackingType}
                       onChange={(e) => setProductForm({ ...productForm, trackingType: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50/50 border border-amber-300 focus:outline-none focus:border-[#f6821f] text-slate-900 font-semibold cursor-pointer"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50/50 border border-amber-300 focus:outline-none focus:border-[#1b426e] text-slate-900 font-semibold cursor-pointer"
                     >
                       <option value="NONE">Sin rastreo (Inventario Estándar)</option>
                       <option value="LOT">Control por Lotes y Vencimientos</option>
@@ -20340,7 +20340,7 @@ export default function AdminDashboard() {
                         required
                         value={productForm.cost}
                         onChange={(e) => setProductForm({ ...productForm, cost: Number(e.target.value) })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>
                     <div>
@@ -20351,7 +20351,7 @@ export default function AdminDashboard() {
                         required
                         value={productForm.price}
                         onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono font-bold"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -20371,7 +20371,7 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={modalLoading}
-                      className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold cursor-pointer shadow-md shadow-[#f6821f]/20 disabled:opacity-50"
+                      className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
                     >
                       {modalLoading ? "Guardando..." : "Guardar cambios"}
                     </button>
@@ -20388,7 +20388,7 @@ export default function AdminDashboard() {
               activeModal !== "crear-orden-compra" &&
               activeModal !== "editar-producto" && (
               <div className="text-center py-4 space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#fff7ed] text-[#f6821f] border border-[#fed7aa] flex items-center justify-center mx-auto shadow-xs">
+                <div className="w-12 h-12 rounded-2xl bg-[#fff7ed] text-[#1b426e] border border-[#fed7aa] flex items-center justify-center mx-auto shadow-xs">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
@@ -20405,7 +20405,7 @@ export default function AdminDashboard() {
                 <div className="pt-2">
                   <button
                     onClick={() => setActiveModal(null)}
-                    className="px-6 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-semibold cursor-pointer transition shadow-md shadow-[#f6821f]/20"
+                    className="px-6 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer transition shadow-md shadow-[#1b426e]/20"
                   >
                     Entendido
                   </button>
@@ -20436,7 +20436,7 @@ export default function AdminDashboard() {
                   {editingAccountId ? "Editar cuenta contable" : "Nueva cuenta"}
                 </h2>
                 {editingAccountId && newAccountForm.code && (
-                  <span className="text-[11px] font-mono text-[#f6821f] font-semibold">
+                  <span className="text-[11px] font-mono text-[#1b426e] font-semibold">
                     Cuenta N.º {newAccountForm.code}
                   </span>
                 )}
@@ -20481,7 +20481,7 @@ export default function AdminDashboard() {
                       required
                       value={newAccountForm.name}
                       onChange={(e) => setNewAccountForm({ ...newAccountForm, name: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                      className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                     />
                   </div>
 
@@ -20494,7 +20494,7 @@ export default function AdminDashboard() {
                       placeholder="Ej. 1105 (opcional)"
                       value={newAccountForm.code}
                       onChange={(e) => setNewAccountForm({ ...newAccountForm, code: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                      className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                     />
                   </div>
                 </div>
@@ -20552,7 +20552,7 @@ export default function AdminDashboard() {
                             detailType: defaultDetail,
                           });
                         }}
-                        className="w-full pl-3 pr-8 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs appearance-none focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                        className="w-full pl-3 pr-8 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs appearance-none focus:outline-none focus:border-[#1b426e] cursor-pointer"
                       >
                         {Object.entries(ACCOUNT_CATEGORIES).map(([cat, types]) => (
                           <optgroup key={cat} label={cat} className="font-bold text-slate-900 bg-slate-50">
@@ -20578,7 +20578,7 @@ export default function AdminDashboard() {
                       <select
                         value={newAccountForm.detailType}
                         onChange={(e) => setNewAccountForm({ ...newAccountForm, detailType: e.target.value })}
-                        className="w-full pl-3 pr-8 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs appearance-none focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                        className="w-full pl-3 pr-8 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs appearance-none focus:outline-none focus:border-[#1b426e] cursor-pointer"
                       >
                         {(DETAIL_TYPES_MAP[newAccountForm.type] || [newAccountForm.type]).map((dt) => (
                           <option key={dt} value={dt}>
@@ -20600,7 +20600,7 @@ export default function AdminDashboard() {
                       type="checkbox"
                       checked={newAccountForm.isSubAccount}
                       onChange={(e) => setNewAccountForm({ ...newAccountForm, isSubAccount: e.target.checked })}
-                      className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer accent-[#f6821f]"
+                      className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer accent-[#1b426e]"
                     />
                     <span className="font-medium text-xs">Convertir en una cuenta secundaria</span>
                   </label>
@@ -20611,7 +20611,7 @@ export default function AdminDashboard() {
                       <select
                         value={newAccountForm.parentAccountId}
                         onChange={(e) => setNewAccountForm({ ...newAccountForm, parentAccountId: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 text-xs focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 text-xs focus:outline-none focus:border-[#1b426e]"
                       >
                         <option value="">Seleccionar cuenta principal...</option>
                         {accounts
@@ -20639,7 +20639,7 @@ export default function AdminDashboard() {
                     type="text"
                     value={newAccountForm.description}
                     onChange={(e) => setNewAccountForm({ ...newAccountForm, description: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                   />
                 </div>
 
@@ -20706,7 +20706,7 @@ export default function AdminDashboard() {
                         onClick={() => setNewAccountForm({ ...newAccountForm, isLocked: true })}
                         className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1 transition cursor-pointer ${
                           newAccountForm.isLocked
-                            ? "bg-white text-[#f6821f] shadow-xs border border-slate-200"
+                            ? "bg-white text-[#1b426e] shadow-xs border border-slate-200"
                             : "text-slate-400 hover:text-slate-700"
                         }`}
                         title="Bloqueada"
@@ -20737,7 +20737,7 @@ export default function AdminDashboard() {
                   <button
                     type="submit"
                     disabled={accountModalLoading}
-                    className="px-5 py-2 rounded-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                    className="px-5 py-2 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                   >
                     {accountModalLoading ? "Guardando cambios..." : "Guardar cambios"}
                   </button>
@@ -20746,14 +20746,14 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={accountModalLoading}
-                      className="px-4 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                      className="px-4 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
                     >
                       {accountModalLoading ? "Guardando..." : "Guardar"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowSaveDropdown(!showSaveDropdown)}
-                      className="px-2 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                      className="px-2 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                     >
                       <svg
                         className={`w-3.5 h-3.5 transition-transform ${showSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -20774,9 +20774,9 @@ export default function AdminDashboard() {
                             setShowSaveDropdown(false);
                             handleSaveAccount(undefined, true);
                           }}
-                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                          className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                         >
-                          <svg className="w-4 h-4 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                           </svg>
                           <span>Guardar y crear nueva</span>
@@ -20853,7 +20853,7 @@ export default function AdminDashboard() {
                             placeholder="ej. Impresión Flexográfica Cartón Búfalo"
                             value={newProductForm.name}
                             onChange={(e) => setNewProductForm({ ...newProductForm, name: e.target.value })}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] focus:ring-1 focus:ring-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
                           />
                         </div>
 
@@ -20862,7 +20862,7 @@ export default function AdminDashboard() {
                           <select
                             value={newProductForm.type}
                             onChange={(e) => setNewProductForm({ ...newProductForm, type: e.target.value })}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                           >
                             <option value="Servicio">Servicio</option>
                             <option value="Inventario">Inventario</option>
@@ -20873,7 +20873,7 @@ export default function AdminDashboard() {
                       </div>
 
                       {/* Image Upload Box */}
-                      <div className="sm:col-span-1 border-2 border-dashed border-slate-200 hover:border-[#f6821f]/50 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/50 hover:bg-slate-50 transition min-h-[110px]">
+                      <div className="sm:col-span-1 border-2 border-dashed border-slate-200 hover:border-[#1b426e]/50 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/50 hover:bg-slate-50 transition min-h-[110px]">
                         <svg className="w-8 h-8 text-slate-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -20890,7 +20890,7 @@ export default function AdminDashboard() {
                         placeholder="ej. SKU-104928"
                         value={newProductForm.sku}
                         onChange={(e) => setNewProductForm({ ...newProductForm, sku: e.target.value })}
-                        className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                        className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                       />
                     </div>
 
@@ -20899,7 +20899,7 @@ export default function AdminDashboard() {
                       <select
                         value={newProductForm.category}
                         onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
-                        className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                        className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                       >
                         {productCategoriesList.map((cat) => (
                           <option key={cat} value={cat}>
@@ -20946,7 +20946,7 @@ export default function AdminDashboard() {
                             placeholder="Descripción visible en facturas de venta..."
                             value={newProductForm.salesDescription}
                             onChange={(e) => setNewProductForm({ ...newProductForm, salesDescription: e.target.value })}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -20959,7 +20959,7 @@ export default function AdminDashboard() {
                               placeholder="0.00"
                               value={newProductForm.price}
                               onChange={(e) => setNewProductForm({ ...newProductForm, price: parseFloat(e.target.value) || 0 })}
-                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -20970,7 +20970,7 @@ export default function AdminDashboard() {
                             <select
                               value={newProductForm.incomeAccountId}
                               onChange={(e) => setNewProductForm({ ...newProductForm, incomeAccountId: e.target.value })}
-                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                             >
                               <option value="7000">7000 - Ingresos por Ventas de Servicios</option>
                               {accounts
@@ -21023,7 +21023,7 @@ export default function AdminDashboard() {
                             placeholder="Descripción visible en órdenes de compra..."
                             value={newProductForm.purchaseDescription}
                             onChange={(e) => setNewProductForm({ ...newProductForm, purchaseDescription: e.target.value })}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -21036,7 +21036,7 @@ export default function AdminDashboard() {
                               placeholder="0.00"
                               value={newProductForm.cost}
                               onChange={(e) => setNewProductForm({ ...newProductForm, cost: parseFloat(e.target.value) || 0 })}
-                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
 
@@ -21047,7 +21047,7 @@ export default function AdminDashboard() {
                             <select
                               value={newProductForm.expenseAccountId}
                               onChange={(e) => setNewProductForm({ ...newProductForm, expenseAccountId: e.target.value })}
-                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                              className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
                             >
                               <option value="5000">5000 - Costo de mercancía vendida / Suministros</option>
                               {accounts
@@ -21081,14 +21081,14 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={productDrawerLoading}
-                  className="px-4 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                  className="px-4 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
                 >
                   {productDrawerLoading ? "Guardando..." : "Guardar"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowProductSaveDropdown(!showProductSaveDropdown)}
-                  className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                  className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                 >
                   <svg
                     className={`w-3.5 h-3.5 transition-transform ${showProductSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -21109,7 +21109,7 @@ export default function AdminDashboard() {
                         setShowProductSaveDropdown(false);
                         handleCreateProduct(undefined, false);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                     >
                       <span>Guardar y cerrar</span>
                     </button>
@@ -21119,9 +21119,9 @@ export default function AdminDashboard() {
                         setShowProductSaveDropdown(false);
                         handleCreateProduct(undefined, true);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                       </svg>
                       <span>Guardar y crear nuevo</span>
@@ -21197,7 +21197,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. Distribuidora Textil S.A."
                         value={newCustomerDrawerForm.name}
                         onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
 
@@ -21209,7 +21209,7 @@ export default function AdminDashboard() {
                           placeholder="Ej. 0801199912345"
                           value={newCustomerDrawerForm.rtn}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, rtn: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                         />
                       </div>
                       <div>
@@ -21219,7 +21219,7 @@ export default function AdminDashboard() {
                           placeholder="Ej. CUS-009"
                           value={newCustomerDrawerForm.macolaCode}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, macolaCode: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                         />
                       </div>
                       <div>
@@ -21227,7 +21227,7 @@ export default function AdminDashboard() {
                         <select
                           value={newCustomerDrawerForm.currency}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, currency: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         >
                           <option value="USD">USD ($)</option>
                           <option value="HNL">HNL (L)</option>
@@ -21261,7 +21261,7 @@ export default function AdminDashboard() {
                           placeholder="contacto@cliente.com"
                           value={newCustomerDrawerForm.email}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, email: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         />
                       </div>
                       <div>
@@ -21271,7 +21271,7 @@ export default function AdminDashboard() {
                           placeholder="+504 2550-0000"
                           value={newCustomerDrawerForm.phone}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, phone: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         />
                       </div>
                     </div>
@@ -21283,7 +21283,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. Boulevard del Sur, San Pedro Sula, Honduras"
                         value={newCustomerDrawerForm.address}
                         onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, address: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                   </div>
@@ -21311,7 +21311,7 @@ export default function AdminDashboard() {
                         <select
                           value={newCustomerDrawerForm.paymentTerms}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, paymentTerms: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         >
                           <option value="Contado / Inmediato">Contado / Inmediato</option>
                           <option value="Crédito 15 días">Crédito 15 días</option>
@@ -21326,7 +21326,7 @@ export default function AdminDashboard() {
                           placeholder="0.00"
                           value={newCustomerDrawerForm.creditLimit}
                           onChange={(e) => setNewCustomerDrawerForm({ ...newCustomerDrawerForm, creditLimit: Number(e.target.value) })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono font-bold"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
                         />
                       </div>
                     </div>
@@ -21351,14 +21351,14 @@ export default function AdminDashboard() {
                   type="submit"
                   disabled={customerDrawerLoading}
                   onClick={(e) => handleCreateCustomerDrawer(e, false)}
-                  className="px-4 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                  className="px-4 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
                 >
                   {customerDrawerLoading ? "Guardando..." : "Guardar"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCustomerSaveDropdown(!showCustomerSaveDropdown)}
-                  className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                  className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                 >
                   <svg
                     className={`w-3.5 h-3.5 transition-transform ${showCustomerSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -21379,7 +21379,7 @@ export default function AdminDashboard() {
                         setShowCustomerSaveDropdown(false);
                         handleCreateCustomerDrawer(e, false);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                     >
                       <span>Guardar y cerrar</span>
                     </button>
@@ -21389,9 +21389,9 @@ export default function AdminDashboard() {
                         setShowCustomerSaveDropdown(false);
                         handleCreateCustomerDrawer(e, true);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                       </svg>
                       <span>Guardar y crear nuevo</span>
@@ -21467,7 +21467,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. Insumos Flexográficos S.A."
                         value={newVendorDrawerForm.name}
                         onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
 
@@ -21479,7 +21479,7 @@ export default function AdminDashboard() {
                           placeholder="Ej. 0801199912345"
                           value={newVendorDrawerForm.rtn}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, rtn: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                         />
                       </div>
                       <div>
@@ -21489,7 +21489,7 @@ export default function AdminDashboard() {
                           placeholder="Ej. VEN-009"
                           value={newVendorDrawerForm.macolaCode}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, macolaCode: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                         />
                       </div>
                       <div>
@@ -21497,7 +21497,7 @@ export default function AdminDashboard() {
                         <select
                           value={newVendorDrawerForm.currency}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, currency: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         >
                           <option value="USD">USD ($)</option>
                           <option value="HNL">HNL (L)</option>
@@ -21531,7 +21531,7 @@ export default function AdminDashboard() {
                           placeholder="ventas@proveedor.com"
                           value={newVendorDrawerForm.email}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, email: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         />
                       </div>
                       <div>
@@ -21541,7 +21541,7 @@ export default function AdminDashboard() {
                           placeholder="+504 2550-0000"
                           value={newVendorDrawerForm.phone}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, phone: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         />
                       </div>
                     </div>
@@ -21553,7 +21553,7 @@ export default function AdminDashboard() {
                         placeholder="Ej. Zona Industrial San José, San Pedro Sula, Honduras"
                         value={newVendorDrawerForm.address}
                         onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, address: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                       />
                     </div>
                   </div>
@@ -21581,7 +21581,7 @@ export default function AdminDashboard() {
                         <select
                           value={newVendorDrawerForm.category}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, category: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         >
                           <option value="Tintas Flexo">Tintas Flexográficas</option>
                           <option value="Cartón y Papel">Cartón Corrugado y Papel</option>
@@ -21595,7 +21595,7 @@ export default function AdminDashboard() {
                         <select
                           value={newVendorDrawerForm.paymentTerms}
                           onChange={(e) => setNewVendorDrawerForm({ ...newVendorDrawerForm, paymentTerms: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                         >
                           <option value="Contado">Contado</option>
                           <option value="Crédito 15 días">Crédito 15 días</option>
@@ -21625,7 +21625,7 @@ export default function AdminDashboard() {
                   type="button"
                   disabled={vendorDrawerLoading}
                   onClick={(e) => handleCreateVendorDrawer(e, false)}
-                  className="px-4 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                  className="px-4 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
                 >
                   {vendorDrawerLoading ? "Guardando..." : "Guardar"}
                 </button>
@@ -21633,7 +21633,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowVendorSaveDropdown(!showVendorSaveDropdown)}
-                  className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                  className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                 >
                   <svg
                     className={`w-3.5 h-3.5 transition-transform ${showVendorSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -21653,7 +21653,7 @@ export default function AdminDashboard() {
                         setShowVendorSaveDropdown(false);
                         handleCreateVendorDrawer(e, false);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                     >
                       <span>Guardar y cerrar</span>
                     </button>
@@ -21663,9 +21663,9 @@ export default function AdminDashboard() {
                         setShowVendorSaveDropdown(false);
                         handleCreateVendorDrawer(e, true);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-[#f6821f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                       </svg>
                       <span>Guardar y crear nuevo</span>
@@ -21730,7 +21730,7 @@ export default function AdminDashboard() {
                         <select
                           value={pageSize}
                           onChange={(e) => setPageSize(Number(e.target.value))}
-                          className="w-full pl-3.5 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium appearance-none focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                          className="w-full pl-3.5 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium appearance-none focus:outline-none focus:border-[#1b426e] cursor-pointer"
                         >
                           <option value={25}>25</option>
                           <option value={50}>50</option>
@@ -21750,7 +21750,7 @@ export default function AdminDashboard() {
                         <select
                           value={rowDensity}
                           onChange={(e) => setRowDensity(e.target.value as "espacioso" | "acogedor" | "compacto")}
-                          className="w-full pl-3.5 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium appearance-none focus:outline-none focus:border-[#f6821f] cursor-pointer"
+                          className="w-full pl-3.5 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium appearance-none focus:outline-none focus:border-[#1b426e] cursor-pointer"
                         >
                           <option value="espacioso">Espacioso</option>
                           <option value="acogedor">Acogedor</option>
@@ -21854,7 +21854,7 @@ export default function AdminDashboard() {
                                     [col.id]: !prev[col.id],
                                   }))
                                 }
-                                className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer accent-[#f6821f]"
+                                className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer accent-[#1b426e]"
                               />
                               <span className="font-medium text-xs text-slate-800">{col.label}</span>
                             </label>
@@ -21931,7 +21931,7 @@ export default function AdminDashboard() {
                         type="checkbox"
                         checked={alternateRowColor}
                         onChange={(e) => setAlternateRowColor(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer accent-[#f6821f]"
+                        className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer accent-[#1b426e]"
                       />
                       <span className="font-medium text-xs">Alternar color de fila</span>
                     </label>
@@ -21941,7 +21941,7 @@ export default function AdminDashboard() {
                         type="checkbox"
                         checked={showInactiveAccounts}
                         onChange={(e) => setShowInactiveAccounts(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer accent-[#f6821f]"
+                        className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer accent-[#1b426e]"
                       />
                       <span className="font-medium text-xs">Mostrar cuentas inactivas</span>
                     </label>
@@ -21951,7 +21951,7 @@ export default function AdminDashboard() {
                         type="checkbox"
                         checked={showReportBadges}
                         onChange={(e) => setShowReportBadges(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer accent-[#f6821f]"
+                        className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer accent-[#1b426e]"
                       />
                       <span className="font-medium text-xs">Mostrar distintivos de tipo de informe</span>
                     </label>
@@ -22017,7 +22017,7 @@ export default function AdminDashboard() {
                 <select
                   value={connectBankForm.institution}
                   onChange={(e) => setConnectBankForm({ ...connectBankForm, institution: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-medium cursor-pointer"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-medium cursor-pointer"
                 >
                   <option value="Banco Ficohsa">Banco Ficohsa (Honduras / Regional)</option>
                   <option value="BAC Credomatic">BAC Credomatic Honduras</option>
@@ -22036,7 +22036,7 @@ export default function AdminDashboard() {
                   <select
                     value={connectBankForm.accountType}
                     onChange={(e) => setConnectBankForm({ ...connectBankForm, accountType: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 cursor-pointer"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 cursor-pointer"
                   >
                     <option value="Cuenta de cheques empresarial">Cuenta de Cheques</option>
                     <option value="Cuenta de ahorros comercial">Cuenta de Ahorros</option>
@@ -22050,7 +22050,7 @@ export default function AdminDashboard() {
                   <select
                     value={connectBankForm.currency}
                     onChange={(e) => setConnectBankForm({ ...connectBankForm, currency: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 cursor-pointer"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 cursor-pointer"
                   >
                     <option value="USD">USD ($ - Dólares)</option>
                     <option value="HNL">HNL (L - Lempiras)</option>
@@ -22066,7 +22066,7 @@ export default function AdminDashboard() {
                   required
                   value={connectBankForm.accountNumber}
                   onChange={(e) => setConnectBankForm({ ...connectBankForm, accountNumber: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                 />
               </div>
 
@@ -22081,7 +22081,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={connectBankLoading}
-                  className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {connectBankLoading && (
                     <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22156,7 +22156,7 @@ export default function AdminDashboard() {
                   required
                   value={newRuleForm.name}
                   onChange={(e) => setNewRuleForm({ ...newRuleForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                 />
               </div>
 
@@ -22168,7 +22168,7 @@ export default function AdminDashboard() {
                   required
                   value={newRuleForm.condition}
                   onChange={(e) => setNewRuleForm({ ...newRuleForm, condition: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">Cualquier movimiento bancario con este texto aplicará la regla.</p>
               </div>
@@ -22178,7 +22178,7 @@ export default function AdminDashboard() {
                 <select
                   value={newRuleForm.targetAccount}
                   onChange={(e) => setNewRuleForm({ ...newRuleForm, targetAccount: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#f6821f] text-slate-900 font-medium cursor-pointer"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-medium cursor-pointer"
                 >
                   {accounts.map((acc) => (
                     <option key={acc.id} value={`${acc.code} - ${acc.name}`}>
@@ -22194,7 +22194,7 @@ export default function AdminDashboard() {
                     type="checkbox"
                     checked={newRuleForm.autoConfirm}
                     onChange={(e) => setNewRuleForm({ ...newRuleForm, autoConfirm: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-300 text-[#f6821f] focus:ring-[#f6821f] cursor-pointer accent-[#f6821f]"
+                    className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e] cursor-pointer accent-[#1b426e]"
                   />
                   <div>
                     <span className="font-semibold text-slate-800 block text-xs">Auto-confirmar transacciones</span>
@@ -22213,7 +22213,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold transition cursor-pointer shadow-xs"
+                  className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold transition cursor-pointer shadow-xs"
                 >
                   Guardar regla
                 </button>
@@ -22273,7 +22273,7 @@ export default function AdminDashboard() {
                     placeholder="ej. LOT-2026-001"
                     value={newLotForm.lotNumber}
                     onChange={(e) => setNewLotForm({ ...newLotForm, lotNumber: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
                 <div>
@@ -22286,7 +22286,7 @@ export default function AdminDashboard() {
                     placeholder="0"
                     value={newLotForm.quantity}
                     onChange={(e) => setNewLotForm({ ...newLotForm, quantity: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
                 <div>
@@ -22295,7 +22295,7 @@ export default function AdminDashboard() {
                     type="date"
                     value={newLotForm.manufactureDate}
                     onChange={(e) => setNewLotForm({ ...newLotForm, manufactureDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
                 <div>
@@ -22304,7 +22304,7 @@ export default function AdminDashboard() {
                     type="date"
                     value={newLotForm.expirationDate}
                     onChange={(e) => setNewLotForm({ ...newLotForm, expirationDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
               </div>
@@ -22314,7 +22314,7 @@ export default function AdminDashboard() {
                   placeholder="Notas adicionales (opcional)..."
                   value={newLotForm.notes}
                   onChange={(e) => setNewLotForm({ ...newLotForm, notes: e.target.value })}
-                  className="flex-1 max-w-md px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#f6821f] text-xs"
+                  className="flex-1 max-w-md px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] text-xs"
                 />
                 <button
                   type="submit"
@@ -22653,7 +22653,7 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-[#fff7ed] text-[#f6821f]">
+                <span className="p-2 rounded-xl bg-[#fff7ed] text-[#1b426e]">
                   <FileText className="w-5 h-5" />
                 </span>
                 <div>
@@ -22729,7 +22729,7 @@ export default function AdminDashboard() {
                       const et = e.target.value as "CUSTOMER" | "VENDOR";
                       setNoteForm({ ...noteForm, entityType: et, entityName: "" });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   >
                     <option value="CUSTOMER">Cliente (Cuentas por Cobrar)</option>
                     <option value="VENDOR">Proveedor (Cuentas por Pagar)</option>
@@ -22742,7 +22742,7 @@ export default function AdminDashboard() {
                     type="text"
                     value={noteForm.noteNumber}
                     onChange={(e) => setNoteForm({ ...noteForm, noteNumber: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -22757,7 +22757,7 @@ export default function AdminDashboard() {
                   <select
                     value={noteForm.entityName}
                     onChange={(e) => setNoteForm({ ...noteForm, entityName: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   >
                     <option value="">Selecciona beneficiario...</option>
@@ -22774,7 +22774,7 @@ export default function AdminDashboard() {
                     placeholder="Ej. FAC-2026-004 o OC-2026-012"
                     value={noteForm.targetDocNum || ""}
                     onChange={(e) => setNoteForm({ ...noteForm, targetDocNum: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
               </div>
@@ -22786,7 +22786,7 @@ export default function AdminDashboard() {
                   <select
                     value={noteForm.reason}
                     onChange={(e) => setNoteForm({ ...noteForm, reason: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   >
                     <option value="Devolución de Insumos / Mercadería Defectuosa">Devolución de Insumos / Mercadería Defectuosa</option>
                     <option value="Descuento por Volumen en Facturación">Descuento por Volumen en Facturación</option>
@@ -22803,7 +22803,7 @@ export default function AdminDashboard() {
                     type="date"
                     value={noteForm.issueDate}
                     onChange={(e) => setNoteForm({ ...noteForm, issueDate: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono text-slate-800 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -22822,7 +22822,7 @@ export default function AdminDashboard() {
                       const isv = amt * 0.15;
                       setNoteForm({ ...noteForm, amount: amt, tax: isv, total: amt + isv });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     placeholder="0.00"
                     required
                   />
@@ -22838,7 +22838,7 @@ export default function AdminDashboard() {
                       const isv = Number(e.target.value) || 0;
                       setNoteForm({ ...noteForm, tax: isv, total: (noteForm.amount || 0) + isv });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -22862,7 +22862,7 @@ export default function AdminDashboard() {
                   value={noteForm.notes || ""}
                   onChange={(e) => setNoteForm({ ...noteForm, notes: e.target.value })}
                   placeholder="Detalles adicionales para auditoría contable..."
-                  className="w-full p-3 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:border-[#f6821f] resize-none"
+                  className="w-full p-3 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:border-[#1b426e] resize-none"
                 />
               </div>
 
@@ -22878,7 +22878,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={noteLoading}
-                  className="px-6 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="px-6 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {noteLoading ? "Guardando..." : `Emitir ${noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}`}
                 </button>
@@ -22894,7 +22894,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#f6821f]" />
+                <Users className="w-5 h-5 text-[#1b426e]" />
                 <h3 className="font-bold text-base text-slate-900">
                   {editingRepId ? "Editar Vendedor / Esquema" : "Registrar Nuevo Vendedor"}
                 </h3>
@@ -22927,7 +22927,7 @@ export default function AdminDashboard() {
                     value={salesRepForm.code}
                     onChange={(e) => setSalesRepForm({ ...salesRepForm, code: e.target.value })}
                     placeholder="VEND-001"
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -22936,7 +22936,7 @@ export default function AdminDashboard() {
                   <select
                     value={salesRepForm.status}
                     onChange={(e) => setSalesRepForm({ ...salesRepForm, status: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   >
                     <option value="ACTIVO">ACTIVO</option>
                     <option value="INACTIVO">INACTIVO</option>
@@ -22951,7 +22951,7 @@ export default function AdminDashboard() {
                   value={salesRepForm.name}
                   onChange={(e) => setSalesRepForm({ ...salesRepForm, name: e.target.value })}
                   placeholder="Ej. Carlos Roberto Mendoza"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   required
                 />
               </div>
@@ -22964,7 +22964,7 @@ export default function AdminDashboard() {
                     value={salesRepForm.email}
                     onChange={(e) => setSalesRepForm({ ...salesRepForm, email: e.target.value })}
                     placeholder="ejecutivo@waynetrademarkhn.com"
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
                 <div>
@@ -22974,7 +22974,7 @@ export default function AdminDashboard() {
                     value={salesRepForm.phone}
                     onChange={(e) => setSalesRepForm({ ...salesRepForm, phone: e.target.value })}
                     placeholder="+504 9900-1122"
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
               </div>
@@ -22984,7 +22984,7 @@ export default function AdminDashboard() {
                 <select
                   value={salesRepForm.zone}
                   onChange={(e) => setSalesRepForm({ ...salesRepForm, zone: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                 >
                   <option value="San Pedro Sula / Zona Norte">San Pedro Sula / Zona Norte</option>
                   <option value="Tegucigalpa / Zona Central">Tegucigalpa / Zona Central</option>
@@ -22996,7 +22996,7 @@ export default function AdminDashboard() {
 
               {/* Commission Config Box */}
               <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-200/80 space-y-3">
-                <span className="font-bold text-[#f6821f] text-xs uppercase tracking-wider block">
+                <span className="font-bold text-[#1b426e] text-xs uppercase tracking-wider block">
                   Configuración del Esquema de Comisión
                 </span>
 
@@ -23008,7 +23008,7 @@ export default function AdminDashboard() {
                       step="0.1"
                       value={salesRepForm.commissionRate}
                       onChange={(e) => setSalesRepForm({ ...salesRepForm, commissionRate: Number(e.target.value) })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-[#f6821f] focus:outline-none focus:border-[#f6821f]"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-[#1b426e] focus:outline-none focus:border-[#1b426e]"
                       required
                     />
                   </div>
@@ -23017,7 +23017,7 @@ export default function AdminDashboard() {
                     <select
                       value={salesRepForm.commissionType}
                       onChange={(e) => setSalesRepForm({ ...salesRepForm, commissionType: e.target.value })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                     >
                       <option value="PERCENTAGE">Porcentaje Fijo sobre Venta</option>
                       <option value="TIERED">Escalonado por Metas</option>
@@ -23033,7 +23033,7 @@ export default function AdminDashboard() {
                     step="500"
                     value={salesRepForm.monthlyTarget}
                     onChange={(e) => setSalesRepForm({ ...salesRepForm, monthlyTarget: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -23051,7 +23051,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={salesRepLoading}
-                  className="px-6 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="px-6 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {salesRepLoading ? "Guardando..." : editingRepId ? "Guardar Cambios" : "Registrar Vendedor"}
                 </button>
@@ -23067,7 +23067,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#f6821f]" />
+                <FileText className="w-5 h-5 text-[#1b426e]" />
                 <h3 className="font-bold text-base text-slate-900">Registrar Cálculo de Comisión</h3>
               </div>
               <button
@@ -23106,7 +23106,7 @@ export default function AdminDashboard() {
                         commissionAmount: (saleAmount * rate) / 100,
                       });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   >
                     <option value="">Seleccione Vendedor...</option>
@@ -23123,7 +23123,7 @@ export default function AdminDashboard() {
                     type="month"
                     value={commissionForm.period}
                     onChange={(e) => setCommissionForm({ ...commissionForm, period: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-mono font-bold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
               </div>
@@ -23136,7 +23136,7 @@ export default function AdminDashboard() {
                     value={commissionForm.invoiceNumber}
                     onChange={(e) => setCommissionForm({ ...commissionForm, invoiceNumber: e.target.value })}
                     placeholder="FAC-2026-004"
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-mono text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
                 <div>
@@ -23146,7 +23146,7 @@ export default function AdminDashboard() {
                     value={commissionForm.customerName}
                     onChange={(e) => setCommissionForm({ ...commissionForm, customerName: e.target.value })}
                     placeholder="Embotelladora de Sula S.A."
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-medium text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-medium text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
               </div>
@@ -23167,7 +23167,7 @@ export default function AdminDashboard() {
                         commissionAmount: (amount * rate) / 100,
                       });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -23186,7 +23186,7 @@ export default function AdminDashboard() {
                         commissionAmount: (amount * rate) / 100,
                       });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-[#f6821f] focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 font-bold text-[#1b426e] focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
                 <div>
@@ -23213,7 +23213,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={commLoading}
-                  className="px-6 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="px-6 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {commLoading ? "Guardando..." : "Registrar Comisión"}
                 </button>
@@ -23299,7 +23299,7 @@ export default function AdminDashboard() {
 
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-slate-900">
                 <span>Total Factura Fiscal:</span>
-                <span className="text-base text-[#f6821f] font-mono">${selectedDetailPurchaseInvoice.total.toFixed(2)} USD</span>
+                <span className="text-base text-[#1b426e] font-mono">${selectedDetailPurchaseInvoice.total.toFixed(2)} USD</span>
               </div>
 
               {selectedDetailPurchaseInvoice.notes && (
@@ -23327,7 +23327,7 @@ export default function AdminDashboard() {
                     setSelectedPaymentVendor(vName);
                     setCurrentView("pagos-proveedores");
                   }}
-                  className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
                   <CreditCard className="w-4 h-4" />
                   <span>Pagar / Abonar Factura</span>
@@ -23383,7 +23383,7 @@ export default function AdminDashboard() {
                     type="text"
                     value={vendorReturnForm.returnNumber}
                     onChange={(e) => setVendorReturnForm({ ...vendorReturnForm, returnNumber: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -23403,7 +23403,7 @@ export default function AdminDashboard() {
                         vendorId: matched ? matched.id : vendorReturnForm.vendorId,
                       });
                     }}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                   <datalist id="vendors-list-datalist">
                     {vendors.map((v) => (
@@ -23420,7 +23420,7 @@ export default function AdminDashboard() {
                     placeholder="Ej. FPROV-2026-001..."
                     value={vendorReturnForm.purchaseInvoiceNumber}
                     onChange={(e) => setVendorReturnForm({ ...vendorReturnForm, purchaseInvoiceNumber: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                   <datalist id="purchase-invoices-datalist">
                     {purchaseInvoices.map((pi) => (
@@ -23437,7 +23437,7 @@ export default function AdminDashboard() {
                     type="date"
                     value={vendorReturnForm.returnDate}
                     onChange={(e) => setVendorReturnForm({ ...vendorReturnForm, returnDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -23446,7 +23446,7 @@ export default function AdminDashboard() {
                   <select
                     value={vendorReturnForm.reason}
                     onChange={(e) => setVendorReturnForm({ ...vendorReturnForm, reason: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   >
                     <option value="DEFECTO">Mercancía defectuosa / dañada en origen</option>
                     <option value="EXCESO">Exceso de pedido / error en despacho</option>
@@ -23461,7 +23461,7 @@ export default function AdminDashboard() {
                   <select
                     value={vendorReturnForm.status}
                     onChange={(e) => setVendorReturnForm({ ...vendorReturnForm, status: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   >
                     <option value="BORRADOR">Borrador (En revisión)</option>
                     <option value="APROBADA">Aprobada (Lista para despachar)</option>
@@ -23518,7 +23518,7 @@ export default function AdminDashboard() {
                                   });
                                 }
                               }}
-                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-[#1b426e]"
                               value={it.sku || ""}
                             >
                               <option value="">Seleccionar SKU...</option>
@@ -23535,7 +23535,7 @@ export default function AdminDashboard() {
                               value={it.description}
                               onChange={(e) => updateVendorReturnLine(idx, "description", e.target.value)}
                               placeholder="Descripción..."
-                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="p-2.5">
@@ -23544,7 +23544,7 @@ export default function AdminDashboard() {
                               min="1"
                               value={it.quantity}
                               onChange={(e) => updateVendorReturnLine(idx, "quantity", Number(e.target.value))}
-                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-center font-bold focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-center font-bold focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="p-2.5">
@@ -23553,7 +23553,7 @@ export default function AdminDashboard() {
                               step="0.01"
                               value={it.unitCost}
                               onChange={(e) => updateVendorReturnLine(idx, "unitCost", Number(e.target.value))}
-                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-right font-mono focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-right font-mono focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="p-2.5">
@@ -23562,7 +23562,7 @@ export default function AdminDashboard() {
                               value={it.lotNumber}
                               onChange={(e) => updateVendorReturnLine(idx, "lotNumber", e.target.value)}
                               placeholder="Lote opc."
-                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="p-2.5">
@@ -23571,7 +23571,7 @@ export default function AdminDashboard() {
                               value={it.itemReason}
                               onChange={(e) => updateVendorReturnLine(idx, "itemReason", e.target.value)}
                               placeholder="Detalle defecto..."
-                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="p-2.5 text-right font-mono font-bold text-slate-900">
@@ -23602,7 +23602,7 @@ export default function AdminDashboard() {
 
                 <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
                   <span className="font-bold text-slate-700">Total a Reclamar / Devolver:</span>
-                  <span className="text-base font-bold font-mono text-[#f6821f]">
+                  <span className="text-base font-bold font-mono text-[#1b426e]">
                     ${vendorReturnSubtotal.toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
                   </span>
                 </div>
@@ -23616,7 +23616,7 @@ export default function AdminDashboard() {
                   value={vendorReturnForm.notes}
                   onChange={(e) => setVendorReturnForm({ ...vendorReturnForm, notes: e.target.value })}
                   placeholder="Detalles sobre número de guía, transportista, acuerdo con el proveedor o número de RMA..."
-                  className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f] resize-none"
+                  className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e] resize-none"
                 />
               </div>
             </div>
@@ -23635,7 +23635,7 @@ export default function AdminDashboard() {
                   type="button"
                   onClick={() => handleSaveVendorReturn(false)}
                   disabled={vendorReturnLoading}
-                  className="px-4 py-2 rounded-xl border border-[#f6821f] bg-white hover:bg-[#fff7ed] text-[#f6821f] font-bold text-xs transition cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl border border-[#1b426e] bg-white hover:bg-[#fff7ed] text-[#1b426e] font-bold text-xs transition cursor-pointer disabled:opacity-50"
                 >
                   {vendorReturnLoading ? "Guardando..." : "Guardar como Borrador"}
                 </button>
@@ -23643,7 +23643,7 @@ export default function AdminDashboard() {
                   type="button"
                   onClick={() => handleSaveVendorReturn(true)}
                   disabled={vendorReturnLoading}
-                  className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition cursor-pointer shadow-md shadow-[#f6821f]/20 disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
                 >
                   {vendorReturnLoading ? "Guardando..." : "Guardar & Aprobar"}
                 </button>
@@ -23732,7 +23732,7 @@ export default function AdminDashboard() {
 
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-slate-900">
                 <span>Total Reclamado:</span>
-                <span className="text-base text-[#f6821f] font-mono">${(vendorReturnDetailModal.total || 0).toFixed(2)} USD</span>
+                <span className="text-base text-[#1b426e] font-mono">${(vendorReturnDetailModal.total || 0).toFixed(2)} USD</span>
               </div>
 
               {vendorReturnDetailModal.notes && (

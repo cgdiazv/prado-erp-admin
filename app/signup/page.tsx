@@ -4,14 +4,14 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import logoImg from "@/public/logo.webp";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,28 +22,23 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify({ companyName, email, password }),
       });
 
       const data = await res.json().catch(() => null);
+
       if (!res.ok || !data?.success) {
-        throw new Error(data?.error || "No se pudo iniciar sesión. Por favor verifique sus datos.");
+        throw new Error(data?.error || "No se pudo crear la cuenta. Por favor verifique sus datos.");
       }
 
-      const callbackUrl = typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("callbackUrl") || "/"
-        : "/";
-      window.location.href = callbackUrl;
+      // Successfully registered and session cookie created -> redirect to dashboard
+      window.location.href = "/";
     } catch (err: unknown) {
-      const rawMsg = err instanceof Error ? err.message : "";
-      if (rawMsg.includes("Failed to fetch") || rawMsg.includes("NetworkError") || rawMsg.includes("fetch failed")) {
-        setError("Error de red: No se pudo comunicar con el servidor. Compruebe su conexión a internet.");
-      } else {
-        setError(rawMsg || "No fue posible iniciar sesión. Por favor intente más tarde.");
-      }
+      const msg = err instanceof Error ? err.message : "Error inesperado al registrar la cuenta.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -52,7 +47,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 p-4">
       <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-8 shadow-xl shadow-slate-200/60">
-        {/* Brand Header */}
+        {/* Brand Header with same logo and colors as login */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center">
             <Image
@@ -62,37 +57,44 @@ export default function LoginPage() {
               className="h-16 w-auto max-w-[260px] object-contain"
             />
           </div>
+
           <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-5">
-            Iniciar Sesión
+            Registrarse
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Ingrese sus credenciales para acceder a Prado ERP
+            Cree su cuenta de prueba de 30 días
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200/90 text-red-800 text-sm flex items-start gap-3 shadow-xs animate-in fade-in duration-200">
-            <div className="p-1 rounded-lg bg-red-100 text-red-600 shrink-0 mt-0.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" />
-                <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" />
-              </svg>
-            </div>
+          <div className="mb-5 p-4 rounded-xl bg-red-50 border border-red-200/90 text-red-800 text-sm flex items-start gap-3 shadow-xs animate-in fade-in duration-200">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
             <div className="flex-1 text-left">
               <p className="font-semibold text-red-900 text-xs uppercase tracking-wider mb-0.5">
-                Aviso de autenticación
+                Aviso
               </p>
-              <p className="text-red-700 text-xs leading-relaxed">
-                {error}
-              </p>
+              <p className="text-red-700 text-xs leading-relaxed">{error}</p>
             </div>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              Nombre de la empresa
+            </label>
+            <input
+              type="text"
+              required
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/20 transition-all text-sm font-medium"
+              placeholder="Ej. Inversiones del Prado S.A."
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
               Correo electrónico
             </label>
             <input
@@ -102,19 +104,20 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/20 transition-all text-sm font-medium"
-              placeholder="ejemplo@correo.com"
+              placeholder="admin@empresa.com"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
               Contraseña
             </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                autoComplete="current-password"
+                minLength={6}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/20 transition-all text-sm font-medium"
@@ -137,27 +140,10 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Remember me checkbox */}
-          <div className="flex items-center gap-2.5 pt-1">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]/30 cursor-pointer accent-[#1b426e]"
-            />
-            <label
-              htmlFor="rememberMe"
-              className="text-xs text-slate-600 font-medium cursor-pointer select-none"
-            >
-              Recordarme por 30 días
-            </label>
-          </div>
-
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-sm transition-all shadow-lg shadow-[#1b426e]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-sm transition-all shadow-lg shadow-[#1b426e]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -165,36 +151,26 @@ export default function LoginPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                <span>Ingresando...</span>
+                <span>Creando cuenta...</span>
               </>
             ) : (
-              <span>Ingresar al Panel</span>
+              <span>Crear Mi Cuenta y Comenzar</span>
             )}
           </button>
         </form>
 
-        {/* Separator and Bottom Links */}
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center space-y-2.5 text-xs text-slate-500">
-          <p>
-            ¿Necesita una cuenta?{" "}
+        {/* Footer */}
+        <div className="mt-8 pt-4 text-center">
+          <p className="text-xs text-slate-500">
+            ¿Ya tiene una cuenta?{" "}
             <a
-              href="/signup"
-              className="font-semibold text-[#1b426e] hover:text-[#143355] hover:underline transition-colors cursor-pointer"
+              href="/login"
+              className="font-bold text-[#1b426e] hover:text-[#143355] hover:underline transition-colors cursor-pointer"
             >
-              Comience gratis
-            </a>
-          </p>
-          <p>
-            ¿Olvidó su contraseña?{" "}
-            <a
-              href="/forgot-password"
-              className="font-semibold text-[#1b426e] hover:text-[#143355] hover:underline transition-colors cursor-pointer"
-            >
-              Restablézcala
+              Inicie sesión aquí
             </a>
           </p>
         </div>
-
       </div>
     </div>
   );

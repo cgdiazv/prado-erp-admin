@@ -551,7 +551,7 @@ export default function BankReconciliationModule({
               <h2 className="text-xl font-bold text-slate-900">
                 Conciliación y Cierre de Extractos Mensuales
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                 Auditoría Contable &amp; Bancos
               </span>
             </div>
@@ -585,7 +585,7 @@ export default function BankReconciliationModule({
                 });
                 setShowNewRecModal(true);
               }}
-              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Aperturar Nueva Conciliación</span>
@@ -734,7 +734,7 @@ export default function BankReconciliationModule({
                 if (recsForBank.length > 0) setSelectedRecId(recsForBank[0].id);
                 else setSelectedRecId("");
               }}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
             >
               {bankAccounts.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -751,7 +751,7 @@ export default function BankReconciliationModule({
             <select
               value={selectedRecId}
               onChange={(e) => setSelectedRecId(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
               disabled={bankReconciliations.length === 0}
             >
               {bankReconciliations.length === 0 && (
@@ -800,7 +800,7 @@ export default function BankReconciliationModule({
                 onClick={() => setShowAdjustmentModal(true)}
                 className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5 text-[#f6821f]" />
+                <Plus className="w-3.5 h-3.5 text-[#1b426e]" />
                 <span>Agregar Ajuste</span>
               </button>
 
@@ -924,7 +924,7 @@ export default function BankReconciliationModule({
             onClick={() => setActiveTab("deposits")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
               activeTab === "deposits"
-                ? "bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5] shadow-xs"
+                ? "bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5] shadow-xs"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             }`}
           >
@@ -940,7 +940,7 @@ export default function BankReconciliationModule({
             onClick={() => setActiveTab("checks")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
               activeTab === "checks"
-                ? "bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5] shadow-xs"
+                ? "bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5] shadow-xs"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             }`}
           >
@@ -956,7 +956,7 @@ export default function BankReconciliationModule({
             onClick={() => setActiveTab("history")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
               activeTab === "history"
-                ? "bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5] shadow-xs"
+                ? "bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5] shadow-xs"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             }`}
           >
@@ -973,7 +973,7 @@ export default function BankReconciliationModule({
               placeholder="Buscar por descripción, ref..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
             />
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
           </div>
@@ -1269,7 +1269,7 @@ export default function BankReconciliationModule({
           <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
@@ -1300,7 +1300,7 @@ export default function BankReconciliationModule({
                       statementBeginningBalance: b?.bankBalance || 0,
                     }));
                   }}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:outline-none focus:border-[#1b426e]"
                   required
                 >
                   <option value="">Seleccione cuenta...</option>
@@ -1319,7 +1319,7 @@ export default function BankReconciliationModule({
                     type="month"
                     value={newRecForm.period}
                     onChange={(e) => setNewRecForm({ ...newRecForm, period: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -1329,7 +1329,7 @@ export default function BankReconciliationModule({
                     type="date"
                     value={newRecForm.statementDate}
                     onChange={(e) => setNewRecForm({ ...newRecForm, statementDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -1343,7 +1343,7 @@ export default function BankReconciliationModule({
                     step="0.01"
                     value={newRecForm.statementBeginningBalance}
                     onChange={(e) => setNewRecForm({ ...newRecForm, statementBeginningBalance: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -1354,7 +1354,7 @@ export default function BankReconciliationModule({
                     step="0.01"
                     value={newRecForm.statementEndingBalance}
                     onChange={(e) => setNewRecForm({ ...newRecForm, statementEndingBalance: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -1367,7 +1367,7 @@ export default function BankReconciliationModule({
                   value={newRecForm.notes}
                   onChange={(e) => setNewRecForm({ ...newRecForm, notes: e.target.value })}
                   placeholder="Número de estado de cuenta bancario, observaciones iniciales..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
 
@@ -1381,7 +1381,7 @@ export default function BankReconciliationModule({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold cursor-pointer transition shadow-md shadow-[#f6821f]/20"
+                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold cursor-pointer transition shadow-md shadow-[#1b426e]/20"
                 >
                   Iniciar Conciliación
                 </button>
@@ -1431,7 +1431,7 @@ export default function BankReconciliationModule({
                       payee: currentBank?.name || "Banco",
                     });
                   }}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:outline-none focus:border-[#1b426e]"
                 >
                   <option value="FEE">Cargo Bancario / Comisión (Disminuye saldo)</option>
                   <option value="INTEREST">Intereses Ganados (Aumenta saldo)</option>
@@ -1444,7 +1444,7 @@ export default function BankReconciliationModule({
                   type="text"
                   value={adjustmentForm.description}
                   onChange={(e) => setAdjustmentForm({ ...adjustmentForm, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   required
                 />
               </div>
@@ -1456,7 +1456,7 @@ export default function BankReconciliationModule({
                     type="text"
                     value={adjustmentForm.reference}
                     onChange={(e) => setAdjustmentForm({ ...adjustmentForm, reference: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -1467,7 +1467,7 @@ export default function BankReconciliationModule({
                     step="0.01"
                     value={adjustmentForm.amount}
                     onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-[#1b426e]"
                     required
                   />
                 </div>
@@ -1479,7 +1479,7 @@ export default function BankReconciliationModule({
                   type="date"
                   value={adjustmentForm.date}
                   onChange={(e) => setAdjustmentForm({ ...adjustmentForm, date: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
 
@@ -1493,7 +1493,7 @@ export default function BankReconciliationModule({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold cursor-pointer transition shadow-md shadow-[#f6821f]/20"
+                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold cursor-pointer transition shadow-md shadow-[#1b426e]/20"
                 >
                   Registrar y Cotejar
                 </button>
@@ -1548,7 +1548,7 @@ export default function BankReconciliationModule({
                   type="text"
                   value={closeForm.closedBy}
                   onChange={(e) => setCloseForm({ ...closeForm, closedBy: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#1b426e]"
                   required
                 />
               </div>
@@ -1559,7 +1559,7 @@ export default function BankReconciliationModule({
                   rows={2}
                   value={closeForm.notes}
                   onChange={(e) => setCloseForm({ ...closeForm, notes: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
 
@@ -1600,7 +1600,7 @@ export default function BankReconciliationModule({
             {/* Header toolbar */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 print:hidden">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-[#f6821f]" />
+                <FileSpreadsheet className="w-5 h-5 text-[#1b426e]" />
                 <span className="font-bold text-sm text-slate-900">
                   Cédula Oficial de Conciliación Bancaria Mensual
                 </span>
@@ -1628,9 +1628,9 @@ export default function BankReconciliationModule({
             {/* Printable Report Document */}
             <div id="printable-reconciliation-report" className="p-8 overflow-y-auto space-y-6 text-xs text-slate-800 bg-white">
               {/* Document Header */}
-              <div className="border-b-2 border-[#f6821f] pb-4 flex justify-between items-start">
+              <div className="border-b-2 border-[#1b426e] pb-4 flex justify-between items-start">
                 <div>
-                  <h1 className="text-xl font-black text-[#f6821f] tracking-tight">
+                  <h1 className="text-xl font-black text-[#1b426e] tracking-tight">
                     {companySettings.nombre}
                   </h1>
                   <p className="text-slate-600 font-semibold">{companySettings.direccion}</p>
@@ -1763,7 +1763,7 @@ export default function BankReconciliationModule({
                 {/* 5. Saldo según Libros */}
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between font-bold text-sm text-slate-900">
                   <span className="font-sans">(=) SALDO SEGÚN LIBROS CONTABLES</span>
-                  <span className="text-[#f6821f]">{fmt(currentBank?.bookBalance || currentRec.clearedBalance, currentBank?.currency)}</span>
+                  <span className="text-[#1b426e]">{fmt(currentBank?.bookBalance || currentRec.clearedBalance, currentBank?.currency)}</span>
                 </div>
 
                 {/* 6. Diferencia de Auditoría */}

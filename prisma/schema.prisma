@@ -303,6 +303,22 @@ model VendorReturnItem {
   updatedAt      DateTime     @updatedAt
 }
 
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  legalName   String?
+  taxId       String?
+  currency    String   @default("USD")
+  email       String?
+  phone       String?
+  address     String?
+  logoUrl     String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -310,8 +326,12 @@ model User {
   password  String   // Hashed with bcrypt
   role      String   @default("ADMIN") // "SUPER_ADMIN" | "ADMIN" | "USER"
   isActive  Boolean  @default(true)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 model PasswordResetToken {

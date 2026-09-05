@@ -23,36 +23,44 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
 
-    // If user exists and is active, generate token and send email
-    if (user && user.isActive) {
-      const token = generateResetToken();
-      // Token valid for 1 hour
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    if (!user || !user.isActive) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No se encontró ninguna cuenta activa asociada a este correo electrónico.",
+        },
+        { status: 404 }
+      );
+    }
 
-      await createPasswordResetToken(email, token, expiresAt);
+    const token = generateResetToken();
+    // Token valid for 1 hour
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-      // Determine base URL dynamically
-      const origin =
-        request.headers.get("origin") ||
-        request.nextUrl.origin ||
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        "http://localhost:3000";
+    await createPasswordResetToken(email, token, expiresAt);
 
-      const resetUrl = `${origin.replace(/\/+$/, "")}/reset-password?token=${token}`;
+    // Determine base URL dynamically
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "http://localhost:3000";
 
-      // Format expiration time in user-friendly format
-      const expiryFormatted = expiresAt.toLocaleTimeString("es-HN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+    const resetUrl = `${origin.replace(/\/+$/, "")}/reset-password?token=${token}`;
 
-      // Prepare and send email via Resend
-      const apiKey = process.env.RESEND_API_KEY || "re_dummy_key";
-      const resend = new Resend(apiKey);
-      const fromEmail = process.env.CONTACT_FROM_EMAIL || "notifications@indevasa.com";
+    // Format expiration time in user-friendly format
+    const expiryFormatted = expiresAt.toLocaleTimeString("es-HN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
 
-      const emailHtml = `
+    // Prepare and send email via Resend
+    const apiKey = process.env.RESEND_API_KEY || "re_dummy_key";
+    const resend = new Resend(apiKey);
+    const fromEmail = process.env.CONTACT_FROM_EMAIL || "notifications@indevasa.com";
+
+    const emailHtml = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -133,31 +141,32 @@ export async function POST(request: NextRequest) {
   </table>
 </body>
 </html>
-      `;
+    `;
 
-      try {
-        const { error: sendError } = await resend.emails.send({
-          from: `Prado ERP <${fromEmail}>`,
-          to: [email],
-          subject: "Restablecer contraseña - Prado ERP",
-          html: emailHtml,
-        });
+    const { data: emailData, error: sendError } = await resend.emails.send({
+      from: `Prado ERP <${fromEmail}>`,
+      to: [email],
+      subject: "Restablecer contraseña - Prado ERP",
+      html: emailHtml,
+    });
 
-        if (sendError) {
-          console.error("[ForgotPassword] Resend error:", sendError);
-        }
-      } catch (mailErr) {
-        console.error("[ForgotPassword] Mail exception:", mailErr);
-      }
-    } else {
-      console.log(`[ForgotPassword] Request for unregistered/inactive email: ${email}`);
+    if (sendError) {
+      console.error("[ForgotPassword] Resend error:", sendError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Error al enviar correo con Resend: ${sendError.message || "Fallo en el servicio de correo."}`,
+        },
+        { status: 500 }
+      );
     }
 
-    // Always return a generic success message to prevent account enumeration
+    console.log(`[ForgotPassword] Reset email successfully sent to ${email} (ID: ${emailData?.id})`);
+
     return NextResponse.json({
       success: true,
       message:
-        "Si el correo electrónico ingresado está registrado en el sistema, recibirá un enlace con instrucciones para restablecer su contraseña.",
+        "Se ha enviado un enlace con instrucciones para restablecer su contraseña a su correo.",
     });
   } catch (error: unknown) {
     console.error("[ForgotPassword API Error]:", error);

@@ -4,11 +4,14 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public assets, Next.js internals, and login/auth routes
+  // Allow public assets, Next.js internals, and login/auth/recovery routes
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
-    pathname === "/login" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
     pathname === "/favicon.ico" ||
     pathname.includes(".")
   ) {

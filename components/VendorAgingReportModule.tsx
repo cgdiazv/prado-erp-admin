@@ -267,7 +267,7 @@ export default function VendorAgingReportModule({
               <h2 className="text-xl font-bold text-slate-900">
                 Antigüedad de Saldos a Proveedores
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                 Cuentas por Pagar (AP)
               </span>
             </div>
@@ -285,7 +285,7 @@ export default function VendorAgingReportModule({
               className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
               title="Actualizar reporte"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#f6821f]" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#1b426e]" : ""}`} />
               <span className="hidden sm:inline">Refrescar</span>
             </button>
 
@@ -301,7 +301,7 @@ export default function VendorAgingReportModule({
             <button
               type="button"
               onClick={handlePrint}
-              className="px-3.5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir PDF</span>
@@ -330,7 +330,7 @@ export default function VendorAgingReportModule({
             <span className="text-xs font-medium text-slate-500">
               Total Cuentas por Pagar
             </span>
-            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center font-bold text-xs">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
@@ -343,7 +343,7 @@ export default function VendorAgingReportModule({
             <span>{summary?.totalVendors || 0} provs.</span>
             <span>{summary?.totalBills || 0} facturas</span>
           </p>
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
         </div>
 
         {/* Card 2: Corriente (Al día) */}
@@ -400,15 +400,15 @@ export default function VendorAgingReportModule({
             <span className="text-xs font-medium text-slate-500">
               31 a 60 Días
             </span>
-            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#e07216] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#143355] flex items-center justify-center">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#e07216] tracking-tight">
+            <span className="text-2xl font-black text-[#143355] tracking-tight">
               {formatCurrency(summary?.days31to60 || 0)}
             </span>
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-[#e07216]">
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-[#143355]">
               {summary?.days31to60Pct || 0}%
             </span>
           </div>
@@ -525,7 +525,7 @@ export default function VendorAgingReportModule({
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#f6821f] cursor-pointer"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b426e] cursor-pointer"
           >
             <option value="ALL">Todas las monedas</option>
             <option value="USD">USD ($)</option>
@@ -542,7 +542,7 @@ export default function VendorAgingReportModule({
               placeholder="Buscar proveedor o N.º factura..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f6821f] w-64"
+              className="pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e] w-64"
             />
           </div>
 
@@ -606,7 +606,7 @@ export default function VendorAgingReportModule({
                       >
                         <td className="py-3.5 px-4 text-slate-400">
                           {isExpanded ? (
-                            <ChevronDown className="w-4 h-4 text-[#f6821f]" />
+                            <ChevronDown className="w-4 h-4 text-[#1b426e]" />
                           ) : (
                             <ChevronRight className="w-4 h-4" />
                           )}
@@ -670,7 +670,7 @@ export default function VendorAgingReportModule({
                         {/* 31 - 60 days */}
                         <td className="py-3.5 px-4 text-right font-medium text-slate-700">
                           {row.days31to60 > 0 ? (
-                            <span className="text-[#e07216] font-bold">
+                            <span className="text-[#143355] font-bold">
                               {formatCurrency(row.days31to60)}
                             </span>
                           ) : (
@@ -780,7 +780,7 @@ export default function VendorAgingReportModule({
                                                   bill.daysPastDue > 60
                                                     ? "bg-rose-100 text-rose-700"
                                                     : bill.daysPastDue > 30
-                                                    ? "bg-orange-100 text-[#e07216]"
+                                                    ? "bg-orange-100 text-[#143355]"
                                                     : "bg-amber-100 text-amber-800"
                                                 }`}
                                               >
@@ -814,7 +814,7 @@ export default function VendorAgingReportModule({
                                                 onClick={() =>
                                                   onNavigateToPayment(row.vendorName, bill.invoiceNumber)
                                                 }
-                                                className="px-2 py-0.5 rounded bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f6821f] font-bold text-[10px] border border-[#fed7aa] cursor-pointer"
+                                                className="px-2 py-0.5 rounded bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-bold text-[10px] border border-[#fed7aa] cursor-pointer"
                                               >
                                                 Pagar
                                               </button>
@@ -853,7 +853,7 @@ export default function VendorAgingReportModule({
                   <td className="py-3.5 px-4 text-right text-amber-800">
                     {formatCurrency(summary?.days1to30 || 0)}
                   </td>
-                  <td className="py-3.5 px-4 text-right text-[#e07216]">
+                  <td className="py-3.5 px-4 text-right text-[#143355]">
                     {formatCurrency(summary?.days31to60 || 0)}
                   </td>
                   <td className="py-3.5 px-4 text-right text-rose-700">
@@ -876,7 +876,7 @@ export default function VendorAgingReportModule({
       {/* ================= MORA POLICY AND AUDIT FOOTNOTE ================= */}
       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#f6821f]" />
+          <Clock className="w-4 h-4 text-[#1b426e]" />
           <span>
             <b>Política de Crédito Wayne:</b> Pagos a proveedores se rigen según condiciones de crédito (Neto 15, 30 o 60 días).
           </span>

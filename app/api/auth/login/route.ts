@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
+    const rememberMe = Boolean(body.rememberMe);
 
     if (!email || !password) {
       return NextResponse.json(
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7, // 30 days if rememberMe, else 7 days
     });
 
     return response;

@@ -258,7 +258,7 @@ export default function CustomerStatementModule({
             <button
               type="button"
               onClick={() => onNavigateToPayment(statement.customer.name)}
-              className="px-3.5 py-2 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f6821f] border border-[#fed7aa] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+              className="px-3.5 py-2 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] border border-[#fed7aa] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
             >
               <CreditCard className="w-4 h-4" />
               <span>Registrar Cobro</span>
@@ -270,7 +270,7 @@ export default function CustomerStatementModule({
             title="Recargar extracto"
             className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition cursor-pointer shadow-xs"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#f6821f]" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#1b426e]" : ""}`} />
           </button>
           <button
             type="button"
@@ -302,7 +302,7 @@ export default function CustomerStatementModule({
             <select
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#f6821f] cursor-pointer"
+              className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer"
             >
               {availableCustomers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -418,7 +418,7 @@ export default function CustomerStatementModule({
               </p>
               <p className="text-xs text-slate-700 font-semibold">
                 Moneda:{" "}
-                <span className="font-bold text-[#f6821f]">{statement.customer.currency}</span>
+                <span className="font-bold text-[#1b426e]">{statement.customer.currency}</span>
               </p>
             </div>
           </div>
@@ -532,19 +532,19 @@ export default function CustomerStatementModule({
             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">Saldo Final Pendiente</span>
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-[#f6821f] font-mono tracking-tight">
+                <span className="text-2xl font-black text-[#1b426e] font-mono tracking-tight">
                   {formatCurrency(statement.summary.saldoFinal)}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">Monto actual exigible</p>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
             </div>
           </div>
 
@@ -636,7 +636,7 @@ export default function CustomerStatementModule({
                   <td className="py-3 px-3.5 text-right font-mono text-emerald-700">
                     {formatCurrency(statement.summary.totalAbonos)}
                   </td>
-                  <td className="py-3 px-3.5 text-right font-mono text-sm text-[#f6821f] bg-slate-200/60">
+                  <td className="py-3 px-3.5 text-right font-mono text-sm text-[#1b426e] bg-slate-200/60">
                     {formatCurrency(statement.summary.saldoFinal)}
                   </td>
                 </tr>

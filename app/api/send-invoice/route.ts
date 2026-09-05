@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         <tr style="border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 10px; font-size: 12px; color: #64748b; text-align: center;">${idx + 1}</td>
           <td style="padding: 10px; font-size: 12px; color: #0f172a; font-weight: 600;">${line.productName || line.description || "Artículo"}</td>
-          <td style="padding: 10px; font-size: 11px; color: #f6821f; font-family: monospace;">${line.sku || "—"}</td>
+          <td style="padding: 10px; font-size: 11px; color: #1b426e; font-family: monospace;">${line.sku || "—"}</td>
           <td style="padding: 10px; font-size: 12px; color: #334155;">${line.description || "—"}</td>
           <td style="padding: 10px; font-size: 12px; color: #0f172a; text-align: right; font-family: monospace;">${line.quantity || 1}</td>
           <td style="padding: 10px; font-size: 12px; color: #0f172a; text-align: right; font-family: monospace;">${currency} ${(line.rate || 0).toFixed(2)}</td>
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
                     <p style="margin: 4px 0 0 0; font-size: 12px; color: #a7f3d0;">Printing & Packaging de Honduras</p>
                   </td>
                   <td align="right">
-                    <span style="background-color: #f6821f; color: #ffffff; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; text-transform: uppercase;">Factura N.º ${invoiceNumber}</span>
+                    <span style="background-color: #1b426e; color: #ffffff; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; text-transform: uppercase;">Factura N.º ${invoiceNumber}</span>
                   </td>
                 </tr>
               </table>
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
                       </tr>
                       <tr>
                         <td style="font-size: 14px; font-weight: 800; color: #0f172a; padding-top: 8px;">Total a pagar:</td>
-                        <td align="right" style="font-size: 18px; font-weight: 900; color: #f6821f; font-family: monospace; padding-top: 8px;">${currency} ${total.toFixed(2)} ${currency === "$" ? "USD" : "HNL"}</td>
+                        <td align="right" style="font-size: 18px; font-weight: 900; color: #1b426e; font-family: monospace; padding-top: 8px;">${currency} ${total.toFixed(2)} ${currency === "$" ? "USD" : "HNL"}</td>
                       </tr>
                     </table>
                   </td>
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
                 paymentInstructions
                   ? `
               <!-- INSTRUCCIONES DE PAGO -->
-              <div style="background-color: #f8fafc; border-left: 4px solid #f6821f; padding: 12px 16px; border-radius: 4px; margin-bottom: 24px;">
+              <div style="background-color: #f8fafc; border-left: 4px solid #1b426e; padding: 12px 16px; border-radius: 4px; margin-bottom: 24px;">
                 <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #475569; uppercase;">Instrucciones de Pago:</p>
                 <p style="margin: 0; font-size: 12px; color: #1e293b;">${paymentInstructions}</p>
               </div>

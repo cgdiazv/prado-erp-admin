@@ -588,7 +588,7 @@ export default function TaxRetentionsModule({
               <h2 className="text-xl font-bold text-slate-900">
                 Comprobantes de Retención de ISV y Fiscales
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                 SAR Honduras (Cuentas por Pagar)
               </span>
             </div>
@@ -609,7 +609,7 @@ export default function TaxRetentionsModule({
               className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
               title="Actualizar datos"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#f6821f]" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#1b426e]" : ""}`} />
               <span className="hidden sm:inline">Refrescar</span>
             </button>
 
@@ -634,7 +634,7 @@ export default function TaxRetentionsModule({
             <button
               type="button"
               onClick={openCreateModal}
-              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>+ Emitir Retención</span>
@@ -658,7 +658,7 @@ export default function TaxRetentionsModule({
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">Total Retenido (Período)</span>
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                   <Receipt className="w-4 h-4" />
                 </div>
               </div>
@@ -670,7 +670,7 @@ export default function TaxRetentionsModule({
               <p className="text-[11px] text-slate-400 mt-1">
                 Base Imponible Total: <span className="font-semibold text-slate-600">{formatCurrency(metrics.totalBase)}</span>
               </p>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
             </div>
 
             {/* Retenciones ISV */}
@@ -749,7 +749,7 @@ export default function TaxRetentionsModule({
               placeholder="Buscar por N° de comprobante, proveedor o factura..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition"
+              className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition"
             />
             {searchQuery && (
               <button
@@ -771,7 +771,7 @@ export default function TaxRetentionsModule({
               type="month"
               value={monthFilter}
               onChange={(e) => setMonthFilter(e.target.value)}
-              className="px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition"
+              className="px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition"
             />
             {monthFilter && (
               <button
@@ -792,7 +792,7 @@ export default function TaxRetentionsModule({
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition"
+              className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition"
             >
               <option value="ALL">Todos los tipos</option>
               <option value="ISV_1">1% ISV Bienes/Servicios</option>
@@ -807,7 +807,7 @@ export default function TaxRetentionsModule({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition"
+              className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition"
             >
               <option value="ALL">Todos los estados</option>
               <option value="ISSUED">Solo Emitidos</option>
@@ -989,7 +989,7 @@ export default function TaxRetentionsModule({
             {/* Modal Header */}
             <div className="px-6 py-4.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#f6821f] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#1b426e] flex items-center justify-center">
                   <Receipt className="w-5 h-5" />
                 </div>
                 <div>
@@ -1032,7 +1032,7 @@ export default function TaxRetentionsModule({
                       setFormPurchaseInvoiceId("");
                     }}
                     required
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   >
                     <option value="">Seleccione un proveedor...</option>
                     {vendorsList.map((v) => (
@@ -1051,7 +1051,7 @@ export default function TaxRetentionsModule({
                   <select
                     value={formRetentionType}
                     onChange={(e) => handleTypeChange(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white font-medium"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white font-medium"
                   >
                     {RETENTION_TYPES.map((t) => (
                       <option key={t.code} value={t.code}>
@@ -1071,7 +1071,7 @@ export default function TaxRetentionsModule({
                   <select
                     value={formPurchaseInvoiceId}
                     onChange={(e) => handleInvoiceSelect(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   >
                     <option value="">Ninguna factura (Ingreso de montos manual)</option>
                     {vendorInvoices.map((inv) => (
@@ -1103,7 +1103,7 @@ export default function TaxRetentionsModule({
                     value={formBaseAmount}
                     onChange={(e) => setFormBaseAmount(e.target.value === "" ? "" : Number(e.target.value))}
                     required
-                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   />
                 </div>
 
@@ -1122,7 +1122,7 @@ export default function TaxRetentionsModule({
                       setFormRetentionRate(Number(e.target.value) || 0);
                     }}
                     required
-                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   />
                 </div>
 
@@ -1131,7 +1131,7 @@ export default function TaxRetentionsModule({
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Importe Retenido Total
                   </label>
-                  <div className="px-3 py-2 text-xs font-mono font-black text-[#f6821f] bg-orange-50 rounded-xl border border-orange-200 flex items-center justify-between">
+                  <div className="px-3 py-2 text-xs font-mono font-black text-[#1b426e] bg-orange-50 rounded-xl border border-orange-200 flex items-center justify-between">
                     <span>USD / HNL</span>
                     <span className="text-sm">{formatCurrency(formCalculatedRetention)}</span>
                   </div>
@@ -1150,7 +1150,7 @@ export default function TaxRetentionsModule({
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
                     required
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   />
                 </div>
 
@@ -1164,7 +1164,7 @@ export default function TaxRetentionsModule({
                     placeholder="Auto: RET-2026-XXXX"
                     value={formRetentionNumber}
                     onChange={(e) => setFormRetentionNumber(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   />
                 </div>
 
@@ -1177,7 +1177,7 @@ export default function TaxRetentionsModule({
                     type="text"
                     value={formCai}
                     onChange={(e) => setFormCai(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                   />
                 </div>
               </div>
@@ -1192,7 +1192,7 @@ export default function TaxRetentionsModule({
                   placeholder="Ej. Retención de 1% de ISV sobre compra según factura N°..."
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#f6821f] transition bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 focus:border-[#1b426e] transition bg-white"
                 />
               </div>
 
@@ -1233,7 +1233,7 @@ export default function TaxRetentionsModule({
                 <button
                   type="submit"
                   disabled={isSubmittingCreate || formCalculatedRetention <= 0}
-                  className="px-5 py-2 text-xs font-semibold text-white bg-[#f6821f] hover:bg-[#e07115] disabled:opacity-50 rounded-xl transition cursor-pointer shadow-sm shadow-orange-500/20 flex items-center gap-1.5"
+                  className="px-5 py-2 text-xs font-semibold text-white bg-[#1b426e] hover:bg-[#e07115] disabled:opacity-50 rounded-xl transition cursor-pointer shadow-sm shadow-orange-500/20 flex items-center gap-1.5"
                 >
                   {isSubmittingCreate ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1265,7 +1265,7 @@ export default function TaxRetentionsModule({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#f6821f] hover:bg-[#e07115] rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#1b426e] hover:bg-[#e07115] rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Imprimir Comprobante
@@ -1304,7 +1304,7 @@ export default function TaxRetentionsModule({
                     <div className="text-[11px] font-bold text-slate-500 uppercase">
                       Comprobante de Retención
                     </div>
-                    <div className="text-base font-black text-[#f6821f] font-mono tracking-wide mt-0.5">
+                    <div className="text-base font-black text-[#1b426e] font-mono tracking-wide mt-0.5">
                       N.º {selectedRetentionForPrint.retentionNumber}
                     </div>
                     <div className="text-[10px] text-slate-600 font-mono mt-1">
@@ -1398,7 +1398,7 @@ export default function TaxRetentionsModule({
                       <td colSpan={4} className="p-2.5 text-right uppercase text-xs text-slate-700">
                         Total Importe Retenido:
                       </td>
-                      <td className="p-2.5 text-right font-black text-[#f6821f] text-sm font-mono">
+                      <td className="p-2.5 text-right font-black text-[#1b426e] text-sm font-mono">
                         {formatCurrency(selectedRetentionForPrint.retentionAmount)}
                       </td>
                     </tr>
@@ -1541,7 +1541,7 @@ export default function TaxRetentionsModule({
                         {formatCurrency(metrics.totalBase)}
                       </td>
                       <td className="p-3"></td>
-                      <td className="p-3 text-right font-mono font-black text-[#f6821f] text-sm">
+                      <td className="p-3 text-right font-mono font-black text-[#1b426e] text-sm">
                         {formatCurrency(metrics.totalRetained)}
                       </td>
                     </tr>
@@ -1557,7 +1557,7 @@ export default function TaxRetentionsModule({
               </span>
               <button
                 onClick={handleExportSARCSV}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#f6821f] hover:bg-[#e07115] rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#1b426e] hover:bg-[#e07115] rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Download className="w-4 h-4" />
                 Descargar Reporte CSV

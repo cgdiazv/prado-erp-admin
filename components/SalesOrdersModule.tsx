@@ -637,7 +637,7 @@ export default function SalesOrdersModule({
               <h2 className="text-xl font-bold text-slate-900">
                 Historial de Pedidos de Venta
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                 Ciclo Comercial y Almacén
               </span>
             </div>
@@ -653,14 +653,14 @@ export default function SalesOrdersModule({
               disabled={refreshing}
               className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#f6821f]" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#1b426e]" : ""}`} />
               <span>Actualizar</span>
             </button>
 
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07116] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#e07116] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 transition cursor-pointer"
             >
               <span className="text-sm leading-none">+</span>
               <span>Nuevo Pedido de Venta</span>
@@ -693,7 +693,7 @@ export default function SalesOrdersModule({
                   {metrics.totalCount} pedidos registrados
                 </span>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f6821f]">
+              <div className="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#1b426e]">
                 <ShoppingBag className="w-6 h-6" />
               </div>
             </div>
@@ -766,7 +766,7 @@ export default function SalesOrdersModule({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por N.º pedido, O.C. cliente o artículo..."
-              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] transition"
+              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] transition"
             />
           </div>
 
@@ -978,7 +978,7 @@ export default function SalesOrdersModule({
           <div className="bg-white rounded-3xl max-w-4xl w-full border border-slate-200 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95">
             <div className="p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#fff7ed] border border-orange-200 flex items-center justify-center text-[#f6821f]">
+                <div className="w-10 h-10 rounded-2xl bg-[#fff7ed] border border-orange-200 flex items-center justify-center text-[#1b426e]">
                   <PackageCheck className="w-5 h-5" />
                 </div>
                 <div>
@@ -1013,7 +1013,7 @@ export default function SalesOrdersModule({
                     value={formData.orderNumber}
                     onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -1027,7 +1027,7 @@ export default function SalesOrdersModule({
                     value={formData.customerPoNumber}
                     onChange={(e) => setFormData({ ...formData, customerPoNumber: e.target.value })}
                     placeholder="Ej. OC-CERV-2026-891"
-                    className="w-full px-3 py-2 bg-white border border-orange-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-white border border-orange-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -1041,7 +1041,7 @@ export default function SalesOrdersModule({
                     value={formData.quoteNumber}
                     onChange={(e) => setFormData({ ...formData, quoteNumber: e.target.value })}
                     placeholder="Ej. COT-2026-0001"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -1057,7 +1057,7 @@ export default function SalesOrdersModule({
                       onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                       required
                       placeholder="Nombre o empresa del cliente"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
                     />
                     {customers.length > 0 && (
                       <select
@@ -1066,7 +1066,7 @@ export default function SalesOrdersModule({
                           if (cust) handleSelectCustomer(cust);
                         }}
                         value={formData.customerId}
-                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-[#f6821f] max-w-[150px]"
+                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-[#1b426e] max-w-[150px]"
                       >
                         <option value="">Elegir de lista...</option>
                         {customers.map((c) => (
@@ -1087,7 +1087,7 @@ export default function SalesOrdersModule({
                     value={formData.customerRtn}
                     onChange={(e) => setFormData({ ...formData, customerRtn: e.target.value })}
                     placeholder="05019000000000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -1098,7 +1098,7 @@ export default function SalesOrdersModule({
                     type="date"
                     value={formData.orderDate}
                     onChange={(e) => setFormData({ ...formData, orderDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -1111,7 +1111,7 @@ export default function SalesOrdersModule({
                     type="date"
                     value={formData.expectedDeliveryDate}
                     onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
 
@@ -1121,7 +1121,7 @@ export default function SalesOrdersModule({
                   <select
                     value={formData.warehouse}
                     onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   >
                     <option value="Bodega Principal Zip Búfalo">Bodega Principal Zip Búfalo</option>
                     <option value="Bodega de Producto Terminado Planta 1">Bodega de Producto Terminado Planta 1</option>
@@ -1141,7 +1141,7 @@ export default function SalesOrdersModule({
                     onClick={handleAddItem}
                     className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#f6821f]" />
+                    <Plus className="w-3.5 h-3.5 text-[#1b426e]" />
                     <span>Agregar Ítem</span>
                   </button>
                 </div>
@@ -1168,7 +1168,7 @@ export default function SalesOrdersModule({
                               onChange={(e) => handleItemChange(idx, "productName", e.target.value)}
                               placeholder="Nombre del producto"
                               required
-                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
                             />
                             {inventory.length > 0 && (
                               <select
@@ -1193,7 +1193,7 @@ export default function SalesOrdersModule({
                               value={it.description || ""}
                               onChange={(e) => handleItemChange(idx, "description", e.target.value)}
                               placeholder="Especificaciones o arte"
-                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -1203,7 +1203,7 @@ export default function SalesOrdersModule({
                               step="any"
                               value={it.quantityOrdered}
                               onChange={(e) => handleItemChange(idx, "quantityOrdered", e.target.value)}
-                              className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="py-2 px-3 text-right">
@@ -1213,7 +1213,7 @@ export default function SalesOrdersModule({
                               step="any"
                               value={it.rate}
                               onChange={(e) => handleItemChange(idx, "rate", e.target.value)}
-                              className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                              className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right text-slate-800 focus:outline-none focus:border-[#1b426e]"
                             />
                           </td>
                           <td className="py-2 px-3 text-right font-black text-slate-900 font-mono">
@@ -1249,7 +1249,7 @@ export default function SalesOrdersModule({
                       value={formData.shippingNotes}
                       onChange={(e) => setFormData({ ...formData, shippingNotes: e.target.value })}
                       placeholder="Empaque, paletizado, horarios de entrega..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#1b426e]"
                     />
                   </div>
                   <div>
@@ -1259,7 +1259,7 @@ export default function SalesOrdersModule({
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="Comentarios de ventas o crédito..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#f6821f]"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#1b426e]"
                     />
                   </div>
                 </div>
@@ -1326,7 +1326,7 @@ export default function SalesOrdersModule({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07116] text-white text-xs font-bold shadow-md shadow-orange-500/20 transition cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#e07116] text-white text-xs font-bold shadow-md shadow-orange-500/20 transition cursor-pointer"
                 >
                   {formData.id ? "Guardar Cambios" : "Confirmar y Crear Pedido"}
                 </button>

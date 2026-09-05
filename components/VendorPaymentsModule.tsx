@@ -516,7 +516,7 @@ export default function VendorPaymentsModule({
               <h2 className="text-xl font-bold text-slate-900">
                 Pagos a Proveedores
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                 Cuentas por Pagar (AP)
               </span>
             </div>
@@ -537,14 +537,14 @@ export default function VendorPaymentsModule({
               className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
               title="Actualizar datos"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#f6821f]" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#1b426e]" : ""}`} />
               <span className="hidden sm:inline">Refrescar</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleOpenCreateModal()}
-              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>+ Registrar Pago / Abono</span>
@@ -568,7 +568,7 @@ export default function VendorPaymentsModule({
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">Total Desembolsado (Período)</span>
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                   <DollarSign className="w-4 h-4" />
                 </div>
               </div>
@@ -580,7 +580,7 @@ export default function VendorPaymentsModule({
               <p className="text-[11px] text-slate-400 mt-1">
                 {metrics.countActive} pagos activos aplicados
               </p>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
             </div>
 
             {/* Transferencias ACH */}
@@ -654,7 +654,7 @@ export default function VendorPaymentsModule({
               placeholder="Buscar por N° pago, proveedor, cheque, factura..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#f6821f] transition"
+              className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#1b426e] transition"
             />
           </div>
 
@@ -663,7 +663,7 @@ export default function VendorPaymentsModule({
             <select
               value={selectedVendorFilter}
               onChange={(e) => setSelectedVendorFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#f6821f] font-medium text-slate-700"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#1b426e] font-medium text-slate-700"
             >
               <option value="ALL">Todos los proveedores</option>
               {vendors.map((v) => (
@@ -679,7 +679,7 @@ export default function VendorPaymentsModule({
             <select
               value={selectedStatusFilter}
               onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#f6821f] font-medium text-slate-700"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#1b426e] font-medium text-slate-700"
             >
               <option value="ALL">Todos los estados</option>
               <option value="APLICADO">Aplicados</option>
@@ -694,14 +694,14 @@ export default function VendorPaymentsModule({
               value={dateFromFilter}
               onChange={(e) => setDateFromFilter(e.target.value)}
               title="Fecha inicial"
-              className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#f6821f] text-slate-700"
+              className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#1b426e] text-slate-700"
             />
             <input
               type="date"
               value={dateToFilter}
               onChange={(e) => setDateToFilter(e.target.value)}
               title="Fecha final"
-              className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#f6821f] text-slate-700"
+              className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#1b426e] text-slate-700"
             />
           </div>
         </div>
@@ -717,7 +717,7 @@ export default function VendorPaymentsModule({
                 setDateFromFilter("");
                 setDateToFilter("");
               }}
-              className="text-[11px] font-bold text-[#f6821f] hover:underline cursor-pointer"
+              className="text-[11px] font-bold text-[#1b426e] hover:underline cursor-pointer"
             >
               Limpiar todos los filtros
             </button>
@@ -760,7 +760,7 @@ export default function VendorPaymentsModule({
             <button
               type="button"
               onClick={() => handleOpenCreateModal()}
-              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold inline-flex items-center gap-1.5 transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold inline-flex items-center gap-1.5 transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Registrar primer pago</span>
@@ -942,7 +942,7 @@ export default function VendorPaymentsModule({
                       setSelectedVendorId(found?.id || "");
                       loadVendorPendingInvoices(vName);
                     }}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#f6821f] font-medium"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] font-medium"
                   >
                     <option value="">-- Selecciona un proveedor --</option>
                     {vendors.map((v) => (
@@ -961,7 +961,7 @@ export default function VendorPaymentsModule({
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#f6821f] text-slate-800"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
                   />
                 </div>
               </div>
@@ -975,7 +975,7 @@ export default function VendorPaymentsModule({
                   <select
                     value={selectedBankAccountId}
                     onChange={(e) => setSelectedBankAccountId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#f6821f] text-xs"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-xs"
                   >
                     {bankAccounts.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -995,7 +995,7 @@ export default function VendorPaymentsModule({
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#f6821f] text-xs font-medium"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-xs font-medium"
                   >
                     <option value="Transferencia Bancaria">Transferencia Bancaria (ACH)</option>
                     <option value="Cheque">Cheque Corporativo</option>
@@ -1013,7 +1013,7 @@ export default function VendorPaymentsModule({
                     placeholder="Ej. TRF-88401 o CHQ-1049"
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#f6821f]"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e]"
                   />
                 </div>
               </div>
@@ -1022,7 +1022,7 @@ export default function VendorPaymentsModule({
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-[#f6821f]" />
+                    <Layers className="w-3.5 h-3.5 text-[#1b426e]" />
                     <span>Facturas Pendientes de Pago ({pendingInvoices.length})</span>
                   </h3>
                   {pendingInvoices.length > 0 && (
@@ -1038,7 +1038,7 @@ export default function VendorPaymentsModule({
                           }))
                         );
                       }}
-                      className="text-[11px] font-bold text-[#f6821f] hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-[#1b426e] hover:underline cursor-pointer"
                     >
                       {pendingInvoices.every((i) => i.isSelected) ? "Deseleccionar todas" : "Seleccionar todas"}
                     </button>
@@ -1095,7 +1095,7 @@ export default function VendorPaymentsModule({
                                   type="checkbox"
                                   checked={inv.isSelected}
                                   onChange={() => toggleSelectInvoice(inv.id)}
-                                  className="w-4 h-4 rounded text-[#f6821f] focus:ring-[#f6821f] border-slate-300 cursor-pointer"
+                                  className="w-4 h-4 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer"
                                 />
                               </td>
                               <td className="py-2 px-3 font-mono font-bold text-slate-900">
@@ -1125,7 +1125,7 @@ export default function VendorPaymentsModule({
                                     max={inv.balanceDue}
                                     value={inv.amountToPay}
                                     onChange={(e) => updateInvoiceAmount(inv.id, parseFloat(e.target.value) || 0)}
-                                    className="w-24 px-2 py-1 text-right text-xs font-bold text-slate-900 rounded-lg border border-slate-300 focus:outline-none focus:border-[#f6821f]"
+                                    className="w-24 px-2 py-1 text-right text-xs font-bold text-slate-900 rounded-lg border border-slate-300 focus:outline-none focus:border-[#1b426e]"
                                   />
                                 </div>
                               </td>
@@ -1148,7 +1148,7 @@ export default function VendorPaymentsModule({
                   placeholder="Ej. Pago de factura correspondiente al lote de tintas flexográficas..."
                   value={paymentNotes}
                   onChange={(e) => setPaymentNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#f6821f]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e]"
                 />
               </div>
 
@@ -1184,7 +1184,7 @@ export default function VendorPaymentsModule({
                 type="button"
                 onClick={handleSavePayment}
                 disabled={creating || totalAmountToPay <= 0}
-                className="px-5 py-2.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-xs disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-xs disabled:opacity-50"
               >
                 {creating ? (
                   <>
@@ -1225,7 +1225,7 @@ export default function VendorPaymentsModule({
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                  className="px-3 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Imprimir / PDF</span>

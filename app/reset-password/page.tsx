@@ -195,13 +195,13 @@ function ResetPasswordForm() {
       </button>
 
       <div className="pt-4 text-center">
-        <Link
+        <a
           href="/login"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#1b426e] transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Cancelar y volver al inicio
-        </Link>
+        </a>
       </div>
     </form>
   );
@@ -239,11 +239,6 @@ export default function ResetPasswordPage() {
           <ResetPasswordForm />
         </Suspense>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-400">
-            Prado ERP • Acceso seguro administrativo
-          </p>
-        </div>
       </div>
     </div>
   );

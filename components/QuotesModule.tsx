@@ -953,7 +953,7 @@ export default function QuotesModule({
               <h2 className="text-xl font-bold text-slate-900">
                 Historial de Cotizaciones
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#f6821f] border border-[#ffedd5]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
                 Ciclo Comercial de Ventas
               </span>
             </div>
@@ -985,7 +985,7 @@ export default function QuotesModule({
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="px-4 py-2 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#f6821f]/20 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
             >
               <span className="text-sm leading-none">+</span>
               <span>Crear cotización</span>
@@ -1010,7 +1010,7 @@ export default function QuotesModule({
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">Total Cotizado</span>
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f6821f] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
                   <DollarSign className="w-4 h-4" />
                 </div>
               </div>
@@ -1022,7 +1022,7 @@ export default function QuotesModule({
               <p className="text-[11px] text-slate-400 mt-1">
                 {quotes.length} cotizaciones generadas
               </p>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f6821f]" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
             </div>
 
             {/* Total Aprobado */}
@@ -1095,7 +1095,7 @@ export default function QuotesModule({
             placeholder="Buscar por N.º, cliente o producto..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#f6821f]/30 focus:border-[#f6821f] transition"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] transition"
           />
         </div>
 
@@ -1113,7 +1113,7 @@ export default function QuotesModule({
               onClick={() => setStatusFilter(tab.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition cursor-pointer ${
                 statusFilter === tab.id
-                  ? "bg-[#fff7ed] text-[#f6821f] font-semibold border border-[#ffedd5]"
+                  ? "bg-[#fff7ed] text-[#1b426e] font-semibold border border-[#ffedd5]"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -1245,7 +1245,7 @@ export default function QuotesModule({
                               className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg transition shadow-2xs cursor-pointer"
                               title="Convertir esta cotización en un Pedido de Venta para Almacén"
                             >
-                              <PackageCheck className="w-3.5 h-3.5 text-[#f6821f]" />
+                              <PackageCheck className="w-3.5 h-3.5 text-[#1b426e]" />
                               Pedido
                             </button>
                           )}
@@ -1350,7 +1350,7 @@ export default function QuotesModule({
                     onClick={() => setActiveEditorTab(tab)}
                     className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer ${
                       activeEditorTab === tab
-                        ? "bg-[#fff7ed] text-[#f6821f] border border-[#f6821f]/30"
+                        ? "bg-[#fff7ed] text-[#1b426e] border border-[#1b426e]/30"
                         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                     }`}
                   >
@@ -1396,7 +1396,7 @@ export default function QuotesModule({
                     </div>
 
                     <div className="text-right sm:w-72 space-y-2">
-                      <div className="inline-block px-3 py-1 bg-[#fff7ed] border border-[#ffedd5] text-[#f6821f] font-bold text-xs rounded-lg uppercase tracking-wider">
+                      <div className="inline-block px-3 py-1 bg-[#fff7ed] border border-[#ffedd5] text-[#1b426e] font-bold text-xs rounded-lg uppercase tracking-wider">
                         Cotización Comercial
                       </div>
                       <div>
@@ -1408,7 +1408,7 @@ export default function QuotesModule({
                           required
                           value={formData.quoteNumber}
                           onChange={(e) => setFormData({ ...formData, quoteNumber: e.target.value })}
-                          className="w-full px-3 py-1.5 text-right font-mono font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-[#f6821f]"
+                          className="w-full px-3 py-1.5 text-right font-mono font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-[#1b426e]"
                         />
                       </div>
                     </div>
@@ -1429,7 +1429,7 @@ export default function QuotesModule({
                         <select
                           value={formData.customerId}
                           onChange={(e) => handleCustomerSelect(e.target.value)}
-                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f6821f]/30 focus:border-[#f6821f]"
+                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e]"
                         >
                           <option value="">-- Seleccionar de catálogo existente --</option>
                           {customers.map((c) => (
@@ -1450,7 +1450,7 @@ export default function QuotesModule({
                           placeholder="Nombre completo del cliente..."
                           value={formData.customerName}
                           onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl font-bold text-slate-900 focus:border-[#f6821f]"
+                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl font-bold text-slate-900 focus:border-[#1b426e]"
                         />
                       </div>
 
@@ -1464,7 +1464,7 @@ export default function QuotesModule({
                             placeholder="0501..."
                             value={formData.customerRtn}
                             onChange={(e) => setFormData({ ...formData, customerRtn: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           />
                         </div>
                         <div>
@@ -1476,7 +1476,7 @@ export default function QuotesModule({
                             placeholder="+504..."
                             value={formData.customerPhone}
                             onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           />
                         </div>
                       </div>
@@ -1491,7 +1491,7 @@ export default function QuotesModule({
                             placeholder="correo@empresa.hn"
                             value={formData.customerEmail}
                             onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           />
                         </div>
                         <div>
@@ -1503,7 +1503,7 @@ export default function QuotesModule({
                             placeholder="Ciudad, parque industrial..."
                             value={formData.customerAddress}
                             onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           />
                         </div>
                       </div>
@@ -1525,7 +1525,7 @@ export default function QuotesModule({
                             required
                             value={formData.quoteDate}
                             onChange={(e) => setFormData({ ...formData, quoteDate: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           />
                         </div>
                         <div>
@@ -1537,7 +1537,7 @@ export default function QuotesModule({
                             required
                             value={formData.validUntil}
                             onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           />
                         </div>
                       </div>
@@ -1550,7 +1550,7 @@ export default function QuotesModule({
                           <select
                             value={formData.paymentTerms}
                             onChange={(e) => setFormData({ ...formData, paymentTerms: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           >
                             <option value="Contado">Contado</option>
                             <option value="Neto 15 días">Neto 15 días</option>
@@ -1566,7 +1566,7 @@ export default function QuotesModule({
                           <select
                             value={formData.currency}
                             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           >
                             <option value="USD">USD ($ - Dólar Estadounidense)</option>
                             <option value="HNL">HNL (L - Lempira Hondureño)</option>
@@ -1589,7 +1589,7 @@ export default function QuotesModule({
                                 salesRepName: rep ? rep.name : "",
                               });
                             }}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           >
                             <option value="">-- Sin asignar --</option>
                             {salesReps.map((r) => (
@@ -1606,7 +1606,7 @@ export default function QuotesModule({
                           <select
                             value={formData.status}
                             onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#f6821f]"
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           >
                             <option value="Borrador">Borrador</option>
                             <option value="Enviada">Enviada al Cliente</option>
@@ -1653,7 +1653,7 @@ export default function QuotesModule({
                                   required
                                   value={line.productName}
                                   onChange={(e) => handleLineChange(idx, "productName", e.target.value)}
-                                  className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:border-[#f6821f] mb-1"
+                                  className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:border-[#1b426e] mb-1"
                                 />
                                 {inventory.length > 0 && (
                                   <select
@@ -1671,7 +1671,7 @@ export default function QuotesModule({
                                 )}
                               </td>
 
-                              <td className="p-3 font-mono text-[11px] text-[#f6821f] font-semibold">
+                              <td className="p-3 font-mono text-[11px] text-[#1b426e] font-semibold">
                                 {line.sku || "—"}
                               </td>
 
@@ -1681,7 +1681,7 @@ export default function QuotesModule({
                                   placeholder="Especificaciones (tintas, sustrato, acabado)..."
                                   value={line.description || ""}
                                   onChange={(e) => handleLineChange(idx, "description", e.target.value)}
-                                  className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:border-[#f6821f]"
+                                  className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:border-[#1b426e]"
                                 />
                               </td>
 
@@ -1692,7 +1692,7 @@ export default function QuotesModule({
                                   step="any"
                                   value={line.quantity}
                                   onChange={(e) => handleLineChange(idx, "quantity", e.target.value)}
-                                  className="w-16 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#f6821f]"
+                                  className="w-16 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
                                 />
                               </td>
 
@@ -1703,7 +1703,7 @@ export default function QuotesModule({
                                   step="0.01"
                                   value={line.rate}
                                   onChange={(e) => handleLineChange(idx, "rate", e.target.value)}
-                                  className="w-24 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#f6821f]"
+                                  className="w-24 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
                                 />
                               </td>
 
@@ -1750,7 +1750,7 @@ export default function QuotesModule({
                           rows={3}
                           value={formData.termsConditions || ""}
                           onChange={(e) => setFormData({ ...formData, termsConditions: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#f6821f]"
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#1b426e]"
                         />
                       </div>
 
@@ -1762,7 +1762,7 @@ export default function QuotesModule({
                           rows={2}
                           value={formData.notes || ""}
                           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#f6821f]"
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#1b426e]"
                         />
                       </div>
 
@@ -1812,7 +1812,7 @@ export default function QuotesModule({
                             step="0.01"
                             value={formData.discount}
                             onChange={(e) => setFormData({ ...formData, discount: Number(e.target.value) })}
-                            className="w-24 px-2 py-1 text-right text-xs bg-white border border-slate-300 rounded-lg focus:border-[#f6821f]"
+                            className="w-24 px-2 py-1 text-right text-xs bg-white border border-slate-300 rounded-lg focus:border-[#1b426e]"
                           />
                         </div>
 
@@ -1843,7 +1843,7 @@ export default function QuotesModule({
                         <div className="border-t border-slate-300 pt-3">
                           <div className="flex justify-between items-center py-2 px-3 bg-slate-200 border border-slate-300 text-slate-900 rounded-xl shadow-xs">
                             <span className="font-black text-xs uppercase tracking-wider text-slate-700">Total Cotización:</span>
-                            <span className="font-mono font-black text-xl text-[#f6821f]">
+                            <span className="font-mono font-black text-xl text-[#1b426e]">
                               ${formCalculations.total.toFixed(2)} <span className="text-xs font-normal text-slate-600">{formData.currency}</span>
                             </span>
                           </div>
@@ -1874,9 +1874,9 @@ export default function QuotesModule({
                       Es un placer saludarle de parte de <strong>Wayne Trademark Printing and Packaging de Honduras S. de R.L.</strong> Adjunto encontrará la cotización formal <strong>{formData.quoteNumber}</strong> con la propuesta y detalle de precios para su requerimiento.
                     </p>
 
-                    <div className="my-4 p-4 rounded-xl bg-[#fff7ed] border border-[#f6821f]/30 flex justify-between items-center">
+                    <div className="my-4 p-4 rounded-xl bg-[#fff7ed] border border-[#1b426e]/30 flex justify-between items-center">
                       <div>
-                        <span className="text-xs font-bold text-[#f6821f] block uppercase tracking-wider">Monto Total Cotizado</span>
+                        <span className="text-xs font-bold text-[#1b426e] block uppercase tracking-wider">Monto Total Cotizado</span>
                         <span className="text-2xl font-black text-slate-900">
                           ${formCalculations.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {formData.currency}
                         </span>
@@ -2191,14 +2191,14 @@ export default function QuotesModule({
                 <button
                   type="button"
                   onClick={() => handleSaveQuote(false)}
-                  className="px-4 py-2 rounded-l-lg bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-xs transition cursor-pointer"
+                  className="px-4 py-2 rounded-l-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition cursor-pointer"
                 >
                   Guardar
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowQuoteSaveDropdown(!showQuoteSaveDropdown)}
-                  className="px-2.5 py-2 rounded-r-lg bg-[#e07216] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
+                  className="px-2.5 py-2 rounded-r-lg bg-[#143355] hover:bg-[#d06512] text-white border-l border-white/20 transition cursor-pointer flex items-center justify-center"
                 >
                   <svg
                     className={`w-3.5 h-3.5 transition-transform ${showQuoteSaveDropdown ? "rotate-180" : "rotate-0"}`}
@@ -2218,7 +2218,7 @@ export default function QuotesModule({
                         setShowQuoteSaveDropdown(false);
                         handleSaveQuote(true);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                     >
                       Guardar y cerrar
                     </button>
@@ -2228,7 +2228,7 @@ export default function QuotesModule({
                         setShowQuoteSaveDropdown(false);
                         handleSaveAndNewQuote();
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                     >
                       Guardar y crear nueva
                     </button>
@@ -2276,7 +2276,7 @@ export default function QuotesModule({
                         setShowQuoteSendDropdown(false);
                         setActiveEditorTab("Vista de PDF");
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                     >
                       Vista previa PDF
                     </button>
@@ -2286,7 +2286,7 @@ export default function QuotesModule({
                         setShowQuoteSendDropdown(false);
                         setActiveEditorTab("Vista de correo electrónico");
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#f6821f] font-semibold transition cursor-pointer"
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer"
                     >
                       Vista previa correo
                     </button>
@@ -2392,11 +2392,11 @@ export default function QuotesModule({
           {/* Header de herramientas */}
           <div className="w-full max-w-[8.5in] mb-4 flex items-center justify-between bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-xl no-print shrink-0">
             <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-[#f6821f]" />
+              <Printer className="w-4 h-4 text-[#1b426e]" />
               <span className="text-xs font-bold text-slate-800">
                 Vista Previa de Impresión / PDF
               </span>
-              <span className="text-[11px] font-bold text-[#f6821f] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
+              <span className="text-[11px] font-bold text-[#1b426e] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
                 8.5&quot; × 11&quot; Carta
               </span>
               <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
@@ -2407,7 +2407,7 @@ export default function QuotesModule({
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#f6821f] hover:bg-[#e06f12] rounded-xl transition cursor-pointer shadow-md shadow-[#f6821f]/20"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#1b426e] hover:bg-[#e06f12] rounded-xl transition cursor-pointer shadow-md shadow-[#1b426e]/20"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Imprimir / Guardar PDF</span>
