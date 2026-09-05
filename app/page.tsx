@@ -297,6 +297,7 @@ export default function AdminDashboard() {
     total: number;
     status: string;
     paymentTerms?: string;
+    customerEmail?: string;
     lines?: Array<{
       id: string;
       serviceDate: string;
@@ -308,74 +309,7 @@ export default function AdminDashboard() {
       rate: number;
       amount: number;
     }>;
-  }>>([
-    {
-      num: "1001",
-      date: "2026-09-03",
-      customer: "Textiles Búfalo S.A.",
-      due: "2026-10-03",
-      total: 12500,
-      status: "Pendiente",
-      paymentTerms: "Neto 30",
-      lines: [
-        {
-          id: "line-1001-1",
-          serviceDate: "2026-09-03",
-          productId: "",
-          productName: "Impresión Flexográfica Cajas Corrugadas Búfalo",
-          sku: "SKU-104928",
-          description: "Cajas de cartón corrugado impresas a 4 tintas alta resistencia",
-          quantity: 5000,
-          rate: 2.50,
-          amount: 12500,
-        },
-      ],
-    },
-    {
-      num: "1000",
-      date: "2026-09-01",
-      customer: "Empaques del Norte S. de R.L.",
-      due: "2026-09-15",
-      total: 4850,
-      status: "Cobrada",
-      paymentTerms: "Neto 15",
-      lines: [
-        {
-          id: "line-1000-1",
-          serviceDate: "2026-09-01",
-          productId: "",
-          productName: "Bobinas de Polietileno Impreso de Alta Densidad",
-          sku: "LAM-POL-050",
-          description: "Rollos de polietileno impreso para empaque industrial",
-          quantity: 1000,
-          rate: 4.85,
-          amount: 4850,
-        },
-      ],
-    },
-    {
-      num: "0999",
-      date: "2026-08-28",
-      customer: "Confecciones Gildan Búfalo",
-      due: "2026-09-28",
-      total: 8720,
-      status: "Cobrada",
-      paymentTerms: "Neto 30",
-      lines: [
-        {
-          id: "line-0999-1",
-          serviceDate: "2026-08-28",
-          productId: "",
-          productName: "Etiquetas y Cajas Personalizadas Gildan Exportación",
-          sku: "ETQ-GIL-01",
-          description: "Etiquetas térmicas y empaques para exportación textil",
-          quantity: 4000,
-          rate: 2.18,
-          amount: 8720,
-        },
-      ],
-    },
-  ]);
+  }>>([]);
 
   const loadPurchaseOrders = async () => {
     try {
@@ -734,6 +668,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteProduct = async () => {
+    if (!editingProduct) return;
+    if (
+      !confirm(
+        `¿Eliminar el artículo "${editingProduct.description || editingProduct.sku}"? Esta acción no se puede deshacer.`
+      )
+    )
+      return;
+    setModalLoading(true);
+    setModalError("");
+    try {
+      const res = await fetch(`/api/inventory/${editingProduct.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Error al eliminar artículo de inventario");
+      }
+      setInventory((prev) => prev.filter((item) => item.id !== editingProduct.id));
+      setModalSuccess("¡Artículo de inventario eliminado!");
+      setTimeout(() => {
+        setActiveModal(null);
+        setEditingProduct(null);
+        setModalSuccess("");
+      }, 1000);
+    } catch (err: any) {
+      setModalError(err.message || "Error al eliminar artículo de inventario");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
 
   const paymentFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -808,12 +772,7 @@ export default function AdminDashboard() {
   const handleImportInvoiceData = (numToSearch: string) => {
     if (!numToSearch || !numToSearch.trim()) return;
     const query = numToSearch.trim().toLowerCase();
-    const availableInvoices = [
-      { num: "1001", date: "2026-09-03", customer: "Textiles Búfalo S.A.", email: "compras@textilesbufalo.com", due: "2026-10-03", total: 12500, status: "Pendiente" },
-      { num: "1000", date: "2026-09-01", customer: "Empaques del Norte S. de R.L.", email: "facturacion@empaquesnorte.hn", due: "2026-09-15", total: 4850, status: "Cobrada" },
-      { num: "0999", date: "2026-08-28", customer: "Confecciones Gildan Búfalo", email: "ap@gildanbufalo.com", due: "2026-09-28", total: 8720, status: "Cobrada" },
-    ];
-    const match = availableInvoices.find(
+    const match = invoicesList.find(
       (i) => i.num.toLowerCase().includes(query) || i.customer.toLowerCase().includes(query)
     );
     if (match) {
@@ -824,7 +783,7 @@ export default function AdminDashboard() {
         ...prev,
         customerId: foundCustomer ? foundCustomer.id : "",
         customerName: match.customer,
-        customerEmail: match.email || foundCustomer?.email || "",
+        customerEmail: match.customerEmail || foundCustomer?.email || "",
         amount: match.total,
         referenceNumber: `FAC-${match.num}`,
         note: `Pago asignado a la Factura N.º ${match.num}`,
@@ -1784,7 +1743,7 @@ export default function AdminDashboard() {
     return {
       monedaPrincipal: "USD ($) Dólar estadounidense",
       multidivisa: "Activado (USD, HNL)",
-      bancoPrincipal: "Banco Ficohsa (Cuenta de cheques empresarial USD)",
+      bancoPrincipal: "Ninguno indicado",
       transferenciasAch: "Habilitadas",
     };
   });
@@ -1828,18 +1787,9 @@ export default function AdminDashboard() {
   const [importNotification, setImportNotification] = useState<string>("");
   const [isImporting, setIsImporting] = useState<boolean>(false);
 
-  const [productCategoriesList, setProductCategoriesList] = useState<string[]>([
-    "Empaque e Impresión Flexográfica",
-    "Etiquetas y Adhesivos Industriales",
-    "Cartón Corrugado y Cajas",
-    "Suministros y Materiales de Producción",
-  ]);
+  const [productCategoriesList, setProductCategoriesList] = useState<string[]>([]);
 
-  const [physicalLocationsList, setPhysicalLocationsList] = useState<{ id: string; name: string; address: string }[]>([
-    { id: "1", name: "Planta Principal Zip Búfalo", address: "Zip Búfalo Edificio 1B, Villanueva, Cortés" },
-    { id: "2", name: "Oficina Comercial San Pedro Sula", address: "Barrio los Andes, 7 Calle NO, San Pedro Sula" },
-    { id: "3", name: "Bodega de Distribución Central", address: "Km 5 Carretera a Puerto Cortés" },
-  ]);
+  const [physicalLocationsList, setPhysicalLocationsList] = useState<{ id: string; name: string; address: string }[]>([]);
 
   const [paymentMethodsList, setPaymentMethodsList] = useState<{ id: string; name: string; type: string }[]>([
     { id: "1", name: "Efectivo Disponible", type: "Efectivo" },
@@ -1855,17 +1805,9 @@ export default function AdminDashboard() {
     { id: "4", name: "Neto 60 Días", days: 60 },
   ]);
 
-  const [recurringTransactionsList, setRecurringTransactionsList] = useState<{ id: string; name: string; type: string; frequency: string; amount: number }[]>([
-    { id: "1", name: "Alquiler Mensual Planta Zip Búfalo", type: "Gasto", frequency: "Mensual", amount: 4500.00 },
-    { id: "2", name: "Servicios Públicos e Internet", type: "Gasto", frequency: "Mensual", amount: 850.00 },
-    { id: "3", name: "Facturación Recurrente Cliente Búfalo", type: "Ingreso", frequency: "Mensual", amount: 12500.00 },
-  ]);
+  const [recurringTransactionsList, setRecurringTransactionsList] = useState<{ id: string; name: string; type: string; frequency: string; amount: number }[]>([]);
 
-  const [accountingClassesList, setAccountingClassesList] = useState<{ id: string; name: string; description: string }[]>([
-    { id: "1", name: "Línea Flexografía", description: "Impresiones flexográficas de alta velocidad" },
-    { id: "2", name: "Línea Offset & Embalaje", description: "Cajas y empaques de cartón rígido" },
-    { id: "3", name: "Administración & Ventas", description: "Gastos operativos administrativos" },
-  ]);
+  const [accountingClassesList, setAccountingClassesList] = useState<{ id: string; name: string; description: string }[]>([]);
 
   const [editingConfigKey, setEditingConfigKey] = useState<string | null>(null);
   const [editingConfigLabel, setEditingConfigLabel] = useState<string>("");
@@ -1997,7 +1939,7 @@ export default function AdminDashboard() {
   });
 
   const [invoiceForm, setInvoiceForm] = useState({
-    invoiceNumber: "1001",
+    invoiceNumber: "",
     customerId: "",
     customerName: "",
     customerEmail: "",
@@ -2017,24 +1959,22 @@ export default function AdminDashboard() {
     isExempt: false,
     status: "Pendiente",
     paymentTerms: "Neto 30",
-    invoiceDate: "2026-09-03",
-    dueDate: "2026-10-03",
-    paymentInstructions: "Realizar depósito o transferencia ACH a Banco Ficohsa en USD / HNL.",
-    customerNote: "Gracias por elegir a Wayne Trademark Printing & Packaging.",
-    statementNote: "Factura emitida por Wayne Trademark Honduras.",
-    lines: [
-      {
-        id: "line-1",
-        serviceDate: "2026-09-03",
-        productId: "",
-        productName: "Impresión Flexográfica Cajas Corrugadas Búfalo",
-        sku: "SKU-104928",
-        description: "Cajas de cartón corrugado impresas a 4 tintas alta resistencia",
-        quantity: 5000,
-        rate: 2.50,
-        amount: 12500.00,
-      },
-    ],
+    invoiceDate: new Date().toISOString().split("T")[0],
+    dueDate: "",
+    paymentInstructions: "",
+    customerNote: "",
+    statementNote: "",
+    lines: [] as Array<{
+      id: string;
+      serviceDate: string;
+      productId: string;
+      productName: string;
+      sku: string;
+      description: string;
+      quantity: number;
+      rate: number;
+      amount: number;
+    }>,
   });
 
   const invoiceCurrencySymbol = invoiceForm.currency || defaultCurrencySymbol;
@@ -2221,9 +2161,9 @@ export default function AdminDashboard() {
         customerId: matchedCust ? matchedCust.id : "",
         customerName: invoiceToEdit.customer || "",
         customerEmail: invoiceToEdit.email || matchedCust?.email || "",
-        customerAddress: matchedCust?.address || "Parque Industrial Zip Búfalo, Villanueva",
+        customerAddress: matchedCust?.address || "",
         deliveredTo: invoiceToEdit.customer || "",
-        deliveryAddress: matchedCust?.address || "Misma dirección fiscal",
+        deliveryAddress: matchedCust?.address || "",
         currency: "USD",
         status: invoiceToEdit.status || "Pendiente",
         discount: 0,
@@ -2239,9 +2179,9 @@ export default function AdminDashboard() {
         paymentTerms: invoiceToEdit.paymentTerms || "Neto 30",
         invoiceDate: invoiceToEdit.date || new Date().toISOString().split("T")[0],
         dueDate: invoiceToEdit.due || new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
-        paymentInstructions: "Realizar depósito o transferencia ACH a Banco Ficohsa en USD / HNL.",
-        customerNote: "Gracias por elegir a Wayne Trademark Printing & Packaging.",
-        statementNote: "Factura emitida por Wayne Trademark Honduras.",
+        paymentInstructions: "",
+        customerNote: "",
+        statementNote: "",
         lines: invoiceLines,
       });
     } else {
@@ -2270,9 +2210,9 @@ export default function AdminDashboard() {
         paymentTerms: "Neto 30",
         invoiceDate: new Date().toISOString().split("T")[0],
         dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
-        paymentInstructions: "Realizar depósito o transferencia ACH a Banco Ficohsa en USD / HNL.",
-        customerNote: "Gracias por elegir a Wayne Trademark Printing & Packaging.",
-        statementNote: "Factura emitida por Wayne Trademark Honduras.",
+        paymentInstructions: "",
+        customerNote: "",
+        statementNote: "",
         lines: [
           {
             id: `line-${Date.now()}`,
@@ -3280,8 +3220,8 @@ export default function AdminDashboard() {
 
   // Depósito Bancario Full-Page State
   const [depositForm, setDepositForm] = useState({
-    account: "1002 - Banco Ficohsa USD",
-    accountBalance: 45200.00,
+    account: "",
+    accountBalance: 0,
     date: new Date().toISOString().split("T")[0],
     currency: "USD",
     memo: "",
@@ -3302,8 +3242,8 @@ export default function AdminDashboard() {
       setPreviousDepositView(currentView);
     }
     setDepositForm({
-      account: "1002 - Banco Ficohsa USD",
-      accountBalance: 45200.00,
+      account: "",
+      accountBalance: 0,
       date: new Date().toISOString().split("T")[0],
       currency: "USD",
       memo: "",
@@ -3474,8 +3414,8 @@ export default function AdminDashboard() {
         setDepositSuccessMsg("");
         if (createAnother) {
           setDepositForm({
-            account: "1002 - Banco Ficohsa USD",
-            accountBalance: 45200.00,
+            account: "",
+            accountBalance: 0,
             date: new Date().toISOString().split("T")[0],
             currency: "USD",
             memo: "",
@@ -4073,63 +4013,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const defaultSampleInventory: InventoryItem[] = [
-    {
-      id: "prod-1",
-      sku: "SKU-104928",
-      description: "Tinta Flexográfica Violeta Búfalo 20L",
-      quantity: 150,
-      cost: 45.0,
-      price: 85.0,
-      trackingType: "LOT",
-      lots: [
-        {
-          id: "lot-1",
-          inventoryItemId: "prod-1",
-          lotNumber: "LOT-2026-08A",
-          quantity: 100,
-          manufactureDate: "2026-08-01",
-          expirationDate: "2027-08-01",
-          notes: "Lote de alta viscosidad",
-        },
-        {
-          id: "lot-2",
-          inventoryItemId: "prod-1",
-          lotNumber: "LOT-2026-05B",
-          quantity: 50,
-          manufactureDate: "2026-05-10",
-          expirationDate: "2026-10-10",
-          notes: "Lote por vencer en 30 días",
-        },
-      ],
-    },
-    {
-      id: "prod-2",
-      sku: "SKU-209412",
-      description: "Impresora Industrial de Etiquetas Zebra ZT411",
-      quantity: 3,
-      cost: 1200.0,
-      price: 1850.0,
-      trackingType: "SERIAL",
-      serials: [
-        { id: "ser-1", inventoryItemId: "prod-2", serialNumber: "SN-ZB-99401", status: "DISPONIBLE" },
-        { id: "ser-2", inventoryItemId: "prod-2", serialNumber: "SN-ZB-99402", status: "DISPONIBLE" },
-        { id: "ser-3", inventoryItemId: "prod-2", serialNumber: "SN-ZB-99403", status: "DISPONIBLE" },
-        { id: "ser-4", inventoryItemId: "prod-2", serialNumber: "SN-ZB-99398", status: "VENDIDO" },
-      ],
-    },
-    {
-      id: "prod-3",
-      sku: "SKU-301928",
-      description: "Caja de Cartón Corrugado Búfalo 40x30x30",
-      quantity: 2500,
-      cost: 0.85,
-      price: 2.10,
-      trackingType: "NONE",
-    },
-  ];
-
-  const [inventory, setInventory] = useState<InventoryItem[]>(defaultSampleInventory);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   // Fetch all live data from Next.js API routes
   const loadDashboardData = async () => {
@@ -4152,18 +4036,14 @@ export default function AdminDashboard() {
       if (cusRes.success) setCustomers(cusRes.data || []);
       if (venRes.success) setVendors(venRes.data || []);
       if (invRes.success) {
-        if (Array.isArray(invRes.data) && invRes.data.length > 0) {
-          setInventory(invRes.data);
-        } else {
-          setInventory(defaultSampleInventory);
-        }
+        setInventory(Array.isArray(invRes.data) ? invRes.data : []);
       }
 
       if (bankRes.success) setConnectedBanks(bankRes.data || []);
       if (txRes.success) setBankTransactions(txRes.data || []);
       if (ruleRes.success) setAutomationRules(ruleRes.data || []);
       if (noteRes && noteRes.success) setCreditDebitNotes(noteRes.data || []);
-      if (invcRes && invcRes.success && Array.isArray(invcRes.data) && invcRes.data.length > 0) {
+      if (invcRes && invcRes.success && Array.isArray(invcRes.data)) {
         setInvoicesList(
           invcRes.data.map((inv: any) => ({
             num: inv.invoiceNumber,
@@ -4173,6 +4053,7 @@ export default function AdminDashboard() {
             total: inv.total,
             status: inv.status,
             paymentTerms: inv.paymentTerms,
+            customerEmail: inv.customerEmail || "",
             lines: inv.lines || [],
           }))
         );
@@ -12540,11 +12421,7 @@ export default function AdminDashboard() {
                                 const bankOptions =
                                   connectedBanks.length > 0
                                     ? connectedBanks.map((b) => `${b.name} (${b.accountNumber}) ${b.currency}`)
-                                    : [
-                                        "Banco Ficohsa (•••• 2266) USD",
-                                        "BAC Credomatic (•••• 8810) USD",
-                                        "Banco Atlántida (•••• 4105) HNL",
-                                      ];
+                                    : ["Ninguna cuenta bancaria conectada"];
                                 setParamEditModal({
                                   title: "Banco Operativo",
                                   label: "Banco de operaciones principal",
@@ -15478,10 +15355,14 @@ export default function AdminDashboard() {
                         Instrucciones de Pago / Depósito Bancario
                       </span>
                       <p className="text-slate-600 text-[11px]">
-                        <strong>Banco Ficohsa (USD):</strong> Cta. 001-201-12345678 • <strong>BAC Credomatic (HNL):</strong> Cta. 741-258-9630
+                        {connectedBanks.length > 0 ? (
+                          connectedBanks.map((b) => `${b.name} (${b.currency}): ${b.accountNumber}`).join(" • ")
+                        ) : (
+                          "Consultar cuentas autorizadas con contabilidad."
+                        )}
                       </p>
                       <p className="text-slate-500 text-[10px] mt-0.5">
-                        Beneficiario: WAYNE TRADEMARK DE HONDURAS S. DE R.L. • RTN: {companySettings.taxId || "05019008183490"}
+                        Beneficiario: {companySettings.nombreLegal || companySettings.nombre || "Empresa"} {companySettings.taxId ? `• RTN: ${companySettings.taxId}` : ""}
                       </p>
                     </div>
                   )}
@@ -16310,10 +16191,14 @@ export default function AdminDashboard() {
                                 Instrucciones de Pago / Depósito Bancario
                               </span>
                               <p className="text-slate-600 text-[11px]">
-                                <strong>Banco Ficohsa (USD):</strong> Cta. 001-201-12345678 • <strong>BAC Credomatic (HNL):</strong> Cta. 741-258-9630
+                                {connectedBanks.length > 0 ? (
+                                  connectedBanks.map((b) => `${b.name} (${b.currency}): ${b.accountNumber}`).join(" • ")
+                                ) : (
+                                  "Consultar cuentas autorizadas con contabilidad."
+                                )}
                               </p>
                               <p className="text-slate-500 text-[10px] mt-0.5">
-                                Beneficiario: WAYNE TRADEMARK DE HONDURAS S. DE R.L. • RTN: {companySettings.taxId || "05019008183490"}
+                                Beneficiario: {companySettings.nombreLegal || companySettings.nombre || "Empresa"} {companySettings.taxId ? `• RTN: ${companySettings.taxId}` : ""}
                               </p>
                             </div>
                           )}
@@ -17956,8 +17841,12 @@ export default function AdminDashboard() {
                             onChange={(e) => setDepositForm({ ...depositForm, account: e.target.value })}
                             className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                           >
-                            <option value="1002 - Banco Ficohsa USD">1002 - Banco Ficohsa USD</option>
-                            <option value="1001 - Banco Atlántida HNL">1001 - Banco Atlántida HNL</option>
+                            <option value="">-- Seleccionar Cuenta --</option>
+                            {connectedBanks.map((b) => (
+                              <option key={b.id} value={`${b.name} (${b.accountNumber}) ${b.currency}`}>
+                                {b.name} ({b.accountNumber}) {b.currency}
+                              </option>
+                            ))}
                             <option value="1000 - Caja General y Efectivo">1000 - Caja General y Efectivo</option>
                           </select>
                         </div>
@@ -19508,11 +19397,7 @@ export default function AdminDashboard() {
                     <div className="pt-2">
                       <span className="text-[11px] font-semibold text-slate-500 mb-2 block uppercase tracking-wider">Facturas Disponibles:</span>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {[
-                          { num: "1001", date: "2026-09-03", customer: "Textiles Búfalo S.A.", due: "2026-10-03", total: 12500, status: "Pendiente" },
-                          { num: "1000", date: "2026-09-01", customer: "Empaques del Norte S. de R.L.", due: "2026-09-15", total: 4850, status: "Cobrada" },
-                          { num: "0999", date: "2026-08-28", customer: "Confecciones Gildan Búfalo", due: "2026-09-28", total: 8720, status: "Cobrada" },
-                        ]
+                        {invoicesList
                           .filter((inv) =>
                             !searchInvoiceNumber ||
                             inv.num.includes(searchInvoiceNumber) ||
@@ -20196,13 +20081,13 @@ export default function AdminDashboard() {
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Proveedor *</label>
                     <select
-                      defaultValue={selectedPurchaseOrder?.vendor || "Insumos Flexográficos S.A."}
+                      defaultValue={selectedPurchaseOrder?.vendor || ""}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-medium"
                     >
-                      <option value="Insumos Flexográficos S.A.">Insumos Flexográficos S.A.</option>
-                      <option value="Papelera Hondureña">Papelera Hondureña</option>
-                      <option value="Químicos Industriales S.A.">Químicos Industriales S.A.</option>
-                      <option value="Empaques Especializados Búfalo">Empaques Especializados Búfalo</option>
+                      <option value="">-- Seleccionar Proveedor --</option>
+                      {vendors.map((v) => (
+                        <option key={v.id} value={v.name}>{v.name}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -20384,24 +20269,34 @@ export default function AdminDashboard() {
                   </div>
 
 
-                  <div className="pt-2 flex justify-end gap-2">
+                  <div className="pt-2 flex justify-between items-center">
                     <button
                       type="button"
-                      onClick={() => {
-                        setActiveModal(null);
-                        setEditingProduct(null);
-                      }}
-                      className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
+                      onClick={handleDeleteProduct}
                       disabled={modalLoading}
-                      className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
+                      className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold cursor-pointer border border-red-200 transition disabled:opacity-50"
                     >
-                      {modalLoading ? "Guardando..." : "Guardar cambios"}
+                      Eliminar
                     </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveModal(null);
+                          setEditingProduct(null);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={modalLoading}
+                        className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer shadow-md shadow-[#1b426e]/20 disabled:opacity-50"
+                      >
+                        {modalLoading ? "Guardando..." : "Guardar cambios"}
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
