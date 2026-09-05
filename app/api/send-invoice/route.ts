@@ -27,11 +27,11 @@ export async function POST(req: NextRequest) {
       where: { id: companyId },
     }).catch(() => null);
 
-    const compName = comp?.nombreLegal || comp?.nombre || "Wayne Trademark";
-    const compSlogan = comp?.sector || "Printing & Packaging de Honduras";
-    const compEmail = comp?.email || "sac@waynetrademarkhn.com";
-    const compAddress = comp?.direccion || "ZIP Búfalo, Nave 12, Villanueva, Cortés, Honduras";
-    const compPhone = comp?.telefono || "+504 2550-0000";
+    const compName = comp?.nombreLegal || comp?.nombre || "Empresa";
+    const compSlogan = comp?.sector || "Comercio y Servicios";
+    const compEmail = comp?.email || "notificaciones@pradocommerce.com";
+    const compAddress = comp?.direccion || "";
+    const compPhone = comp?.telefono || "";
 
     if (!to || typeof to !== "string" || !to.includes("@")) {
       return NextResponse.json(

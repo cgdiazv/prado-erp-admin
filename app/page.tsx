@@ -1341,20 +1341,20 @@ export default function AdminDashboard() {
       .then((res) => {
         if (res.success && res.data) {
           setCompanySettings({
-            nombre: res.data.nombre || "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
-            direccion: res.data.direccion || "ZIP Búfalo, Villanueva, Cortés 21100",
-            email: res.data.email || "contabilidad@waynetrademarkhn.com",
-            telefono: res.data.telefono || "+50494522666",
+            nombre: res.data.nombre ?? "",
+            direccion: res.data.direccion ?? "",
+            email: res.data.email ?? "",
+            telefono: res.data.telefono ?? "",
             sitioWeb: res.data.sitioWeb || "Ninguno indicado",
-            sector: res.data.sector || "Manufactura y Producción Industrial (Manufacturing)",
-            nombreLegal: res.data.nombreLegal || "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
-            taxId: res.data.taxId || "05019008183490",
+            sector: res.data.sector || "General",
+            nombreLegal: res.data.nombreLegal ?? "",
+            taxId: res.data.taxId ?? "",
             cai: res.data.cai || "Ninguno indicado",
             rangoAutorizado: res.data.rangoAutorizado || "Ninguno indicado",
             fechaLimiteEmision: res.data.fechaLimiteEmision || "Ninguno indicado",
-            tipoEmpresa: res.data.tipoEmpresa || "Sociedad anónima (pequeña empresa) con dos o más propietarios",
-            domicilioLegal: res.data.domicilioLegal || "Zip Búfalo Edificio 1B, Villanueva, Cortés 21101",
-            emailCliente: res.data.emailCliente || "contabilidad@waynetrademarkhn.com",
+            tipoEmpresa: res.data.tipoEmpresa || "Ninguno indicado",
+            domicilioLegal: res.data.domicilioLegal ?? "",
+            emailCliente: res.data.emailCliente ?? "",
             direccionCliente: res.data.direccionCliente || "Ninguno indicado",
             contadorNombre: res.data.contadorNombre || "",
             contadorTitulo: res.data.contadorTitulo || "Contador General",
@@ -1526,22 +1526,22 @@ export default function AdminDashboard() {
   >("empresa");
 
   const [companySettings, setCompanySettings] = useState({
-    nombre: "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
-    direccion: "ZIP Búfalo, Villanueva, Cortés 21100",
-    email: "contabilidad@waynetrademarkhn.com",
-    telefono: "+50494522666",
+    nombre: "",
+    direccion: "",
+    email: "",
+    telefono: "",
     sitioWeb: "Ninguno indicado",
-    sector: "Manufactura y Producción Industrial (Manufacturing)",
+    sector: "General",
     // Legal
-    nombreLegal: "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
-    taxId: "05019008183490",
+    nombreLegal: "",
+    taxId: "",
     cai: "Ninguno indicado",
     rangoAutorizado: "Ninguno indicado",
     fechaLimiteEmision: "Ninguno indicado",
-    tipoEmpresa: "Sociedad anónima (pequeña empresa) con dos o más propietarios",
-    domicilioLegal: "Zip Búfalo Edificio 1B, Villanueva, Cortés 21101",
+    tipoEmpresa: "Ninguno indicado",
+    domicilioLegal: "",
     // Contacto del cliente
-    emailCliente: "contabilidad@waynetrademarkhn.com",
+    emailCliente: "",
     direccionCliente: "Ninguno indicado",
     // Información del Contador General
     contadorNombre: "",
@@ -7385,6 +7385,7 @@ export default function AdminDashboard() {
               onBackToDashboard={() => setCurrentView("dashboard")}
               connectedBanks={connectedBanks}
               accounts={accounts}
+              companySettings={companySettings}
             />
           )}
 
@@ -9587,6 +9588,7 @@ export default function AdminDashboard() {
           {/* ================= VIEW: ANTIGÜEDAD DE SALDOS (AGING CLIENTES) ================= */}
           {currentView === "antiguedad-saldos" && (
             <CustomerAgingReportModule
+              companySettings={companySettings}
               onBack={() => setCurrentView("reportes")}
               onNavigateToInvoice={(invNum) => {
                 setCurrentView("lista-facturas");
@@ -9605,6 +9607,7 @@ export default function AdminDashboard() {
           {/* ================= VIEW: ANTIGÜEDAD DE SALDOS (AGING PROVEEDORES) ================= */}
           {currentView === "antiguedad-saldos-proveedores" && (
             <VendorAgingReportModule
+              companySettings={companySettings}
               onBack={() => setCurrentView("proveedores")}
               onNavigateToPayment={(vendorName) => {
                 openPagarProveedorView(vendorName);
@@ -9669,6 +9672,7 @@ export default function AdminDashboard() {
                 openRecibirPagoView(found?.id);
               }}
               formatCurrency={formatCurrency}
+              companySettings={companySettings}
             />
           )}
 
@@ -9817,7 +9821,9 @@ export default function AdminDashboard() {
                         <div className="divide-y divide-slate-100 text-xs">
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Nombre</span>
-                            <span className="flex-1 text-slate-700 font-medium">{companySettings.nombre}</span>
+                            <span className={`flex-1 font-medium ${!companySettings.nombre || companySettings.nombre === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.nombre || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("nombre", "Nombre de la empresa")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -9828,7 +9834,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Dirección</span>
-                            <span className="flex-1 text-slate-700 font-medium whitespace-pre-line">{companySettings.direccion}</span>
+                            <span className={`flex-1 font-medium whitespace-pre-line ${!companySettings.direccion || companySettings.direccion === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.direccion || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("direccion", "Dirección de la empresa")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -9839,7 +9847,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Correo electrónico</span>
-                            <span className="flex-1 text-slate-700 font-medium">{companySettings.email}</span>
+                            <span className={`flex-1 font-medium ${!companySettings.email || companySettings.email === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.email || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("email", "Correo electrónico")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -9850,7 +9860,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Teléfono</span>
-                            <span className="flex-1 text-slate-700 font-medium font-mono">{companySettings.telefono}</span>
+                            <span className={`flex-1 font-medium font-mono ${!companySettings.telefono || companySettings.telefono === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.telefono || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("telefono", "Teléfono de contacto")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -9861,8 +9873,8 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Sitio web</span>
-                            <span className={`flex-1 font-medium ${companySettings.sitioWeb === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
-                              {companySettings.sitioWeb}
+                            <span className={`flex-1 font-medium ${!companySettings.sitioWeb || companySettings.sitioWeb === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.sitioWeb || "Ninguno indicado"}
                             </span>
                             <button
                               onClick={() => startEditConfig("sitioWeb", "Sitio web")}
@@ -9959,7 +9971,9 @@ export default function AdminDashboard() {
                         <div className="divide-y divide-slate-100 text-xs">
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Nombre legal de la empresa</span>
-                            <span className="flex-1 text-slate-700 font-medium">{companySettings.nombreLegal}</span>
+                            <span className={`flex-1 font-medium ${!companySettings.nombreLegal || companySettings.nombreLegal === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.nombreLegal || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("nombreLegal", "Nombre legal")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10012,7 +10026,9 @@ export default function AdminDashboard() {
                           ) : (
                             <div className="py-3 flex items-start justify-between gap-4">
                               <span className="w-40 font-semibold text-slate-800 shrink-0">Tipo de empresa</span>
-                              <span className="flex-1 text-slate-700 font-medium">{companySettings.tipoEmpresa}</span>
+                              <span className={`flex-1 font-medium ${!companySettings.tipoEmpresa || companySettings.tipoEmpresa === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                {companySettings.tipoEmpresa || "Ninguno indicado"}
+                              </span>
                               <button
                                 onClick={() => startEditConfig("tipoEmpresa", "Tipo de empresa")}
                                 className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10024,7 +10040,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Domicilio legal</span>
-                            <span className="flex-1 text-slate-700 font-medium whitespace-pre-line">{companySettings.domicilioLegal}</span>
+                            <span className={`flex-1 font-medium whitespace-pre-line ${!companySettings.domicilioLegal || companySettings.domicilioLegal === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.domicilioLegal || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("domicilioLegal", "Domicilio legal")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10035,7 +10053,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">RTN / TAX ID No.</span>
-                            <span className="flex-1 text-slate-700 font-mono font-medium">{companySettings.taxId}</span>
+                            <span className={`flex-1 font-mono font-medium ${!companySettings.taxId || companySettings.taxId === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.taxId || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("taxId", "Número de Identificación Fiscal (RTN / TAX ID No.)")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10046,7 +10066,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">CAI</span>
-                            <span className="flex-1 text-slate-700 font-mono font-medium">{companySettings.cai}</span>
+                            <span className={`flex-1 font-mono font-medium ${!companySettings.cai || companySettings.cai === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.cai || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("cai", "Código de Autorización de Impresión (CAI)")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10057,7 +10079,9 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Rango Autorizado</span>
-                            <span className="flex-1 text-slate-700 font-mono font-medium">{companySettings.rangoAutorizado}</span>
+                            <span className={`flex-1 font-mono font-medium ${!companySettings.rangoAutorizado || companySettings.rangoAutorizado === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.rangoAutorizado || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("rangoAutorizado", "Rango de Facturación Autorizado")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10068,7 +10092,7 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Fecha Límite de Emisión</span>
-                            <span className="flex-1 text-slate-700 font-mono font-medium">
+                            <span className={`flex-1 font-mono font-medium ${!companySettings.fechaLimiteEmision || companySettings.fechaLimiteEmision === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
                               {formatFechaLimite(companySettings.fechaLimiteEmision)}
                             </span>
                             <button
@@ -10091,7 +10115,9 @@ export default function AdminDashboard() {
                         <div className="divide-y divide-slate-100 text-xs">
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Correo electrónico del cliente</span>
-                            <span className="flex-1 text-slate-700 font-medium">{companySettings.emailCliente}</span>
+                            <span className={`flex-1 font-medium ${!companySettings.emailCliente || companySettings.emailCliente === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.emailCliente || "Ninguno indicado"}
+                            </span>
                             <button
                               onClick={() => startEditConfig("emailCliente", "Correo de contacto del cliente")}
                               className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
@@ -10102,8 +10128,8 @@ export default function AdminDashboard() {
 
                           <div className="py-3 flex items-start justify-between gap-4">
                             <span className="w-40 font-semibold text-slate-800 shrink-0">Dirección del cliente</span>
-                            <span className={`flex-1 font-medium ${companySettings.direccionCliente === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
-                              {companySettings.direccionCliente}
+                            <span className={`flex-1 font-medium ${!companySettings.direccionCliente || companySettings.direccionCliente === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                              {companySettings.direccionCliente || "Ninguno indicado"}
                             </span>
                             <button
                               onClick={() => startEditConfig("direccionCliente", "Dirección del cliente")}
@@ -13645,7 +13671,7 @@ export default function AdminDashboard() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
                   <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
                     <h3 className="text-base font-bold text-slate-900 mb-1">Editar {editingConfigLabel}</h3>
-                    <p className="text-xs text-slate-500 mb-4">Actualiza la información oficial de Wayne Trademark Honduras.</p>
+                    <p className="text-xs text-slate-500 mb-4">Actualiza la información oficial de la empresa.</p>
 
                     <div className="mb-5">
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">{editingConfigLabel}</label>
@@ -13836,6 +13862,7 @@ export default function AdminDashboard() {
           {currentView === "cotizaciones" && (
             <div className="animate-in fade-in duration-150 p-6">
               <QuotesModule
+                companySettings={companySettings}
                 customers={customers}
                 inventory={inventory}
                 salesReps={salesReps}

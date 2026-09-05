@@ -1246,13 +1246,13 @@ export default function VendorPaymentsModule({
               <div className="flex justify-between items-start border-b border-slate-200 pb-4">
                 <div>
                   <h2 className="text-base font-black text-slate-900 tracking-tight">
-                    {companySettings?.nombreLegal || "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL"}
+                    {companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}
                   </h2>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    RTN: {companySettings?.taxId || "05019008183490"} | {companySettings?.direccion || "ZIP Búfalo, Villanueva, Cortés"}
+                    {companySettings?.taxId ? `RTN: ${companySettings.taxId} • ` : ""}{companySettings?.direccion || ""}
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    Tel: {companySettings?.telefono || "+504 9452-2666"} | {companySettings?.email || "contabilidad@waynetrademarkhn.com"}
+                    {[companySettings?.telefono ? `Tel: ${companySettings.telefono}` : "", companySettings?.email].filter(Boolean).join(" | ")}
                   </p>
                 </div>
                 <div className="text-right">

@@ -1386,10 +1386,10 @@ export default function SalesOrdersModule({
               <div className="flex justify-between items-start pb-4 border-b border-slate-200">
                 <div>
                   <h3 className="font-black text-slate-900 text-sm tracking-wide">
-                    WAYNE TRADEMARK DE HONDURAS, S.A.
+                    {companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Zip Búfalo, Edificio 1B, Villanueva, Cortés • Tel: +504 2516-4300
+                    {[companySettings?.direccion, companySettings?.telefono ? `Tel: ${companySettings.telefono}` : ""].filter(Boolean).join(" • ")}
                   </p>
                   <p className="text-xs font-semibold text-orange-600 mt-1">
                     HOJA DE DESPACHO Y CONTROL DE ALMACÉN (PACKING SLIP)

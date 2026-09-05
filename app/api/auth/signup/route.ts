@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { sendWelcomeEmail } from "@/lib/welcomeEmail";
 
 export async function POST(request: NextRequest) {
   try {
@@ -99,6 +100,22 @@ export async function POST(request: NextRequest) {
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    // Send welcome email via Resend from notifications@pradocommerce.com
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://pradocommerce.com";
+
+    sendWelcomeEmail({
+      to: email,
+      companyName,
+      companyId,
+      origin,
+    }).catch((err) => {
+      console.error("[Signup Welcome Email Failed]:", err);
     });
 
     return response;

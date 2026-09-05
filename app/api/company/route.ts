@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
-const DEFAULT_COMPANY_DATA = {
+const WAYNE_COMPANY_DATA = {
   id: "default",
   nombre: "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
   direccion: "ZIP Búfalo, Villanueva, Cortés 21100",
@@ -19,7 +19,29 @@ const DEFAULT_COMPANY_DATA = {
   domicilioLegal: "Zip Búfalo Edificio 1B, Villanueva, Cortés 21101",
   emailCliente: "contabilidad@waynetrademarkhn.com",
   direccionCliente: "Ninguno indicado",
-  // Información del Contador General
+  contadorNombre: "",
+  contadorTitulo: "Contador General",
+  contadorColegiacion: "Ninguno indicado",
+  contadorTelefono: "Ninguno indicado",
+  contadorEmail: "Ninguno indicado",
+};
+
+const BLANK_COMPANY_DATA = {
+  nombre: "",
+  direccion: "",
+  email: "",
+  telefono: "",
+  sitioWeb: "Ninguno indicado",
+  sector: "General",
+  nombreLegal: "",
+  taxId: "",
+  cai: "Ninguno indicado",
+  rangoAutorizado: "Ninguno indicado",
+  fechaLimiteEmision: "Ninguno indicado",
+  tipoEmpresa: "Ninguno indicado",
+  domicilioLegal: "",
+  emailCliente: "",
+  direccionCliente: "Ninguno indicado",
   contadorNombre: "",
   contadorTitulo: "Contador General",
   contadorColegiacion: "Ninguno indicado",
@@ -42,20 +64,36 @@ export async function GET(request: NextRequest) {
         where: { id: companyId },
       });
 
-      const initialName = companyRecord?.name || (companyId === "default" ? DEFAULT_COMPANY_DATA.nombre : "Mi Empresa");
-      const initialLegal = companyRecord?.legalName || initialName;
+      if (companyId === "default") {
+        settings = await prisma.companySettings.create({
+          data: {
+            ...WAYNE_COMPANY_DATA,
+            id: companyId,
+            nombre: companyRecord?.name && companyRecord.name !== "Ninguno indicado" ? companyRecord.name : WAYNE_COMPANY_DATA.nombre,
+            nombreLegal: companyRecord?.legalName && companyRecord.legalName !== "Ninguno indicado" ? companyRecord.legalName : WAYNE_COMPANY_DATA.nombreLegal,
+            email: companyRecord?.email && companyRecord.email !== "Ninguno indicado" ? companyRecord.email : WAYNE_COMPANY_DATA.email,
+            telefono: companyRecord?.phone && companyRecord.phone !== "Ninguno indicado" ? companyRecord.phone : WAYNE_COMPANY_DATA.telefono,
+            direccion: companyRecord?.address && companyRecord.address !== "Ninguno indicado" ? companyRecord.address : WAYNE_COMPANY_DATA.direccion,
+          },
+        });
+      } else {
+        const initialName = companyRecord?.name || "Mi Empresa";
+        const initialLegal = companyRecord?.legalName || initialName;
 
-      settings = await prisma.companySettings.create({
-        data: {
-          ...DEFAULT_COMPANY_DATA,
-          id: companyId,
-          nombre: initialName,
-          nombreLegal: initialLegal,
-          email: companyRecord?.email || DEFAULT_COMPANY_DATA.email,
-          telefono: companyRecord?.phone || DEFAULT_COMPANY_DATA.telefono,
-          direccion: companyRecord?.address || DEFAULT_COMPANY_DATA.direccion,
-        },
-      });
+        settings = await prisma.companySettings.create({
+          data: {
+            ...BLANK_COMPANY_DATA,
+            id: companyId,
+            nombre: initialName,
+            nombreLegal: initialLegal,
+            email: companyRecord?.email || "",
+            telefono: companyRecord?.phone || "",
+            direccion: companyRecord?.address || "",
+            taxId: companyRecord?.taxId || "",
+            cai: companyRecord?.cai || "Ninguno indicado",
+          },
+        });
+      }
     }
 
     return NextResponse.json({ success: true, data: settings });
@@ -105,11 +143,16 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    const defaultCreate = companyId === "default" ? WAYNE_COMPANY_DATA : {
+      ...BLANK_COMPANY_DATA,
+      id: companyId,
+    };
+
     const settings = await prisma.companySettings.upsert({
       where: { id: companyId },
       update: updateData,
       create: {
-        ...DEFAULT_COMPANY_DATA,
+        ...defaultCreate,
         id: companyId,
         ...updateData,
       },
@@ -119,13 +162,13 @@ export async function PUT(request: NextRequest) {
     await prisma.company.updateMany({
       where: { id: companyId },
       data: {
-        ...(updateData.nombre ? { name: updateData.nombre } : {}),
-        ...(updateData.nombreLegal ? { legalName: updateData.nombreLegal } : {}),
-        ...(updateData.taxId ? { taxId: updateData.taxId } : {}),
-        ...(updateData.cai ? { cai: updateData.cai } : {}),
-        ...(updateData.email ? { email: updateData.email } : {}),
-        ...(updateData.telefono ? { phone: updateData.telefono } : {}),
-        ...(updateData.direccion ? { address: updateData.direccion } : {}),
+        ...(updateData.nombre !== undefined ? { name: updateData.nombre || "Mi Empresa" } : {}),
+        ...(updateData.nombreLegal !== undefined ? { legalName: updateData.nombreLegal || "" } : {}),
+        ...(updateData.taxId !== undefined ? { taxId: updateData.taxId || "" } : {}),
+        ...(updateData.cai !== undefined ? { cai: updateData.cai || null } : {}),
+        ...(updateData.email !== undefined ? { email: updateData.email || "" } : {}),
+        ...(updateData.telefono !== undefined ? { phone: updateData.telefono || "" } : {}),
+        ...(updateData.direccion !== undefined ? { address: updateData.direccion || "" } : {}),
         ...(updateData.logoUrl !== undefined ? { logoUrl: updateData.logoUrl } : {}),
       },
     });

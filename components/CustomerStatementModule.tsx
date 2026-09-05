@@ -81,6 +81,15 @@ interface CustomerStatementProps {
   onNavigateToInvoice?: (invoiceNumber: string) => void;
   onNavigateToPayment?: (customerName: string) => void;
   formatCurrency?: (val: number) => string;
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+    telefono?: string;
+    email?: string;
+    emailCliente?: string;
+  };
 }
 
 export default function CustomerStatementModule({
@@ -89,6 +98,7 @@ export default function CustomerStatementModule({
   onBack,
   onNavigateToInvoice,
   onNavigateToPayment,
+  companySettings,
   formatCurrency = (val: number) =>
     `$${val.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
 }: CustomerStatementProps) {
@@ -393,13 +403,18 @@ export default function CustomerStatementModule({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xl font-bold tracking-tight text-slate-900 uppercase">
-                  Wayne Trademark Honduras
+                  {companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}
                 </span>
               </div>
-              <p className="text-xs text-slate-600">S. de R.L. — Soluciones de Empaque, Impresión y Etiquetas</p>
-              <p className="text-xs text-slate-500 mt-1">RTN: 05019012345678</p>
-              <p className="text-xs text-slate-500">Parque Industrial Búfalo, Villanueva, Cortés, Honduras</p>
-              <p className="text-xs text-slate-500">Tel: +504 2550-0000 | Email: cobros@waynetrademarkhn.com</p>
+              {companySettings?.taxId && (
+                <p className="text-xs text-slate-500 mt-1">RTN: {companySettings.taxId}</p>
+              )}
+              {companySettings?.direccion && (
+                <p className="text-xs text-slate-500">{companySettings.direccion}</p>
+              )}
+              <p className="text-xs text-slate-500">
+                {[companySettings?.telefono ? `Tel: ${companySettings.telefono}` : "", companySettings?.email ? `Email: ${companySettings.email}` : ""].filter(Boolean).join(" | ")}
+              </p>
             </div>
 
             <div className="sm:text-right">
@@ -694,10 +709,12 @@ export default function CustomerStatementModule({
             <div>
               <p className="font-bold text-slate-700">Cuentas Bancarias para Depósito y Transferencias (USD / HNL):</p>
               <p className="text-[11px] text-slate-500">Banco Ficohsa: 2000-0102-001234 (Cheques USD) | BAC Credomatic: 7420-001923</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Favor enviar confirmación de pago a cobros@waynetrademarkhn.com</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Favor enviar confirmación de pago a {companySettings?.emailCliente || companySettings?.email || "contabilidad"}
+              </p>
             </div>
             <div className="sm:text-right text-[11px] text-slate-400">
-              <p>Wayne Trademark Honduras — Sistema Integrado Administrativo</p>
+              <p>{companySettings?.nombre || "Sistema Administrativo"} — Estado de Cuenta Oficial</p>
               <p>Documento generado el {new Date().toLocaleString("es-HN")}</p>
             </div>
           </div>

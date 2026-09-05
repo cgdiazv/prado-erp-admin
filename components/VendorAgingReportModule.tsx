@@ -76,12 +76,19 @@ interface VendorAgingReportProps {
   onNavigateToPayment?: (vendorName: string, invoiceNumber?: string) => void;
   onNavigateToBill?: (invoiceNumber: string) => void;
   formatCurrency?: (val: number) => string;
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+  };
 }
 
 export default function VendorAgingReportModule({
   onBack,
   onNavigateToPayment,
   onNavigateToBill,
+  companySettings,
   formatCurrency = (val: number) =>
     `$${val.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
 }: VendorAgingReportProps) {
@@ -219,10 +226,10 @@ export default function VendorAgingReportModule({
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-xl font-bold text-slate-900">
-              Wayne Trademark Printing & Packaging de Honduras S. de R.L.
+              {companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}
             </h1>
             <p className="text-xs text-slate-600">
-              RTN: 05019008183490 • ZIP Búfalo, Villanueva, Cortés
+              {[companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "", companySettings?.direccion].filter(Boolean).join(" • ")}
             </p>
             <h2 className="text-base font-bold text-slate-800 mt-2">
               Reporte de Antigüedad de Saldos a Proveedores (Cuentas por Pagar)

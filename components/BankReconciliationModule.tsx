@@ -86,10 +86,10 @@ export default function BankReconciliationModule({
   onBack,
   formatCurrency,
   companySettings = {
-    nombre: "WAYNE TRADEMARK DE HONDURAS, S.A.",
-    taxId: "05019008183490",
-    direccion: "Zip Búfalo, Edificio 1B, Villanueva, Cortés",
-    telefono: "+504 2516-4300",
+    nombre: "",
+    taxId: "",
+    direccion: "",
+    telefono: "",
   },
 }: Props) {
   // State

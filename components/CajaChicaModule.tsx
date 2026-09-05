@@ -64,6 +64,14 @@ interface Props {
   onBackToDashboard: () => void;
   connectedBanks?: any[];
   accounts?: any[];
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+    telefono?: string;
+    email?: string;
+  };
 }
 
 export default function CajaChicaModule({
@@ -81,6 +89,7 @@ export default function CajaChicaModule({
   onBackToDashboard,
   connectedBanks = [],
   accounts = [],
+  companySettings,
 }: Props) {
   // Currently selected fund object
   const currentFund = useMemo(() => {
@@ -2762,9 +2771,9 @@ export default function CajaChicaModule({
           <div className="p-8 max-w-3xl mx-auto space-y-6 text-black bg-white">
             <div className="border-b-2 border-black pb-4 flex justify-between items-start">
               <div>
-                <h1 className="text-lg font-black uppercase">WAYNE TRADEMARK DE HONDURAS S. DE R.L.</h1>
-                <p className="text-xs">RTN: 05019001123456 | Tel: +504 2565-8900</p>
-                <p className="text-xs">Planta Búfalo, Villanueva, Cortés, Honduras</p>
+                <h1 className="text-lg font-black uppercase">{companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}</h1>
+                <p className="text-xs">{[companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "", companySettings?.telefono ? `Tel: ${companySettings.telefono}` : ""].filter(Boolean).join(" | ")}</p>
+                <p className="text-xs">{companySettings?.direccion || ""}</p>
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold uppercase tracking-widest block">ACTA OFICIAL DE ARQUEO</span>
@@ -2909,9 +2918,9 @@ export default function CajaChicaModule({
               <div className="border-b-2 border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div>
                   <h2 className="text-base font-black text-slate-900 uppercase tracking-tight">
-                    WAYNE TRADEMARK DE HONDURAS S. DE R.L.
+                    {companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}
                   </h2>
-                  <p className="text-slate-500 text-xs">RTN: 05019001123456 | Planta Búfalo, Villanueva, Cortés</p>
+                  <p className="text-slate-500 text-xs">{[companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "", companySettings?.direccion].filter(Boolean).join(" | ")}</p>
                   <p className="text-slate-500 text-xs">Departamento de Tesorería & Contabilidad General</p>
                 </div>
                 <div className="text-right shrink-0">
@@ -3132,8 +3141,8 @@ export default function CajaChicaModule({
             {/* Header */}
             <div className="border-b-2 border-black pb-3 flex justify-between items-start">
               <div>
-                <h1 className="text-base font-black uppercase">WAYNE TRADEMARK DE HONDURAS S. DE R.L.</h1>
-                <p className="text-[11px]">RTN: 05019001123456 | Planta Búfalo, Villanueva, Cortés</p>
+                <h1 className="text-base font-black uppercase">{companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}</h1>
+                <p className="text-[11px]">{[companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "", companySettings?.direccion].filter(Boolean).join(" | ")}</p>
                 <p className="text-[11px]">Departamento de Tesorería & Contabilidad General</p>
               </div>
               <div className="text-right">

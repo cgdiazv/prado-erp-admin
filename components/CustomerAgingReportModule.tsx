@@ -76,6 +76,12 @@ interface CustomerAgingReportProps {
   onNavigateToPayment?: (customerName: string) => void;
   onNavigateToStatement?: (customerNameOrId: string) => void;
   formatCurrency?: (val: number) => string;
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+  };
 }
 
 export default function CustomerAgingReportModule({
@@ -83,6 +89,7 @@ export default function CustomerAgingReportModule({
   onNavigateToInvoice,
   onNavigateToPayment,
   onNavigateToStatement,
+  companySettings,
   formatCurrency = (val: number) =>
     `$${val.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
 }: CustomerAgingReportProps) {
@@ -219,10 +226,10 @@ export default function CustomerAgingReportModule({
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-xl font-bold text-slate-900">
-              Wayne Trademark Printing &amp; Packaging de Honduras S. de R.L.
+              {companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA"}
             </h1>
             <p className="text-xs text-slate-600">
-              RTN: 05019008183490 • ZIP Búfalo, Villanueva, Cortés
+              {[companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "", companySettings?.direccion].filter(Boolean).join(" • ")}
             </p>
             <h2 className="text-base font-bold text-slate-800 mt-2">
               Reporte de Antigüedad de Saldos de Clientes (Cuentas por Cobrar)

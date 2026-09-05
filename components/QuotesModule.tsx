@@ -106,6 +106,14 @@ interface QuotesModuleProps {
     name: string;
     code: string;
   }>;
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+    telefono?: string;
+    email?: string;
+  };
 }
 
 export default function QuotesModule({
@@ -119,7 +127,12 @@ export default function QuotesModule({
   customers = [],
   inventory = [],
   salesReps = [],
+  companySettings,
 }: QuotesModuleProps) {
+  const compName = companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA";
+  const compRtn = companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "";
+  const compAddress = companySettings?.direccion || "";
+  const compContact = [companySettings?.telefono ? `Tel: ${companySettings.telefono}` : "", companySettings?.email].filter(Boolean).join(" | ");
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -1384,15 +1397,19 @@ export default function QuotesModule({
                     <div>
                       <div>
                         <h2 className="text-lg font-black text-slate-900 tracking-tight">
-                          WAYNE TRADEMARK DE HONDURAS
+                          {compName}
                         </h2>
-                        <p className="text-xs text-slate-500">
-                          Printing & Packaging • RTN: 05019008183490
-                        </p>
+                        {compRtn && (
+                          <p className="text-xs text-slate-500">
+                            {compRtn}
+                          </p>
+                        )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-2">
-                        Zip Búfalo Edificio 1B, Villanueva, Cortés • Tel: +504 9452-2666
-                      </p>
+                      {(compAddress || compContact) && (
+                        <p className="text-xs text-slate-500 mt-2">
+                          {[compAddress, compContact].filter(Boolean).join(" • ")}
+                        </p>
+                      )}
                     </div>
 
                     <div className="text-right sm:w-72 space-y-2">
@@ -1920,12 +1937,11 @@ export default function QuotesModule({
                   <div className="flex justify-between items-start border-b border-slate-200 pb-6">
                     <div>
                       <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-                        WAYNE TRADEMARK PRINTING AND PACKAGING
+                        {compName}
                       </h1>
-                      <p className="text-xs font-semibold text-slate-600">DE HONDURAS S. DE R.L.</p>
-                      <p className="text-xs text-slate-500 mt-1">RTN: 05019008183490</p>
-                      <p className="text-xs text-slate-500">Parque Industrial Zip Búfalo, Edificio 1B, Villanueva, Cortés</p>
-                      <p className="text-xs text-slate-500">Tel: +504 9452-2666 | info@waynetrademarkhn.com</p>
+                      {compRtn && <p className="text-xs text-slate-500 mt-1">{compRtn}</p>}
+                      {compAddress && <p className="text-xs text-slate-500">{compAddress}</p>}
+                      {compContact && <p className="text-xs text-slate-500">{compContact}</p>}
                     </div>
 
                     <div className="text-right">
@@ -2031,12 +2047,11 @@ export default function QuotesModule({
             <div className="flex justify-between items-start border-b border-slate-200 pb-6">
               <div>
                 <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-                  WAYNE TRADEMARK PRINTING AND PACKAGING
+                  {compName}
                 </h1>
-                <p className="text-xs font-semibold text-slate-600">DE HONDURAS S. DE R.L.</p>
-                <p className="text-xs text-slate-500 mt-1">RTN: 05019008183490</p>
-                <p className="text-xs text-slate-500">Parque Industrial Zip Búfalo, Edificio 1B, Villanueva, Cortés</p>
-                <p className="text-xs text-slate-500">Tel: +504 9452-2666 | info@waynetrademarkhn.com</p>
+                {compRtn && <p className="text-xs text-slate-500 mt-1">{compRtn}</p>}
+                {compAddress && <p className="text-xs text-slate-500">{compAddress}</p>}
+                {compContact && <p className="text-xs text-slate-500">{compContact}</p>}
               </div>
 
               <div className="text-right">
@@ -2434,14 +2449,11 @@ export default function QuotesModule({
               <div className="flex justify-between items-start border-b border-slate-200 pb-6">
                 <div>
                   <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-                    WAYNE TRADEMARK PRINTING AND PACKAGING
+                    {compName}
                   </h1>
-                  <p className="text-xs font-semibold text-slate-600">DE HONDURAS S. DE R.L.</p>
-                  <p className="text-xs text-slate-500 mt-1">RTN: 05019008183490</p>
-                  <p className="text-xs text-slate-500">
-                    Parque Industrial Zip Búfalo, Edificio 1B, Villanueva, Cortés
-                  </p>
-                  <p className="text-xs text-slate-500">Tel: +504 9452-2666 | info@waynetrademarkhn.com</p>
+                  {compRtn && <p className="text-xs text-slate-500 mt-1">{compRtn}</p>}
+                  {compAddress && <p className="text-xs text-slate-500">{compAddress}</p>}
+                  {compContact && <p className="text-xs text-slate-500">{compContact}</p>}
                 </div>
 
                 <div className="text-right">
