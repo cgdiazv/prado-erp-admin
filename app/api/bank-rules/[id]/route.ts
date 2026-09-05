@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 // PATCH /api/bank-rules/[id] - Toggle active status or update rule
 export async function PATCH(
@@ -8,11 +9,12 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { active, autoConfirm, name, condition, targetAccount } = body;
 
-    const existing = await prisma.bankRule.findUnique({
-      where: { id },
+    const existing = await prisma.bankRule.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -43,11 +45,23 @@ export async function PATCH(
 
 // DELETE /api/bank-rules/[id] - Delete an automation rule
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
+
+    const existing = await prisma.bankRule.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Rule not found" },
+        { status: 404 }
+      );
+    }
 
     await prisma.bankRule.delete({
       where: { id },

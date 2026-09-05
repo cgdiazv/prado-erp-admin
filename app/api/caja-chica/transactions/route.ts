@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const { searchParams } = new URL(req.url);
     const fundId = searchParams.get("fundId");
 
-    const where: any = {};
+    const where: any = {
+      fund: { companyId },
+    };
     if (fundId) where.fundId = fundId;
 
     const rawTransactions = await prisma.pettyCashTransaction.findMany({
@@ -29,6 +33,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       fundId,
@@ -52,14 +57,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const targetFund = await prisma.pettyCashFund.findFirst({
+      where: { id: fundId, companyId },
+    });
+
+    if (!targetFund) {
+      return NextResponse.json(
+        { success: false, error: "Fondo de caja chica no encontrado." },
+        { status: 404 }
+      );
+    }
+
     const numAmount = parseFloat(amount);
     const isExpense = type === "EXPENSE" || type === "EGRESO";
     const dbType = isExpense ? "EGRESO" : type === "REPOSICION" ? "REPOSICION" : "INGRESO";
 
     if (dbType === "REPOSICION" || type === "REIMBURSEMENT") {
       // Mark unreimbursed expenses as REEMBOLSADO and restore fund cash
-      const targetFund = await prisma.pettyCashFund.findUnique({ where: { id: fundId } });
-      const targetBalance = targetFund ? targetFund.initialAmount : undefined;
+      const targetBalance = targetFund.initialAmount;
 
       const [transaction] = await prisma.$transaction([
         prisma.pettyCashTransaction.create({
@@ -69,7 +84,7 @@ export async function POST(req: NextRequest) {
             type: "REPOSICION",
             concept,
             category: category || "Reposición de Fondo Fijo",
-            beneficiary: beneficiary || "Wayne Trademark de Honduras",
+            beneficiary: beneficiary || "Empresa",
             voucherNumber: voucherNumber || invoiceNumber || null,
             cai: cai || null,
             amount: numAmount,

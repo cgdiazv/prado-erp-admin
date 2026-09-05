@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       to,
@@ -21,6 +24,16 @@ export async function POST(req: NextRequest) {
       salesRepName = "",
       apiKey: customApiKey,
     } = body;
+
+    const comp = await prisma.companySettings.findUnique({
+      where: { id: companyId },
+    }).catch(() => null);
+
+    const compName = comp?.nombreLegal || comp?.nombre || "Wayne Trademark";
+    const compSlogan = comp?.sector || "Printing & Packaging de Honduras";
+    const compEmail = comp?.email || "sac@waynetrademarkhn.com";
+    const compAddress = comp?.direccion || "ZIP Búfalo, Nave 12, Villanueva, Cortés, Honduras";
+    const compPhone = comp?.telefono || "+504 2550-0000";
 
     if (!to || typeof to !== "string" || !to.includes("@")) {
       return NextResponse.json(
@@ -67,8 +80,8 @@ export async function POST(req: NextRequest) {
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">WAYNE TRADEMARK</h1>
-                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #a7f3d0;">Printing & Packaging de Honduras</p>
+                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">${compName.toUpperCase()}</h1>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #a7f3d0;">${compSlogan}</p>
                   </td>
                   <td align="right">
                     <span style="background-color: #1b426e; color: #ffffff; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; text-transform: uppercase;">Cotización N.º ${quoteNumber}</span>
@@ -83,7 +96,7 @@ export async function POST(req: NextRequest) {
             <td style="padding: 32px;">
               <p style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: #0f172a;">Estimado/a ${customerName},</p>
               <p style="margin: 0 0 24px 0; font-size: 13px; color: #475569; line-height: 1.6;">
-                Agradecemos su interés en nuestros servicios de impresión y empaque de alta calidad. Adjuntamos la cotización oficial formal para su revisión.
+                Agradecemos su interés en nuestros servicios y productos. Adjuntamos la cotización oficial formal para su revisión.
               </p>
 
               <!-- METADATA BOX -->
@@ -184,9 +197,9 @@ export async function POST(req: NextRequest) {
           <!-- FOOTER -->
           <tr>
             <td style="background-color: #f1f5f9; padding: 20px 32px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; text-align: center;">
-              <p style="margin: 0 0 4px 0; font-weight: 700; color: #334155;">Wayne Trademark Printing & Packaging de Honduras S. de R.L.</p>
-              <p style="margin: 0 0 4px 0;">ZIP Búfalo, Nave 12, Villanueva, Cortés, Honduras</p>
-              <p style="margin: 0; color: #94a3b8;">Atención al cliente: sac@waynetrademarkhn.com | Tel: +504 2550-0000</p>
+              <p style="margin: 0 0 4px 0; font-weight: 700; color: #334155;">${compName}</p>
+              <p style="margin: 0 0 4px 0;">${compAddress}</p>
+              <p style="margin: 0; color: #94a3b8;">Atención al cliente: ${compEmail} | Tel: ${compPhone}</p>
             </td>
           </tr>
 
@@ -199,10 +212,10 @@ export async function POST(req: NextRequest) {
     `;
 
     const { data, error } = await resend.emails.send({
-      from: "Wayne Trademark <notifications@indevasa.com>",
+      from: `${compName} <${process.env.CONTACT_FROM_EMAIL || "notifications@pradocommerce.com"}>`,
       to: [to],
-      replyTo: "sac@waynetrademarkhn.com",
-      subject: `Cotización N.º ${quoteNumber} - Wayne Trademark Honduras`,
+      replyTo: compEmail,
+      subject: `Cotización N.º ${quoteNumber} - ${compName}`,
       html: emailHtml,
     });
 

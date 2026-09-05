@@ -12,16 +12,33 @@ export async function GET(request: NextRequest) {
     try {
       const decoded = JSON.parse(Buffer.from(sessionCookie.value, "base64").toString("utf8"));
       if (decoded && decoded.email) {
-        // Optionally fetch fresh record from DB to verify user is still active
+        // Fetch fresh record from DB to verify user is still active and get company
         const freshUser = await prisma.user.findUnique({
           where: { email: decoded.email },
-          select: { id: true, email: true, name: true, role: true, isActive: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            isActive: true,
+            companyId: true,
+            company: {
+              select: { id: true, name: true },
+            },
+          },
         });
 
         if (freshUser && freshUser.isActive) {
           return NextResponse.json({
             authenticated: true,
-            user: freshUser,
+            user: {
+              id: freshUser.id,
+              email: freshUser.email,
+              name: freshUser.name,
+              role: freshUser.role,
+              companyId: freshUser.companyId || "default",
+              companyName: freshUser.company?.name || "Empresa Principal",
+            },
           });
         }
       }

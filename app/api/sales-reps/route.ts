@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 const seedSalesReps = [
   {
@@ -43,20 +44,24 @@ const seedSalesReps = [
   },
 ];
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
+
     let reps = await db.salesRep.findMany({
+      where: { companyId },
       include: { commissions: true },
       orderBy: { code: "asc" },
     });
 
-    if (!reps || reps.length === 0) {
+    if (companyId === "default" && (!reps || reps.length === 0)) {
       // Seed default sample sales representatives
       for (const r of seedSalesReps) {
         await db.salesRep.create({
           data: {
             id: r.id,
+            companyId: "default",
             code: r.code,
             name: r.name,
             email: r.email,
@@ -71,6 +76,7 @@ export async function GET() {
         });
       }
       reps = await db.salesRep.findMany({
+        where: { companyId },
         include: { commissions: true },
         orderBy: { code: "asc" },
       });
@@ -89,6 +95,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
 
     if (!body.name || !body.code) {
@@ -100,6 +107,7 @@ export async function POST(req: Request) {
 
     const newRep = await db.salesRep.create({
       data: {
+        companyId,
         code: body.code,
         name: body.name,
         email: body.email || null,

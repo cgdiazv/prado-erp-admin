@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ id: string }>;
@@ -9,10 +10,12 @@ type RouteProps = {
 export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
 
     const item = await prisma.inventoryItem.findFirst({
       where: {
         OR: [{ id }, { sku: id }],
+        companyId,
       },
       include: {
         lots: {
@@ -43,10 +46,11 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
 export async function PATCH(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
-    const existing = await prisma.inventoryItem.findUnique({
-      where: { id },
+    const existing = await prisma.inventoryItem.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -60,8 +64,8 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 
     // Check SKU uniqueness if changing
     if (sku && sku !== existing.sku) {
-      const skuConflict = await prisma.inventoryItem.findUnique({
-        where: { sku },
+      const skuConflict = await prisma.inventoryItem.findFirst({
+        where: { sku, companyId, NOT: { id: existing.id } },
       });
       if (skuConflict) {
         return NextResponse.json(
@@ -72,7 +76,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
     }
 
     const updated = await prisma.inventoryItem.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         ...(sku !== undefined && { sku }),
         ...(description !== undefined && { description }),
@@ -99,9 +103,10 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 export async function DELETE(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
 
-    const existing = await prisma.inventoryItem.findUnique({
-      where: { id },
+    const existing = await prisma.inventoryItem.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -112,7 +117,7 @@ export async function DELETE(request: NextRequest, { params }: RouteProps) {
     }
 
     await prisma.inventoryItem.delete({
-      where: { id },
+      where: { id: existing.id },
     });
 
     return NextResponse.json({ success: true, message: "Inventory item deleted successfully" });

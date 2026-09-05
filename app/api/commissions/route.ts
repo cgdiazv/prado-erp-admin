@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 const seedCommissions = [
   {
@@ -60,16 +61,21 @@ const seedCommissions = [
   },
 ];
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
+
     let comms = await db.commissionRecord.findMany({
+      where: {
+        salesRep: { companyId },
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    if (!comms || comms.length === 0) {
+    if (companyId === "default" && (!comms || comms.length === 0)) {
       // Ensure seed sales reps exist first
-      const reps = await db.salesRep.findMany();
+      const reps = await db.salesRep.findMany({ where: { companyId: "default" } });
       if (reps.length > 0) {
         for (const c of seedCommissions) {
           const matchingRep = reps.find((r: any) => r.code === "VEND-001") || reps[0];
@@ -91,6 +97,9 @@ export async function GET() {
           });
         }
         comms = await db.commissionRecord.findMany({
+          where: {
+            salesRep: { companyId },
+          },
           orderBy: { createdAt: "desc" },
         });
       }
@@ -109,6 +118,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
 
     if (!body.salesRepId || !body.saleAmount) {
@@ -118,8 +128,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const salesRep = await db.salesRep.findUnique({
-      where: { id: body.salesRepId },
+    const salesRep = await db.salesRep.findFirst({
+      where: { id: body.salesRepId, companyId },
     });
 
     if (!salesRep) {

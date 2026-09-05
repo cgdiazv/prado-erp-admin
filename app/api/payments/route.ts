@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postCustomerPaymentEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const payments = await prisma.payment.findMany({
+      where: { companyId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ success: true, data: payments });
@@ -17,6 +20,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const {
       customerId,
@@ -40,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     const newPayment = await prisma.payment.create({
       data: {
+        companyId,
         customerId: customerId || null,
         customerName,
         customerEmail: customerEmail || null,
@@ -58,6 +63,7 @@ export async function POST(request: NextRequest) {
     try {
       journalEntry = await postCustomerPaymentEntry({
         id: newPayment.id,
+        companyId,
         paymentDate: newPayment.paymentDate,
         customerName: newPayment.customerName,
         amount: newPayment.amount,

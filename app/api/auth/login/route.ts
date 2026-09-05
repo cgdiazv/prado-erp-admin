@@ -19,6 +19,11 @@ export async function POST(request: NextRequest) {
     // Lookup user in PostgreSQL database
     const user = await prisma.user.findUnique({
       where: { email },
+      include: {
+        company: {
+          select: { id: true, name: true },
+        },
+      },
     });
 
     if (!user || !user.isActive) {
@@ -42,6 +47,8 @@ export async function POST(request: NextRequest) {
       email: user.email,
       name: user.name,
       role: user.role,
+      companyId: user.companyId || "default",
+      companyName: user.company?.name || "Empresa Principal",
     };
 
     const sessionPayload = Buffer.from(JSON.stringify(userData)).toString("base64");

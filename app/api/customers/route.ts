@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-// GET /api/customers - List customers with search & pagination
+// GET /api/customers - List customers with search & pagination isolated by company
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const currency = searchParams.get("currency");
@@ -11,18 +13,26 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      companyId,
+    };
 
     if (currency) {
       where.currency = currency;
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { macolaCode: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
+      where.AND = [
+        { companyId },
+        {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { macolaCode: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+          ],
+        },
       ];
+      delete where.companyId;
     }
 
     const [total, customers] = await Promise.all([
@@ -52,9 +62,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/customers - Create a new customer
+// POST /api/customers - Create a new customer for current company
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { macolaCode, name, email, phone, address, currency } = body;
 
@@ -66,8 +77,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (macolaCode) {
-      const existing = await prisma.customer.findUnique({
-        where: { macolaCode },
+      const existing = await prisma.customer.findFirst({
+        where: { macolaCode, companyId },
       });
       if (existing) {
         return NextResponse.json(
@@ -79,6 +90,7 @@ export async function POST(request: NextRequest) {
 
     const customer = await prisma.customer.create({
       data: {
+        companyId,
         name,
         macolaCode: macolaCode || null,
         email: email || null,

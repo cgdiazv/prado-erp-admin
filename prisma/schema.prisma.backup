@@ -10,8 +10,6 @@ generator client {
 
 model Account {
   id           String             @id @default(cuid())
-  companyId    String?            @default("default")
-  company      Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   code         String             @unique // e.g., 1000-6000 standard numbering
   name         String
   type         String             // Asset, Liability, Equity, Income, Expense
@@ -22,15 +20,11 @@ model Account {
   journalLines JournalEntryLine[]
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
-
-  @@index([companyId])
 }
 
 model Customer {
   id         String   @id @default(cuid())
-  companyId  String?  @default("default")
-  company    Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  macolaCode String?
+  macolaCode String?  @unique // Macola tracking code
   name       String
   email      String?
   phone      String?
@@ -38,33 +32,25 @@ model Customer {
   currency   String   @default("USD")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  @@index([companyId])
 }
 
 model Vendor {
-  id             String          @id @default(cuid())
-  companyId      String?         @default("default")
-  company        Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  macolaCode     String?
-  name           String
-  email          String?
-  phone          String?
-  address        String?
-  currency       String          @default("USD")
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  taxRetentions  TaxRetention[]
+  id         String   @id @default(cuid())
+  macolaCode String?  @unique // Macola tracking code
+  name       String
+  email      String?
+  phone      String?
+  address    String?
+  currency   String   @default("USD")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  taxRetentions TaxRetention[]
   vendorPayments VendorPayment[]
   purchaseOrders PurchaseOrder[]
-
-  @@index([companyId])
 }
 
 model InventoryItem {
   id           String       @id @default(cuid())
-  companyId    String?      @default("default")
-  company      Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   sku          String       @unique
   description  String
   quantity     Float        @default(0)
@@ -75,8 +61,6 @@ model InventoryItem {
   updatedAt    DateTime     @updatedAt
   lots         ItemLot[]
   serials      ItemSerial[]
-
-  @@index([companyId])
 }
 
 model ItemLot {
@@ -103,78 +87,73 @@ model ItemSerial {
   updatedAt       DateTime      @updatedAt
 }
 
+
 model CompanySettings {
-  id                  String   @id @default("default")
-  nombre              String   @default("WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL")
-  direccion           String   @default("ZIP Búfalo, Villanueva, Cortés 21100")
-  email               String   @default("contabilidad@waynetrademarkhn.com")
-  telefono            String   @default("+50494522666")
-  sitioWeb            String   @default("Ninguno indicado")
-  sector              String   @default("Manufactura y Producción Industrial (Manufacturing)")
+  id               String   @id @default("default")
+  nombre           String   @default("WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL")
+  direccion        String   @default("ZIP Búfalo, Villanueva, Cortés 21100")
+  email            String   @default("contabilidad@waynetrademarkhn.com")
+  telefono         String   @default("+50494522666")
+  sitioWeb         String   @default("Ninguno indicado")
+  sector           String   @default("Manufactura y Producción Industrial (Manufacturing)")
   nombreLegal         String   @default("WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL")
   taxId               String   @default("05019008183490")
   cai                 String   @default("Ninguno indicado")
   rangoAutorizado     String   @default("Ninguno indicado")
   fechaLimiteEmision  String   @default("Ninguno indicado")
   tipoEmpresa         String   @default("Sociedad anónima (pequeña empresa) con dos o más propietarios")
-  domicilioLegal      String   @default("Zip Búfalo Edificio 1B, Villanueva, Cortés 21101")
-  emailCliente        String   @default("contabilidad@waynetrademarkhn.com")
-  direccionCliente    String   @default("Ninguno indicado")
+  domicilioLegal   String   @default("Zip Búfalo Edificio 1B, Villanueva, Cortés 21101")
+  emailCliente     String   @default("contabilidad@waynetrademarkhn.com")
+  direccionCliente String   @default("Ninguno indicado")
   // Información del Contador General
   contadorNombre      String?  @default("")
   contadorTitulo      String?  @default("Contador General")
   contadorColegiacion String?  @default("")
   contadorTelefono    String?  @default("")
   contadorEmail       String?  @default("")
-  logoUrl             String?  @db.Text
-  updatedAt           DateTime @updatedAt
+  logoUrl          String?  @db.Text
+  updatedAt        DateTime @updatedAt
 }
 
 model BankAccount {
-  id              String               @id @default(cuid())
-  companyId       String?              @default("default")
-  company         Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  tenantId        String?
-  name            String               // e.g. "Banco Ficohsa"
-  accountNumber   String               // e.g. "•••• 2266"
-  type            String               // e.g. "Cuenta de cheques empresarial USD"
-  currency        String               @default("USD")
-  bankBalance     Float                @default(0)
-  bookBalance     Float                @default(0)
-  lastUpdated     String               @default("Hoy, 10:15 PM")
-  status          String               @default("Conectado")
-  color           String               @default("#0284c7")
-  accountId       String?              @unique
-  account         Account?             @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  transactions    BankTransaction[]
-  vendorPayments  VendorPayment[]
+  id            String            @id @default(cuid())
+  tenantId      String?
+  name          String            // e.g. "Banco Ficohsa"
+  accountNumber String            // e.g. "•••• 2266"
+  type          String            // e.g. "Cuenta de cheques empresarial USD"
+  currency      String            @default("USD")
+  bankBalance   Float             @default(0)
+  bookBalance   Float             @default(0)
+  lastUpdated   String            @default("Hoy, 10:15 PM")
+  status        String            @default("Conectado")
+  color         String            @default("#0284c7")
+  accountId     String?           @unique
+  account       Account?          @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  transactions  BankTransaction[]
+  vendorPayments VendorPayment[]
   reconciliations BankReconciliation[]
-
-  @@index([companyId])
 }
 
 model BankTransaction {
-  id               String      @id @default(cuid())
+  id               String       @id @default(cuid())
   bankAccountId    String
-  bankAccount      BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
-  date             String      // e.g. "02/09/2026"
+  bankAccount      BankAccount  @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  date             String       // e.g. "02/09/2026"
   description      String
   payee            String
-  type             String      // "deposit" | "expense"
+  type             String       // "deposit" | "expense"
   amount           Float
   suggestedAccount String
   ruleApplied      String?
-  status           String      @default("porRevisar") // "porRevisar" | "categorizadas" | "excluidas"
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  status           String       @default("porRevisar") // "porRevisar" | "categorizadas" | "excluidas"
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model BankRule {
   id            String   @id @default(cuid())
-  companyId     String?  @default("default")
-  company       Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name          String
   condition     String
   targetAccount String
@@ -182,14 +161,10 @@ model BankRule {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  @@index([companyId])
 }
 
 model Payment {
   id              String   @id @default(cuid())
-  companyId       String?  @default("default")
-  company         Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   customerId      String?
   customerName    String
   customerEmail   String?
@@ -202,38 +177,30 @@ model Payment {
   note            String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  @@index([companyId])
 }
 
 model CreditDebitNote {
-  id           String   @id @default(cuid())
-  companyId    String?  @default("default")
-  company      Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  noteNumber   String   @unique // e.g. "NC-2026-001" or "ND-2026-001"
-  type         String   // "CREDIT" | "DEBIT"
-  entityType   String   @default("CUSTOMER") // "CUSTOMER" | "VENDOR"
-  entityId     String?
-  entityName   String
-  targetDocNum String?  // e.g. "FAC-1002"
-  issueDate    String
-  reason       String   // "Devolución", "Descuento", "Ajuste de Precio", "Intereses", "Otros"
-  amount       Float    @default(0)
-  tax          Float    @default(0)
-  total        Float    @default(0)
-  currency     String   @default("USD")
-  status       String   @default("APLICADA") // "APLICADA" | "BORRADOR" | "ANULADA"
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([companyId])
+  id            String   @id @default(cuid())
+  noteNumber    String   @unique // e.g. "NC-2026-001" or "ND-2026-001"
+  type          String   // "CREDIT" | "DEBIT"
+  entityType    String   @default("CUSTOMER") // "CUSTOMER" | "VENDOR"
+  entityId      String?
+  entityName    String
+  targetDocNum  String?  // e.g. "FAC-1002"
+  issueDate     String
+  reason        String   // "Devolución", "Descuento", "Ajuste de Precio", "Intereses", "Otros"
+  amount        Float    @default(0)
+  tax           Float    @default(0)
+  total         Float    @default(0)
+  currency      String   @default("USD")
+  status        String   @default("APLICADA") // "APLICADA" | "BORRADOR" | "ANULADA"
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model SalesRep {
   id             String             @id @default(cuid())
-  companyId      String?            @default("default")
-  company        Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   code           String             @unique // e.g., "VEND-001"
   name           String
   email          String?
@@ -247,32 +214,28 @@ model SalesRep {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   commissions    CommissionRecord[]
-
-  @@index([companyId])
 }
 
 model CommissionRecord {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   salesRepId       String
-  salesRep         SalesRep @relation(fields: [salesRepId], references: [id], onDelete: Cascade)
+  salesRep         SalesRep  @relation(fields: [salesRepId], references: [id], onDelete: Cascade)
   salesRepName     String
-  period           String   // e.g. "2026-08", "2026-09"
-  invoiceNumber    String?  // e.g. "FAC-2026-004"
-  customerName     String?  // e.g. "Embotelladora de Sula S.A."
-  saleAmount       Float    @default(0) // Total sale amount in USD
-  commissionRate   Float    @default(5.0) // Commission percentage applied
-  commissionAmount Float    @default(0) // Calculated commission earned
-  status           String   @default("PENDIENTE") // "PENDIENTE" | "APROBADO" | "PAGADO"
+  period           String    // e.g. "2026-08", "2026-09"
+  invoiceNumber    String?   // e.g. "FAC-2026-004"
+  customerName     String?   // e.g. "Embotelladora de Sula S.A."
+  saleAmount       Float     @default(0) // Total sale amount in USD
+  commissionRate   Float     @default(5.0) // Commission percentage applied
+  commissionAmount Float     @default(0) // Calculated commission earned
+  status           String    @default("PENDIENTE") // "PENDIENTE" | "APROBADO" | "PAGADO"
   paidDate         String?
   notes            String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model PurchaseInvoice {
   id                  String                @id @default(cuid())
-  companyId           String?               @default("default")
-  company             Company?              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   invoiceNumber       String                @unique // Vendor invoice # e.g. "FPROV-2026-889"
   purchaseOrderNumber String?               // Linked PO e.g. "OC-2026-012"
   vendorId            String?
@@ -291,8 +254,6 @@ model PurchaseInvoice {
   paymentLines        VendorPaymentLine[]
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
-
-  @@index([companyId])
 }
 
 model PurchaseInvoiceItem {
@@ -311,8 +272,6 @@ model PurchaseInvoiceItem {
 
 model VendorReturn {
   id                    String             @id @default(cuid())
-  companyId             String?            @default("default")
-  company               Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   returnNumber          String             @unique // e.g. "DEV-2026-001"
   vendorId              String?
   vendorName            String
@@ -327,8 +286,6 @@ model VendorReturn {
   items                 VendorReturnItem[]
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
-
-  @@index([companyId])
 }
 
 model VendorReturnItem {
@@ -347,39 +304,19 @@ model VendorReturnItem {
 }
 
 model Company {
-  id               String             @id @default(cuid())
-  name             String
-  legalName        String?
-  taxId            String?
-  cai              String?
-  currency         String             @default("USD")
-  email            String?
-  phone            String?
-  address          String?
-  logoUrl          String?            @db.Text
-  isActive         Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  users            User[]
-  accounts         Account[]
-  customers        Customer[]
-  vendors          Vendor[]
-  inventoryItems   InventoryItem[]
-  bankAccounts     BankAccount[]
-  bankRules        BankRule[]
-  payments         Payment[]
-  creditDebitNotes CreditDebitNote[]
-  salesReps        SalesRep[]
-  purchaseInvoices PurchaseInvoice[]
-  vendorReturns    VendorReturn[]
-  pettyCashFunds   PettyCashFund[]
-  journalEntries   JournalEntry[]
-  salesInvoices    SalesInvoice[]
-  quotes           Quote[]
-  salesOrders      SalesOrder[]
-  taxRetentions    TaxRetention[]
-  vendorPayments   VendorPayment[]
-  purchaseOrders   PurchaseOrder[]
+  id          String   @id @default(cuid())
+  name        String
+  legalName   String?
+  taxId       String?
+  currency    String   @default("USD")
+  email       String?
+  phone       String?
+  address     String?
+  logoUrl     String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
 }
 
 model User {
@@ -409,8 +346,6 @@ model PasswordResetToken {
 
 model PettyCashFund {
   id             String                 @id @default(cuid())
-  companyId      String?                @default("default")
-  company        Company?               @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name           String                 // e.g. "Caja Chica Administrativa", "Caja Chica Planta Búfalo"
   code           String                 @unique // e.g. "CC-001"
   custodianName  String                 // Custodio responsable e.g. "Lic. Ruben Mondragón"
@@ -426,27 +361,25 @@ model PettyCashFund {
   transactions   PettyCashTransaction[]
   audits         PettyCashAudit[]
   vouchers       PettyCashVoucher[]
-
-  @@index([companyId])
 }
 
 model PettyCashTransaction {
-  id            String        @id @default(cuid())
+  id            String         @id @default(cuid())
   fundId        String
-  fund          PettyCashFund @relation(fields: [fundId], references: [id], onDelete: Cascade)
-  date          String        // e.g. "2026-09-03"
-  type          String        // "EGRESO" | "INGRESO" | "REPOSICION"
-  concept       String        // Concepto o descripción
-  category      String        // "Transporte y Fletes", "Cafetería y Alimentos", "Suministros de Oficina", "Mantenimiento y Reparación", "Combustible", "Otros"
-  beneficiary   String        // A quién se le pagó o quién ingresó el dinero
-  voucherNumber String?       // Número de factura o recibo físico
-  cai           String?       // CAI fiscal si aplica factura SAR
-  amount        Float         @default(0)
-  taxDeductible Boolean       @default(true) // Si cuenta con comprobante fiscal válido
-  status        String        @default("REGISTRADO") // "REGISTRADO" | "REEMBOLSADO" | "ANULADO"
+  fund          PettyCashFund  @relation(fields: [fundId], references: [id], onDelete: Cascade)
+  date          String         // e.g. "2026-09-03"
+  type          String         // "EGRESO" | "INGRESO" | "REPOSICION"
+  concept       String         // Concepto o descripción
+  category      String         // "Transporte y Fletes", "Cafetería y Alimentos", "Suministros de Oficina", "Mantenimiento y Reparación", "Combustible", "Otros"
+  beneficiary   String         // A quién se le pagó o quién ingresó el dinero
+  voucherNumber String?        // Número de factura o recibo físico
+  cai           String?        // CAI fiscal si aplica factura SAR
+  amount        Float          @default(0)
+  taxDeductible Boolean        @default(true) // Si cuenta con comprobante fiscal válido
+  status        String         @default("REGISTRADO") // "REGISTRADO" | "REEMBOLSADO" | "ANULADO"
   notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model PettyCashAudit {
@@ -488,8 +421,6 @@ model PettyCashVoucher {
 
 model JournalEntry {
   id            String             @id @default(cuid())
-  companyId     String?            @default("default")
-  company       Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   entryNumber   String             @unique // e.g. "AS-2026-0001"
   date          String             // e.g. "2026-09-04"
   concept       String
@@ -500,8 +431,6 @@ model JournalEntry {
   lines         JournalEntryLine[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-
-  @@index([companyId])
 }
 
 model JournalEntryLine {
@@ -520,38 +449,34 @@ model JournalEntryLine {
 }
 
 model SalesInvoice {
-  id               String             @id @default(cuid())
-  companyId        String?            @default("default")
-  company          Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  invoiceNumber    String             @unique // e.g. "000-001-01-00036801" or "1001"
-  customerId       String?
-  customerName     String             @default("Cliente Contado")
-  customerRtn      String?
-  customerAddress  String?
-  customerEmail    String?
-  invoiceDate      String
-  dueDate          String?
-  paymentTerms     String             @default("Neto 30 días")
-  currency         String             @default("USD")
-  cai              String?
-  discount         Float              @default(0)
-  importeExento    Float              @default(0)
-  importeExonerado Float              @default(0)
-  impGravado15     Float              @default(0)
-  impGravado18     Float              @default(0)
-  subtotal         Float              @default(0)
-  isv15            Float              @default(0)
-  isv18            Float              @default(0)
-  total            Float              @default(0)
-  status           String             @default("Emitida") // "Borrador" | "Emitida" | "Pagada" | "Anulada"
-  journalEntryId   String?
-  lines            SalesInvoiceLine[]
-  quotes           Quote[]
-  salesOrders      SalesOrder[]
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-
-  @@index([companyId])
+  id                  String             @id @default(cuid())
+  invoiceNumber       String             @unique // e.g. "000-001-01-00036801" or "1001"
+  customerId          String?
+  customerName        String             @default("Cliente Contado")
+  customerRtn         String?
+  customerAddress     String?
+  customerEmail       String?
+  invoiceDate         String
+  dueDate             String?
+  paymentTerms        String             @default("Neto 30 días")
+  currency            String             @default("USD")
+  cai                 String?
+  discount            Float              @default(0)
+  importeExento       Float              @default(0)
+  importeExonerado    Float              @default(0)
+  impGravado15        Float              @default(0)
+  impGravado18        Float              @default(0)
+  subtotal            Float              @default(0)
+  isv15               Float              @default(0)
+  isv18               Float              @default(0)
+  total               Float              @default(0)
+  status              String             @default("Emitida") // "Borrador" | "Emitida" | "Pagada" | "Anulada"
+  journalEntryId      String?
+  lines               SalesInvoiceLine[]
+  quotes              Quote[]
+  salesOrders         SalesOrder[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 }
 
 model SalesInvoiceLine {
@@ -569,39 +494,35 @@ model SalesInvoiceLine {
 }
 
 model Quote {
-  id              String        @id @default(cuid())
-  companyId       String?       @default("default")
-  company         Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  quoteNumber     String        @unique // e.g. "COT-2026-0001"
-  customerId      String?
-  customerName    String        @default("Cliente Contado")
-  customerRtn     String?
-  customerAddress String?
-  customerEmail   String?
-  customerPhone   String?
-  quoteDate       String        // e.g. "2026-09-04"
-  validUntil      String        // e.g. "2026-10-04"
-  paymentTerms    String        @default("Neto 30 días")
-  currency        String        @default("USD")
-  salesRepId      String?
-  salesRepName    String?
-  notes           String?
-  termsConditions String?
-  discount        Float         @default(0)
-  subtotal        Float         @default(0)
-  taxRate         Float         @default(15) // ISV % (15% o 18%)
-  tax             Float         @default(0)  // ISV calculado
-  total           Float         @default(0)
-  status          String        @default("Borrador") // "Borrador" | "Enviada" | "Aprobada" | "Facturada" | "Rechazada"
-  invoiceNumber   String?       // Reference to created invoice number
-  salesInvoiceId  String?       // Reference to SalesInvoice ID
-  salesInvoice    SalesInvoice? @relation(fields: [salesInvoiceId], references: [id], onDelete: SetNull)
-  lines           QuoteLine[]
-  salesOrders     SalesOrder[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@index([companyId])
+  id               String        @id @default(cuid())
+  quoteNumber      String        @unique // e.g. "COT-2026-0001"
+  customerId       String?
+  customerName     String        @default("Cliente Contado")
+  customerRtn      String?
+  customerAddress  String?
+  customerEmail    String?
+  customerPhone    String?
+  quoteDate        String        // e.g. "2026-09-04"
+  validUntil       String        // e.g. "2026-10-04"
+  paymentTerms     String        @default("Neto 30 días")
+  currency         String        @default("USD")
+  salesRepId       String?
+  salesRepName     String?
+  notes            String?
+  termsConditions  String?
+  discount         Float         @default(0)
+  subtotal         Float         @default(0)
+  taxRate          Float         @default(15) // ISV % (15% o 18%)
+  tax              Float         @default(0)  // ISV calculado
+  total            Float         @default(0)
+  status           String        @default("Borrador") // "Borrador" | "Enviada" | "Aprobada" | "Facturada" | "Rechazada"
+  invoiceNumber    String?       // Reference to created invoice number
+  salesInvoiceId   String?       // Reference to SalesInvoice ID
+  salesInvoice     SalesInvoice? @relation(fields: [salesInvoiceId], references: [id], onDelete: SetNull)
+  lines            QuoteLine[]
+  salesOrders      SalesOrder[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model QuoteLine {
@@ -620,8 +541,6 @@ model QuoteLine {
 
 model SalesOrder {
   id                   String           @id @default(cuid())
-  companyId            String?          @default("default")
-  company              Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   orderNumber          String           @unique // e.g. "PV-2026-0001"
   quoteId              String?
   quote                Quote?           @relation(fields: [quoteId], references: [id], onDelete: SetNull)
@@ -654,8 +573,6 @@ model SalesOrder {
   items                SalesOrderItem[]
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
-
-  @@index([companyId])
 }
 
 model SalesOrderItem {
@@ -678,8 +595,6 @@ model SalesOrderItem {
 
 model TaxRetention {
   id                String           @id @default(cuid())
-  companyId         String?          @default("default")
-  company           Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   retentionNumber   String           @unique // Número correlativo del comprobante ej. "RET-2026-0001"
   providerId        String
   provider          Vendor           @relation(fields: [providerId], references: [id], onDelete: Cascade)
@@ -697,34 +612,28 @@ model TaxRetention {
   date              DateTime         @default(now())
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-
-  @@index([companyId])
 }
 
 model VendorPayment {
-  id              String              @id @default(cuid())
-  companyId       String?             @default("default")
-  company         Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  paymentNumber   String              @unique // e.g. "PAG-2026-0001"
-  vendorId        String?
-  vendor          Vendor?             @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  vendorName      String
-  paymentDate     String              // e.g. "2026-09-04"
-  paymentMethod   String              // "Transferencia Bancaria" | "Cheque" | "Efectivo" | "Tarjeta de Crédito"
-  referenceNumber String?             // e.g. "TRF-99401" or "CHQ-1002"
-  bankAccountId   String?
-  bankAccount     BankAccount?        @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
-  paidAccount     String              @default("1100") // Account code or bank account name
-  currency        String              @default("USD")
-  amount          Float               @default(0)
-  notes           String?
-  status          String              @default("APLICADO") // "APLICADO" | "ANULADO"
-  journalEntryId  String?             // Reference to JournalEntry ID
-  lines           VendorPaymentLine[]
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-
-  @@index([companyId])
+  id                String              @id @default(cuid())
+  paymentNumber     String              @unique // e.g. "PAG-2026-0001"
+  vendorId          String?
+  vendor            Vendor?             @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  vendorName        String
+  paymentDate       String              // e.g. "2026-09-04"
+  paymentMethod     String              // "Transferencia Bancaria" | "Cheque" | "Efectivo" | "Tarjeta de Crédito"
+  referenceNumber   String?             // e.g. "TRF-99401" or "CHQ-1002"
+  bankAccountId     String?
+  bankAccount       BankAccount?        @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  paidAccount       String              @default("1100") // Account code or bank account name
+  currency          String              @default("USD")
+  amount            Float               @default(0)
+  notes             String?
+  status            String              @default("APLICADO") // "APLICADO" | "ANULADO"
+  journalEntryId    String?             // Reference to JournalEntry ID
+  lines             VendorPaymentLine[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 }
 
 model VendorPaymentLine {
@@ -743,30 +652,26 @@ model VendorPaymentLine {
 }
 
 model PurchaseOrder {
-  id            String              @id @default(cuid())
-  companyId     String?             @default("default")
-  company       Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  orderNumber   String              @unique // e.g. "OC-2026-0084"
-  vendorId      String?
-  vendor        Vendor?             @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  vendorName    String
-  vendorEmail   String?
-  vendorAddress String?
-  category      String              @default("General") // "Tintas Flexo", "Cartón Corrugado", "Solventes", "Materia Prima", "Repuestos", "General"
-  issueDate     String              // "2026-09-04"
-  expectedDate  String?             // "2026-09-20"
-  paymentTerms  String              @default("Crédito 30 días")
-  currency      String              @default("USD")
-  subtotal      Float               @default(0)
-  tax           Float               @default(0)
-  total         Float               @default(0)
-  status        String              @default("Pendiente") // "Pendiente" | "Aprobada" | "Recibida" | "Facturada" | "Cancelada"
-  notes         String?
-  items         PurchaseOrderItem[]
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-
-  @@index([companyId])
+  id               String              @id @default(cuid())
+  orderNumber      String              @unique // e.g. "OC-2026-0084"
+  vendorId         String?
+  vendor           Vendor?             @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  vendorName       String
+  vendorEmail      String?
+  vendorAddress    String?
+  category         String              @default("General") // "Tintas Flexo", "Cartón Corrugado", "Solventes", "Materia Prima", "Repuestos", "General"
+  issueDate        String              // "2026-09-04"
+  expectedDate     String?             // "2026-09-20"
+  paymentTerms     String              @default("Crédito 30 días")
+  currency         String              @default("USD")
+  subtotal         Float               @default(0)
+  tax              Float               @default(0)
+  total            Float               @default(0)
+  status           String              @default("Pendiente") // "Pendiente" | "Aprobada" | "Recibida" | "Facturada" | "Cancelada"
+  notes            String?
+  items            PurchaseOrderItem[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 }
 
 model PurchaseOrderItem {
@@ -792,8 +697,8 @@ model BankReconciliation {
   statementDate             String                   // Corte del extracto e.g. "2026-08-31"
   startDate                 String                   // e.g. "2026-08-01"
   endDate                   String                   // e.g. "2026-08-31"
-  statementBeginningBalance Float                    @default(0.0)
-  statementEndingBalance    Float                    @default(0.0)
+  statementBeginningBalance  Float                    @default(0.0)
+  statementEndingBalance     Float                    @default(0.0)
   clearedDepositsCount      Int                      @default(0)
   clearedDepositsAmount     Float                    @default(0.0)
   clearedChecksCount        Int                      @default(0)
@@ -832,3 +737,5 @@ model BankReconciliationItem {
   @@index([reconciliationId])
   @@index([isCleared])
 }
+
+

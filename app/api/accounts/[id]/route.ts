@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ id: string }>;
@@ -9,10 +10,12 @@ type RouteProps = {
 export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
 
     const account = await prisma.account.findFirst({
       where: {
         OR: [{ id }, { code: id }],
+        companyId,
       },
     });
 
@@ -35,10 +38,11 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
 export async function PATCH(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
-    const existing = await prisma.account.findUnique({
-      where: { id },
+    const existing = await prisma.account.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -50,10 +54,10 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 
     const { code, name, type, currency, balance, isActive } = body;
 
-    // Check if new code conflicts with another account
+    // Check if new code conflicts with another account in this company
     if (code && code !== existing.code) {
-      const codeConflict = await prisma.account.findUnique({
-        where: { code },
+      const codeConflict = await prisma.account.findFirst({
+        where: { code, companyId, NOT: { id: existing.id } },
       });
       if (codeConflict) {
         return NextResponse.json(
@@ -64,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
     }
 
     const updated = await prisma.account.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         ...(code !== undefined && { code }),
         ...(name !== undefined && { name }),
@@ -87,9 +91,10 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 export async function DELETE(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
 
-    const existing = await prisma.account.findUnique({
-      where: { id },
+    const existing = await prisma.account.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -100,7 +105,7 @@ export async function DELETE(request: NextRequest, { params }: RouteProps) {
     }
 
     await prisma.account.delete({
-      where: { id },
+      where: { id: existing.id },
     });
 
     return NextResponse.json({ success: true, message: "Account deleted successfully" });

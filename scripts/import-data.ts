@@ -126,24 +126,30 @@ export async function importCustomers(filePath: string) {
     }
 
     if (macolaCode) {
-      await prisma.customer.upsert({
-        where: { macolaCode },
-        update: {
-          name,
-          email: email || null,
-          phone: phone || null,
-          address: address || null,
-          currency,
-        },
-        create: {
-          name,
-          macolaCode,
-          email: email || null,
-          phone: phone || null,
-          address: address || null,
-          currency,
-        },
-      });
+      const existing = await prisma.customer.findFirst({ where: { macolaCode } });
+      if (existing) {
+        await prisma.customer.update({
+          where: { id: existing.id },
+          data: {
+            name,
+            email: email || null,
+            phone: phone || null,
+            address: address || null,
+            currency,
+          },
+        });
+      } else {
+        await prisma.customer.create({
+          data: {
+            name,
+            macolaCode,
+            email: email || null,
+            phone: phone || null,
+            address: address || null,
+            currency,
+          },
+        });
+      }
     } else {
       await prisma.customer.create({
         data: {
@@ -183,24 +189,30 @@ export async function importVendors(filePath: string) {
     }
 
     if (macolaCode) {
-      await prisma.vendor.upsert({
-        where: { macolaCode },
-        update: {
-          name,
-          email: email || null,
-          phone: phone || null,
-          address: address || null,
-          currency,
-        },
-        create: {
-          name,
-          macolaCode,
-          email: email || null,
-          phone: phone || null,
-          address: address || null,
-          currency,
-        },
-      });
+      const existing = await prisma.vendor.findFirst({ where: { macolaCode } });
+      if (existing) {
+        await prisma.vendor.update({
+          where: { id: existing.id },
+          data: {
+            name,
+            email: email || null,
+            phone: phone || null,
+            address: address || null,
+            currency,
+          },
+        });
+      } else {
+        await prisma.vendor.create({
+          data: {
+            name,
+            macolaCode,
+            email: email || null,
+            phone: phone || null,
+            address: address || null,
+            currency,
+          },
+        });
+      }
     } else {
       await prisma.vendor.create({
         data: {

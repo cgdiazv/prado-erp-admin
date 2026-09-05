@@ -75,13 +75,17 @@ const initialSeedQuotes = [
   },
 ];
 
+import { resolveCompanyId } from "@/lib/tenant";
+
 export async function GET(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
     const status = searchParams.get("status") || "";
 
     let quotes = await prisma.quote.findMany({
+      where: { companyId },
       include: {
         lines: true,
         salesInvoice: {
@@ -98,11 +102,12 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    // Sembrar datos iniciales si no hay ninguna cotización
-    if (quotes.length === 0) {
+    // Sembrar datos iniciales si la empresa es 'default' y no hay cotizaciones
+    if (quotes.length === 0 && companyId === "default") {
       for (const seed of initialSeedQuotes) {
         await prisma.quote.create({
           data: {
+            companyId,
             quoteNumber: seed.quoteNumber,
             customerName: seed.customerName,
             customerRtn: seed.customerRtn,
@@ -137,6 +142,7 @@ export async function GET(req: NextRequest) {
       }
 
       quotes = await prisma.quote.findMany({
+        where: { companyId },
         include: {
           lines: true,
           salesInvoice: true,
@@ -208,6 +214,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       quoteNumber,
@@ -264,9 +271,9 @@ export async function POST(req: NextRequest) {
       validUntil ||
       new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0];
 
-    // Comprobar si ya existe el número de cotización
-    const existing = await prisma.quote.findUnique({
-      where: { quoteNumber },
+    // Comprobar si ya existe el número de cotización en esta empresa
+    const existing = await prisma.quote.findFirst({
+      where: { quoteNumber, companyId },
     });
 
     let savedQuote;
@@ -315,6 +322,7 @@ export async function POST(req: NextRequest) {
     } else {
       savedQuote = await prisma.quote.create({
         data: {
+          companyId,
           quoteNumber,
           customerId: customerId || null,
           customerName,
@@ -358,6 +366,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const { id, status, notes, termsConditions } = body;
 
@@ -365,8 +374,16 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, error: "ID de cotización requerido." }, { status: 400 });
     }
 
+    const existing = await prisma.quote.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Cotización no encontrada." }, { status: 404 });
+    }
+
     const updated = await prisma.quote.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         ...(status ? { status } : {}),
         ...(notes !== undefined ? { notes } : {}),

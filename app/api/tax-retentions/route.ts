@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postTaxRetentionEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
     const { searchParams } = new URL(req.url);
     const providerId = searchParams.get("providerId");
     const status = searchParams.get("status");
     const month = searchParams.get("month"); // e.g. "2026-09"
 
-    const where: any = {};
+    const where: any = { companyId };
     if (providerId) where.providerId = providerId;
     if (status && status !== "ALL") where.status = status;
     if (month) {
@@ -31,10 +33,10 @@ export async function GET(req: Request) {
       orderBy: { date: "desc" },
     });
 
-    // If database is completely empty of retentions, seed initial demonstration records
-    if ((!retentions || retentions.length === 0) && !providerId && !month) {
-      const vendors = await db.vendor.findMany({ take: 3 });
-      const purchaseInvoices = await db.purchaseInvoice.findMany({ take: 2 });
+    // If database is completely empty of retentions, seed initial demonstration records (default company only)
+    if (companyId === "default" && (!retentions || retentions.length === 0) && !providerId && !month) {
+      const vendors = await db.vendor.findMany({ where: { companyId: "default" }, take: 3 });
+      const purchaseInvoices = await db.purchaseInvoice.findMany({ where: { companyId: "default" }, take: 2 });
 
       if (vendors.length > 0) {
         const seedData = [
@@ -131,6 +133,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
 
     const {
@@ -175,8 +178,8 @@ export async function POST(req: Request) {
         : Math.round(((numBase * numRate) / 100) * 100) / 100;
 
     // Fetch provider info
-    const provider = await db.vendor.findUnique({
-      where: { id: providerId },
+    const provider = await db.vendor.findFirst({
+      where: { id: providerId, companyId },
     });
 
     if (!provider) {
@@ -189,8 +192,8 @@ export async function POST(req: Request) {
     // Optional invoice check
     let invoiceNumber: string | undefined = undefined;
     if (purchaseInvoiceId) {
-      const inv = await db.purchaseInvoice.findUnique({
-        where: { id: purchaseInvoiceId },
+      const inv = await db.purchaseInvoice.findFirst({
+        where: { id: purchaseInvoiceId, companyId },
       });
       if (inv) {
         invoiceNumber = inv.invoiceNumber;
@@ -203,7 +206,7 @@ export async function POST(req: Request) {
       const year = new Date(date).getFullYear() || new Date().getFullYear();
       const prefix = `RET-${year}-`;
       const lastRetention = await db.taxRetention.findFirst({
-        where: { retentionNumber: { startsWith: prefix } },
+        where: { retentionNumber: { startsWith: prefix }, companyId },
         orderBy: { retentionNumber: "desc" },
       });
 
@@ -218,8 +221,8 @@ export async function POST(req: Request) {
       retentionNumber = `${prefix}${String(nextCorrelative).padStart(4, "0")}`;
     } else {
       // Check if custom correlative already exists
-      const existing = await db.taxRetention.findUnique({
-        where: { retentionNumber },
+      const existing = await db.taxRetention.findFirst({
+        where: { retentionNumber, companyId },
       });
       if (existing) {
         return NextResponse.json(
@@ -235,6 +238,7 @@ export async function POST(req: Request) {
     // 1. Create TaxRetention record
     const retention = await db.taxRetention.create({
       data: {
+        companyId,
         retentionNumber,
         providerId,
         purchaseInvoiceId: purchaseInvoiceId || null,
@@ -259,6 +263,7 @@ export async function POST(req: Request) {
     let journalEntry = null;
     try {
       journalEntry = await postTaxRetentionEntry({
+        companyId,
         retentionNumber: retention.retentionNumber,
         providerName: provider.name,
         date: new Date(date).toISOString().split("T")[0],

@@ -1,12 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const accounts = await prisma.account.findMany({
-      where: { isActive: true },
+      where: { isActive: true, companyId },
       include: {
         journalLines: {
+          where: {
+            journalEntry: { companyId },
+          },
           select: {
             debit: true,
             credit: true,

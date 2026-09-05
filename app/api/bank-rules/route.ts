@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 // GET /api/bank-rules - List all automation rules
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const rules = await prisma.bankRule.findMany({
+      where: { companyId },
       orderBy: { createdAt: "asc" },
     });
 
@@ -19,6 +22,7 @@ export async function GET() {
 // POST /api/bank-rules - Create an automation rule
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { name, condition, targetAccount, autoConfirm, active } = body;
 
@@ -31,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     const created = await prisma.bankRule.create({
       data: {
+        companyId,
         name,
         condition,
         targetAccount,

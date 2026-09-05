@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Prepare and send email via Resend
     const apiKey = process.env.RESEND_API_KEY || "re_dummy_key";
     const resend = new Resend(apiKey);
-    const fromEmail = process.env.CONTACT_FROM_EMAIL || "notifications@indevasa.com";
+    const fromEmail = process.env.CONTACT_FROM_EMAIL || "notifications@pradocommerce.com";
 
     const emailHtml = `
 <!DOCTYPE html>

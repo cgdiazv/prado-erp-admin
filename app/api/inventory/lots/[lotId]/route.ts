@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ lotId: string }>;
@@ -9,11 +10,12 @@ type RouteProps = {
 export async function PATCH(request: NextRequest, { params }: RouteProps) {
   try {
     const { lotId } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { lotNumber, quantity, manufactureDate, expirationDate, notes } = body;
 
-    const existingLot = await prisma.itemLot.findUnique({
-      where: { id: lotId },
+    const existingLot = await prisma.itemLot.findFirst({
+      where: { id: lotId, inventoryItem: { companyId } },
     });
 
     if (!existingLot) {
@@ -57,9 +59,10 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 export async function DELETE(request: NextRequest, { params }: RouteProps) {
   try {
     const { lotId } = await params;
+    const companyId = await resolveCompanyId(request);
 
-    const existingLot = await prisma.itemLot.findUnique({
-      where: { id: lotId },
+    const existingLot = await prisma.itemLot.findFirst({
+      where: { id: lotId, inventoryItem: { companyId } },
     });
 
     if (!existingLot) {

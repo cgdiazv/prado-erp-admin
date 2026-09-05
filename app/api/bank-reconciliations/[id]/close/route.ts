@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function POST(
   req: Request,
@@ -8,11 +9,13 @@ export async function POST(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json().catch(() => ({}));
 
     const existing = await db.bankReconciliation.findFirst({
       where: {
         OR: [{ id }, { reconciliationNumber: id }],
+        bankAccount: { companyId },
       },
       include: {
         bankAccount: true,
@@ -47,7 +50,7 @@ export async function POST(
 
     let closedByUser = body.closedBy?.trim();
     if (!closedByUser) {
-      const comp = await db.companySettings.findUnique({ where: { id: "default" } }).catch(() => null);
+      const comp = await db.companySettings.findUnique({ where: { id: companyId } }).catch(() => null);
       closedByUser = comp?.contadorNombre?.trim()
         ? `${comp.contadorNombre} (${comp.contadorTitulo || "Contador General"})`
         : "Contador General / Auditor";

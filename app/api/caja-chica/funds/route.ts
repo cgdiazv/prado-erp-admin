@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
+
     const rawFunds = await prisma.pettyCashFund.findMany({
+      where: { companyId },
       include: {
         transactions: { orderBy: { createdAt: "desc" } },
         audits: { orderBy: { createdAt: "desc" } },
@@ -45,13 +49,13 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       name,
       code,
       custodianName,
       custodianEmail,
-      custodianTitle,
       currency,
       fixedAmount,
       initialAmount,
@@ -67,12 +71,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const assignedCode = code || `CC-${String((await prisma.pettyCashFund.count()) + 1).padStart(3, "0")}`;
+    const assignedCode = code || `CC-${String((await prisma.pettyCashFund.count({ where: { companyId } })) + 1).padStart(3, "0")}`;
     const amountVal = parseFloat(fixedAmount || initialAmount) || 10000;
     const thresholdVal = parseFloat(minThreshold) || amountVal * 0.25;
 
     const fund = await prisma.pettyCashFund.create({
       data: {
+        companyId,
         name,
         code: assignedCode,
         custodianName,

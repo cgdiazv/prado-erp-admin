@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
   req: Request,
@@ -8,10 +9,12 @@ export async function GET(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
 
     const rec = await db.bankReconciliation.findFirst({
       where: {
         OR: [{ id }, { reconciliationNumber: id }],
+        bankAccount: { companyId },
       },
       include: {
         bankAccount: true,
@@ -45,11 +48,13 @@ export async function PATCH(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
 
     const existing = await db.bankReconciliation.findFirst({
       where: {
         OR: [{ id }, { reconciliationNumber: id }],
+        bankAccount: { companyId },
       },
       include: {
         items: true,
@@ -194,10 +199,12 @@ export async function DELETE(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
 
     const existing = await db.bankReconciliation.findFirst({
       where: {
         OR: [{ id }, { reconciliationNumber: id }],
+        bankAccount: { companyId },
       },
     });
 

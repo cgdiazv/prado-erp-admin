@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postVendorPaymentEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendorId");
     const status = searchParams.get("status");
@@ -12,7 +14,7 @@ export async function GET(request: NextRequest) {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = { companyId };
 
     if (vendorId && vendorId !== "ALL") {
       whereClause.vendorId = vendorId;
@@ -65,6 +67,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
     const {
@@ -122,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Generate unique payment correlative PAG-YYYY-XXXX
     const currentYear = new Date().getFullYear();
-    const countThisYear = await db.vendorPayment.count();
+    const countThisYear = await db.vendorPayment.count({ where: { companyId } });
     const nextCorrelative = String(countThisYear + 1).padStart(4, "0");
     const paymentNumber = `PAG-${currentYear}-${nextCorrelative}`;
 
@@ -138,6 +141,7 @@ export async function POST(request: NextRequest) {
     // 4. Create VendorPayment and Lines in a transaction or sequential operations
     const newPayment = await db.vendorPayment.create({
       data: {
+        companyId,
         paymentNumber,
         vendorId: vendorId || null,
         vendorName: vendorName.trim(),
@@ -240,6 +244,7 @@ export async function POST(request: NextRequest) {
     let journalEntry = null;
     try {
       journalEntry = await postVendorPaymentEntry({
+        companyId,
         date: paymentDate,
         vendorName,
         amount: totalAmount,

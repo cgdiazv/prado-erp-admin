@@ -138,21 +138,25 @@ const initialSeedOrders = [
   },
 ];
 
+import { resolveCompanyId } from "@/lib/tenant";
+
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.toLowerCase().trim() || "";
     const status = searchParams.get("status") || "ALL";
     const customerId = searchParams.get("customerId");
 
-    // Verificar si la base de datos necesita semilla inicial
-    const count = await prisma.salesOrder.count();
-    if (count === 0) {
+    // Verificar si la base de datos necesita semilla inicial (solo para 'default')
+    const count = await prisma.salesOrder.count({ where: { companyId } });
+    if (count === 0 && companyId === "default") {
       for (const orderData of initialSeedOrders) {
         const { items, ...orderHeader } = orderData;
         await prisma.salesOrder.create({
           data: {
             ...orderHeader,
+            companyId,
             items: {
               create: items,
             },
@@ -162,7 +166,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Filtros
-    const where: any = {};
+    const where: any = { companyId };
     if (status && status !== "ALL") {
       where.status = status;
     }
@@ -260,6 +264,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
     const {
@@ -310,14 +315,14 @@ export async function POST(request: NextRequest) {
     if (!finalOrderNumber) {
       const currentYear = new Date().getFullYear();
       const count = await prisma.salesOrder.count({
-        where: { orderNumber: { startsWith: `PV-${currentYear}` } },
+        where: { orderNumber: { startsWith: `PV-${currentYear}` }, companyId },
       });
       finalOrderNumber = `PV-${currentYear}-${String(count + 1).padStart(4, "0")}`;
     }
 
-    // Verificar si ya existe
-    const existing = await prisma.salesOrder.findUnique({
-      where: { orderNumber: finalOrderNumber },
+    // Verificar si ya existe en esta empresa
+    const existing = await prisma.salesOrder.findFirst({
+      where: { orderNumber: finalOrderNumber, companyId },
     });
     if (existing) {
       return NextResponse.json(
@@ -329,6 +334,7 @@ export async function POST(request: NextRequest) {
     // Crear pedido con ítems
     const newOrder = await prisma.salesOrder.create({
       data: {
+        companyId,
         orderNumber: finalOrderNumber,
         customerPoNumber: customerPoNumber?.trim() || null,
         quoteId: quoteId || null,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postSalesInvoiceEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function POST(
   _req: NextRequest,
@@ -8,10 +9,11 @@ export async function POST(
 ) {
   try {
     const { id } = await context.params;
+    const companyId = await resolveCompanyId(_req);
 
     // 1. Obtener el pedido de venta con sus líneas
-    const order = await prisma.salesOrder.findUnique({
-      where: { id },
+    const order = await prisma.salesOrder.findFirst({
+      where: { id, companyId },
       include: {
         items: true,
         salesInvoice: true,
@@ -46,6 +48,7 @@ export async function POST(
 
     // 2. Determinar el siguiente correlativo de factura
     const existingInvoices = await prisma.salesInvoice.findMany({
+      where: { companyId },
       select: { invoiceNumber: true },
       orderBy: { createdAt: "desc" },
     });
@@ -88,11 +91,14 @@ export async function POST(
     else if (order.paymentTerms?.toLowerCase().includes("contado")) daysToAdd = 0;
 
     const dueDate = new Date(Date.now() + daysToAdd * 86400000).toISOString().split("T")[0];
-    const companySettings = await prisma.companySettings.findFirst();
+    const companySettings = await prisma.companySettings.findUnique({
+      where: { id: companyId },
+    }) || await prisma.companySettings.findUnique({ where: { id: "default" } });
 
     // 3. Crear la Factura de Ventas (SalesInvoice)
     const newInvoice = await prisma.salesInvoice.create({
       data: {
+        companyId,
         invoiceNumber: nextInvoiceNumber,
         customerId: order.customerId || null,
         customerName: order.customerName,
@@ -135,6 +141,7 @@ export async function POST(
     try {
       journalEntry = await postSalesInvoiceEntry({
         id: newInvoice.id,
+        companyId,
         invoiceNumber: newInvoice.invoiceNumber,
         customerName: newInvoice.customerName,
         invoiceDate: newInvoice.invoiceDate,

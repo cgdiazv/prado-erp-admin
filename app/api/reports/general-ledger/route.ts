@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const accountCode = searchParams.get("accountCode");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    const accountsWhere: any = { isActive: true };
+    const accountsWhere: any = { isActive: true, companyId };
     if (accountCode) {
       accountsWhere.code = accountCode;
     }
@@ -18,9 +20,11 @@ export async function GET(request: NextRequest) {
       orderBy: { code: "asc" },
     });
 
-    const linesWhere: any = {};
+    const linesWhere: any = {
+      journalEntry: { companyId },
+    };
     if (startDate || endDate) {
-      linesWhere.journalEntry = { date: {} };
+      linesWhere.journalEntry.date = {};
       if (startDate) linesWhere.journalEntry.date.gte = startDate;
       if (endDate) linesWhere.journalEntry.date.lte = endDate;
     }

@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const { searchParams } = new URL(req.url);
     const fundId = searchParams.get("fundId");
 
-    const where: any = {};
+    const where: any = {
+      fund: { companyId },
+    };
     if (fundId) where.fundId = fundId;
 
     const rawAudits = await prisma.pettyCashAudit.findMany({
@@ -31,6 +35,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       fundId,
@@ -60,7 +65,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const count = await prisma.pettyCashAudit.count();
+    const targetFund = await prisma.pettyCashFund.findFirst({
+      where: { id: fundId, companyId },
+    });
+
+    if (!targetFund) {
+      return NextResponse.json(
+        { success: false, error: "Fondo de caja chica no encontrado." },
+        { status: 404 }
+      );
+    }
+
+    const count = await prisma.pettyCashAudit.count({
+      where: { fund: { companyId } },
+    });
     const auditNumber = `ARQ-${new Date().getFullYear()}-${String(count + 1).padStart(4, "0")}`;
 
     const physicalCash = parseFloat(cashCounted || physicalCashTotal) || 0;

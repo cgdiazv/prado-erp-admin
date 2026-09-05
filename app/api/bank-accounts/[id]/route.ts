@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 // PATCH /api/bank-accounts/[id] - Update a bank account
 export async function PATCH(
@@ -8,8 +9,17 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { name, accountNumber, type, currency, bankBalance, bookBalance, color, status } = body;
+
+    const existing = await prisma.bankAccount.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Cuenta bancaria no encontrada" }, { status: 404 });
+    }
 
     const updated = await prisma.bankAccount.update({
       where: { id },
@@ -48,6 +58,15 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
+
+    const existing = await prisma.bankAccount.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Cuenta bancaria no encontrada" }, { status: 404 });
+    }
 
     await prisma.bankAccount.delete({
       where: { id },

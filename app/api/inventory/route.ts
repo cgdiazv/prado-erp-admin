@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-// GET /api/inventory - List inventory items with search & pagination
+// GET /api/inventory - List inventory items with search & pagination isolated by company
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const lowStock = searchParams.get("lowStock");
@@ -11,17 +13,25 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      companyId,
+    };
 
     if (lowStock) {
       where.quantity = { lte: parseFloat(lowStock) };
     }
 
     if (search) {
-      where.OR = [
-        { sku: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+      where.AND = [
+        { companyId },
+        {
+          OR: [
+            { sku: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+          ],
+        },
       ];
+      delete where.companyId;
     }
 
     const [total, items] = await Promise.all([
@@ -59,9 +69,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/inventory - Create a new inventory item
+// POST /api/inventory - Create a new inventory item for current company
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { sku, description, quantity, cost, price, trackingType } = body;
 
@@ -72,19 +83,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await prisma.inventoryItem.findUnique({
-      where: { sku },
+    const existing = await prisma.inventoryItem.findFirst({
+      where: { sku, companyId },
     });
 
     if (existing) {
       return NextResponse.json(
-        { success: false, error: `Inventory item with SKU '${sku}' already exists` },
+        { success: false, error: `Inventory item with SKU '${sku}' already exists in this company` },
         { status: 409 }
       );
     }
 
     const item = await prisma.inventoryItem.create({
       data: {
+        companyId,
         sku,
         description,
         quantity: quantity !== undefined ? Number(quantity) : 0,

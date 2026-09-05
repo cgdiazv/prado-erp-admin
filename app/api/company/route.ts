@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 const DEFAULT_COMPANY_DATA = {
   id: "default",
@@ -26,16 +27,34 @@ const DEFAULT_COMPANY_DATA = {
   contadorEmail: "Ninguno indicado",
 };
 
-// GET /api/company - Retrieve official company settings
-export async function GET() {
+// GET /api/company - Retrieve official company settings for current company
+export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
+
     let settings = await prisma.companySettings.findUnique({
-      where: { id: "default" },
+      where: { id: companyId },
     });
 
     if (!settings) {
+      // Look up Company entity name if available
+      const companyRecord = await prisma.company.findUnique({
+        where: { id: companyId },
+      });
+
+      const initialName = companyRecord?.name || (companyId === "default" ? DEFAULT_COMPANY_DATA.nombre : "Mi Empresa");
+      const initialLegal = companyRecord?.legalName || initialName;
+
       settings = await prisma.companySettings.create({
-        data: DEFAULT_COMPANY_DATA,
+        data: {
+          ...DEFAULT_COMPANY_DATA,
+          id: companyId,
+          nombre: initialName,
+          nombreLegal: initialLegal,
+          email: companyRecord?.email || DEFAULT_COMPANY_DATA.email,
+          telefono: companyRecord?.phone || DEFAULT_COMPANY_DATA.telefono,
+          direccion: companyRecord?.address || DEFAULT_COMPANY_DATA.direccion,
+        },
       });
     }
 
@@ -49,9 +68,10 @@ export async function GET() {
   }
 }
 
-// PUT /api/company - Update official company settings
+// PUT /api/company - Update official company settings for current company
 export async function PUT(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
     const allowedFields = [
@@ -86,11 +106,27 @@ export async function PUT(request: NextRequest) {
     }
 
     const settings = await prisma.companySettings.upsert({
-      where: { id: "default" },
+      where: { id: companyId },
       update: updateData,
       create: {
         ...DEFAULT_COMPANY_DATA,
+        id: companyId,
         ...updateData,
+      },
+    });
+
+    // Also sync basic details into Company record
+    await prisma.company.updateMany({
+      where: { id: companyId },
+      data: {
+        ...(updateData.nombre ? { name: updateData.nombre } : {}),
+        ...(updateData.nombreLegal ? { legalName: updateData.nombreLegal } : {}),
+        ...(updateData.taxId ? { taxId: updateData.taxId } : {}),
+        ...(updateData.cai ? { cai: updateData.cai } : {}),
+        ...(updateData.email ? { email: updateData.email } : {}),
+        ...(updateData.telefono ? { phone: updateData.telefono } : {}),
+        ...(updateData.direccion ? { address: updateData.direccion } : {}),
+        ...(updateData.logoUrl !== undefined ? { logoUrl: updateData.logoUrl } : {}),
       },
     });
 

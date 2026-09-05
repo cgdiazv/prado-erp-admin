@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
   req: Request,
@@ -8,9 +9,10 @@ export async function GET(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
 
-    const invoice = await db.purchaseInvoice.findUnique({
-      where: { id },
+    const invoice = await db.purchaseInvoice.findFirst({
+      where: { id, companyId },
       include: { items: true },
     });
 
@@ -38,7 +40,19 @@ export async function PATCH(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
+
+    const existing = await db.purchaseInvoice.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Factura de compra no encontrada." },
+        { status: 404 }
+      );
+    }
 
     const updated = await db.purchaseInvoice.update({
       where: { id },
@@ -67,6 +81,18 @@ export async function DELETE(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
+
+    const existing = await db.purchaseInvoice.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Factura de compra no encontrada." },
+        { status: 404 }
+      );
+    }
 
     await db.purchaseInvoice.delete({
       where: { id },

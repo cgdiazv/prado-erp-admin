@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postSalesInvoiceEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function POST(
   req: NextRequest,
@@ -8,10 +9,11 @@ export async function POST(
 ) {
   try {
     const { id } = await context.params;
+    const companyId = await resolveCompanyId(req);
 
     // 1. Obtener la cotización con sus líneas
-    const quote = await prisma.quote.findUnique({
-      where: { id },
+    const quote = await prisma.quote.findFirst({
+      where: { id, companyId },
       include: {
         lines: true,
         salesInvoice: true,
@@ -46,6 +48,7 @@ export async function POST(
 
     // 2. Determinar el siguiente número de factura
     const existingInvoices = await prisma.salesInvoice.findMany({
+      where: { companyId },
       select: { invoiceNumber: true },
       orderBy: { createdAt: "desc" },
     });
@@ -92,11 +95,14 @@ export async function POST(
     const dueDate = new Date(Date.now() + daysToAdd * 86400000).toISOString().split("T")[0];
 
     // Obtener CAI de la empresa si existe
-    const companySettings = await prisma.companySettings.findFirst();
+    const companySettings = await prisma.companySettings.findUnique({
+      where: { id: companyId },
+    }) || await prisma.companySettings.findUnique({ where: { id: "default" } });
 
     // 3. Crear la Factura de Ventas (SalesInvoice)
     const newInvoice = await prisma.salesInvoice.create({
       data: {
+        companyId,
         invoiceNumber: nextInvoiceNumber,
         customerId: quote.customerId || null,
         customerName: quote.customerName,
@@ -139,6 +145,7 @@ export async function POST(
     try {
       journalEntry = await postSalesInvoiceEntry({
         id: newInvoice.id,
+        companyId,
         invoiceNumber: newInvoice.invoiceNumber,
         customerName: newInvoice.customerName,
         invoiceDate: newInvoice.invoiceDate,

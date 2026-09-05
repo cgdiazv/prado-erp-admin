@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postTaxRetentionVoidEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
   req: Request,
@@ -9,9 +10,10 @@ export async function GET(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
 
-    const retention = await db.taxRetention.findUnique({
-      where: { id },
+    const retention = await db.taxRetention.findFirst({
+      where: { id, companyId },
       include: {
         provider: true,
         purchaseInvoice: {
@@ -44,10 +46,11 @@ export async function PATCH(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
 
-    const existing = await db.taxRetention.findUnique({
-      where: { id },
+    const existing = await db.taxRetention.findFirst({
+      where: { id, companyId },
       include: { provider: true },
     });
 
@@ -88,6 +91,7 @@ export async function PATCH(
       let voidJournal = null;
       try {
         voidJournal = await postTaxRetentionVoidEntry({
+          companyId,
           retentionNumber: existing.retentionNumber,
           providerName: existing.provider?.name || "Proveedor",
           date: new Date().toISOString().split("T")[0],

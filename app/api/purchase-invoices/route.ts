@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postPurchaseInvoiceEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 const seedPurchaseInvoices = [
   {
@@ -55,19 +56,23 @@ const seedPurchaseInvoices = [
   },
 ];
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
+
     let invoices = await db.purchaseInvoice.findMany({
+      where: { companyId },
       include: { items: true },
       orderBy: { createdAt: "desc" },
     });
 
-    if (!invoices || invoices.length === 0) {
+    if (companyId === "default" && (!invoices || invoices.length === 0)) {
       for (const inv of seedPurchaseInvoices) {
         await db.purchaseInvoice.create({
           data: {
             id: inv.id,
+            companyId: "default",
             invoiceNumber: inv.invoiceNumber,
             purchaseOrderNumber: inv.purchaseOrderNumber,
             vendorName: inv.vendorName,
@@ -81,7 +86,7 @@ export async function GET() {
             inventoryStatus: inv.inventoryStatus,
             notes: inv.notes,
             items: {
-              create: inv.items.map((it) => ({
+              create: inv.items.map((it: any) => ({
                 sku: it.sku,
                 description: it.description,
                 quantity: it.quantity,
@@ -95,6 +100,7 @@ export async function GET() {
       }
 
       invoices = await db.purchaseInvoice.findMany({
+        where: { companyId },
         include: { items: true },
         orderBy: { createdAt: "desc" },
       });
@@ -113,6 +119,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
 
     if (!body.invoiceNumber || !body.vendorName) {
@@ -137,6 +144,7 @@ export async function POST(req: Request) {
     // 1. Create Purchase Invoice
     const newInvoice = await db.purchaseInvoice.create({
       data: {
+        companyId,
         invoiceNumber: body.invoiceNumber,
         purchaseOrderNumber: body.purchaseOrderNumber || null,
         vendorId: body.vendorId || null,
@@ -171,8 +179,8 @@ export async function POST(req: Request) {
       if (qtyToAdd <= 0) continue;
 
       // Find inventory item by SKU
-      const existingInvItem = await db.inventoryItem.findUnique({
-        where: { sku: item.sku },
+      const existingInvItem = await db.inventoryItem.findFirst({
+        where: { sku: item.sku, companyId },
       });
 
       if (existingInvItem) {
@@ -204,6 +212,7 @@ export async function POST(req: Request) {
     try {
       journalEntry = await postPurchaseInvoiceEntry({
         id: newInvoice.id,
+        companyId,
         invoiceNumber: newInvoice.invoiceNumber,
         vendorName: newInvoice.vendorName,
         issueDate: newInvoice.issueDate,

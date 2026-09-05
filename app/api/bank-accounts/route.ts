@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-// GET /api/bank-accounts - List all connected bank accounts with linked GL account
-export async function GET() {
+// GET /api/bank-accounts - List connected bank accounts for current company
+export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
+
     const bankAccounts = await prisma.bankAccount.findMany({
+      where: { companyId },
       include: {
         account: true,
         _count: {
@@ -31,9 +35,10 @@ export async function GET() {
   }
 }
 
-// POST /api/bank-accounts - Connect a new bank account & automatically create GL Account in Chart of Accounts
+// POST /api/bank-accounts - Connect a new bank account for current company
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { name, accountNumber, type, currency, bankBalance, bookBalance, color, tenantId } = body;
 
@@ -48,14 +53,17 @@ export async function POST(request: NextRequest) {
     const curr = currency || "USD";
     const balanceVal = Number(bankBalance) || 0;
 
-    // 1. Generate unique GL Account code for Chart of Accounts (e.g., 1101, 1102, etc.)
-    const existingBankAccountsCount = await prisma.bankAccount.count();
+    // 1. Generate unique GL Account code for Chart of Accounts
+    const existingBankAccountsCount = await prisma.bankAccount.count({
+      where: { companyId },
+    });
     const glCode = `11${(0 + existingBankAccountsCount + 1).toString().padStart(2, "0")}`;
     const glName = `${name} (${maskedNumber}) ${curr}`;
 
     // 2. Create GL Account in Chart of Accounts automatically
     const createdGlAccount = await prisma.account.create({
       data: {
+        companyId,
         code: glCode,
         name: glName,
         type: "Efectivo y equivalentes de efectivo",
@@ -68,6 +76,7 @@ export async function POST(request: NextRequest) {
     // 3. Create BankAccount linked to GL Account
     const createdBank = await prisma.bankAccount.create({
       data: {
+        companyId,
         tenantId: tenantId || null,
         name,
         accountNumber: maskedNumber,

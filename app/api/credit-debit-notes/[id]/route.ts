@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const note = await (prisma as any).creditDebitNote.findUnique({
-      where: { id },
+    const companyId = await resolveCompanyId(req);
+    const note = await (prisma as any).creditDebitNote.findFirst({
+      where: { id, companyId },
     });
     if (!note) {
       return NextResponse.json({ success: false, error: "Nota no encontrada" }, { status: 404 });
@@ -21,7 +21,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
+    const existing = await (prisma as any).creditDebitNote.findFirst({
+      where: { id, companyId },
+    });
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Nota no encontrada" }, { status: 404 });
+    }
     const updated = await (prisma as any).creditDebitNote.update({
       where: { id },
       data: body,
@@ -35,6 +42,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
+    const existing = await (prisma as any).creditDebitNote.findFirst({
+      where: { id, companyId },
+    });
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Nota no encontrada" }, { status: 404 });
+    }
     await (prisma as any).creditDebitNote.delete({
       where: { id },
     });

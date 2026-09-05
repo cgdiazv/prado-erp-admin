@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
   req: Request,
@@ -8,9 +9,10 @@ export async function GET(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
 
-    const rep = await db.salesRep.findUnique({
-      where: { id },
+    const rep = await db.salesRep.findFirst({
+      where: { id, companyId },
       include: { commissions: true },
     });
 
@@ -38,7 +40,19 @@ export async function PATCH(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
+
+    const existing = await db.salesRep.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Vendedor no encontrado." },
+        { status: 404 }
+      );
+    }
 
     const updatedRep = await db.salesRep.update({
       where: { id },
@@ -73,6 +87,18 @@ export async function DELETE(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(req);
+
+    const existing = await db.salesRep.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Vendedor no encontrado." },
+        { status: 404 }
+      );
+    }
 
     await db.salesRep.delete({
       where: { id },

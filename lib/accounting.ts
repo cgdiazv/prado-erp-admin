@@ -9,6 +9,7 @@ export interface JournalLineInput {
 }
 
 export interface CreateJournalEntryInput {
+  companyId?: string;
   date?: string;
   concept: string;
   referenceType: "INVOICE" | "PURCHASE_INVOICE" | "PAYMENT_CUSTOMER" | "PAYMENT_VENDOR" | "BANK_TX" | "PETTY_CASH" | "MANUAL" | "TAX_RETENTION";
@@ -197,6 +198,7 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
     // 1. Create the Journal Entry
     const entry = await tx.journalEntry.create({
       data: {
+        companyId: input.companyId || "default",
         entryNumber,
         date,
         concept,
@@ -218,6 +220,7 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
         const std = STANDARD_ACCOUNTS[line.accountCode];
         account = await tx.account.create({
           data: {
+            companyId: input.companyId || "default",
             code: line.accountCode,
             name: line.accountName || std?.name || `Cuenta ${line.accountCode}`,
             type: std?.type || "Asset",
@@ -280,6 +283,7 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
  */
 export async function postSalesInvoiceEntry(invoice: {
   id?: string;
+  companyId?: string;
   invoiceNumber: string;
   customerName: string;
   invoiceDate: string;
@@ -321,6 +325,7 @@ export async function postSalesInvoiceEntry(invoice: {
   }
 
   return await createJournalEntry({
+    companyId: invoice.companyId,
     date: invoice.invoiceDate,
     concept: `Venta Factura N.º ${invoice.invoiceNumber} - ${invoice.customerName}`,
     referenceType: "INVOICE",
@@ -337,6 +342,7 @@ export async function postSalesInvoiceEntry(invoice: {
  */
 export async function postCustomerPaymentEntry(payment: {
   id?: string;
+  companyId?: string;
   paymentDate: string;
   customerName: string;
   amount: number;
@@ -348,6 +354,7 @@ export async function postCustomerPaymentEntry(payment: {
   const methodStr = payment.paymentMethod ? ` (${payment.paymentMethod}${payment.referenceNumber ? ` #${payment.referenceNumber}` : ""})` : "";
 
   return await createJournalEntry({
+    companyId: payment.companyId,
     date: payment.paymentDate,
     concept: `Cobro a Cliente: ${payment.customerName}${methodStr}`,
     referenceType: "PAYMENT_CUSTOMER",
@@ -380,6 +387,7 @@ export async function postCustomerPaymentEntry(payment: {
  */
 export async function postPurchaseInvoiceEntry(purchaseInvoice: {
   id?: string;
+  companyId?: string;
   invoiceNumber: string;
   vendorName: string;
   issueDate: string;
@@ -417,6 +425,7 @@ export async function postPurchaseInvoiceEntry(purchaseInvoice: {
   });
 
   return await createJournalEntry({
+    companyId: purchaseInvoice.companyId,
     date: purchaseInvoice.issueDate,
     concept: `Factura Proveedor N.º ${purchaseInvoice.invoiceNumber} - ${purchaseInvoice.vendorName}`,
     referenceType: "PURCHASE_INVOICE",
@@ -432,6 +441,7 @@ export async function postPurchaseInvoiceEntry(purchaseInvoice: {
  * Crédito: 1100 Bancos
  */
 export async function postVendorPaymentEntry(payment: {
+  companyId?: string;
   date: string;
   vendorName: string;
   amount: number;
@@ -446,6 +456,7 @@ export async function postVendorPaymentEntry(payment: {
   const bankName = payment.bankAccountName || "Bancos Nacionales (Cuenta de Cheques)";
 
   return await createJournalEntry({
+    companyId: payment.companyId,
     date: payment.date,
     concept: `Pago a Proveedor: ${payment.vendorName}${payment.referenceNumber ? ` ref. ${payment.referenceNumber}` : ""}${payment.paymentNumber ? ` (${payment.paymentNumber})` : ""}`,
     referenceType: "PAYMENT_VENDOR",
@@ -476,6 +487,7 @@ export async function postVendorPaymentEntry(payment: {
  * Crédito: 2160 Retenciones Fiscales por Pagar (SAR: 1% ISV, 12.5% Honorarios, 10% Alquiler) (Registra la obligación fiscal con el Estado)
  */
 export async function postTaxRetentionEntry(retention: {
+  companyId?: string;
   retentionNumber: string;
   providerName: string;
   date: string;
@@ -495,6 +507,7 @@ export async function postTaxRetentionEntry(retention: {
   const invRef = retention.invoiceNumber ? ` s/Factura ${retention.invoiceNumber}` : "";
 
   return await createJournalEntry({
+    companyId: retention.companyId,
     date: retention.date,
     concept: `Comprobante Retención N.º ${retention.retentionNumber} - ${retention.providerName} (${typeLabel}${invRef})`,
     referenceType: "TAX_RETENTION",
@@ -525,6 +538,7 @@ export async function postTaxRetentionEntry(retention: {
  * Crédito: 2000 Cuentas por Pagar Proveedores Comerciales (Restaura la cuenta por pagar al proveedor)
  */
 export async function postTaxRetentionVoidEntry(retention: {
+  companyId?: string;
   retentionNumber: string;
   providerName: string;
   date: string;
@@ -532,6 +546,7 @@ export async function postTaxRetentionVoidEntry(retention: {
   currency?: string;
 }) {
   return await createJournalEntry({
+    companyId: retention.companyId,
     date: retention.date,
     concept: `ANULACIÓN Comprobante Retención N.º ${retention.retentionNumber} - ${retention.providerName}`,
     referenceType: "TAX_RETENTION",

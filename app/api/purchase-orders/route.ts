@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 const INITIAL_PURCHASE_ORDERS = [
   {
@@ -93,6 +94,7 @@ const INITIAL_PURCHASE_ORDERS = [
 export async function GET(request: NextRequest) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.toLowerCase().trim();
     const status = searchParams.get("status");
@@ -101,23 +103,26 @@ export async function GET(request: NextRequest) {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    // Check count and seed initial standard data if empty
-    const count = await db.purchaseOrder.count();
-    if (count === 0) {
-      for (const po of INITIAL_PURCHASE_ORDERS) {
-        const { items, ...orderData } = po;
-        await db.purchaseOrder.create({
-          data: {
-            ...orderData,
-            items: {
-              create: items,
+    // Check count and seed initial standard data if empty (for default company only)
+    if (companyId === "default") {
+      const count = await db.purchaseOrder.count({ where: { companyId: "default" } });
+      if (count === 0) {
+        for (const po of INITIAL_PURCHASE_ORDERS) {
+          const { items, ...orderData } = po;
+          await db.purchaseOrder.create({
+            data: {
+              ...orderData,
+              companyId: "default",
+              items: {
+                create: items,
+              },
             },
-          },
-        });
+          });
+        }
       }
     }
 
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = { companyId };
 
     if (status && status !== "ALL") {
       whereClause.status = status;
@@ -172,6 +177,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const db = prisma as any;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
     const {
@@ -208,14 +214,14 @@ export async function POST(request: NextRequest) {
     let finalOrderNumber = inputOrderNumber?.trim();
     if (!finalOrderNumber) {
       const currentYear = new Date().getFullYear();
-      const countThisYear = await db.purchaseOrder.count();
+      const countThisYear = await db.purchaseOrder.count({ where: { companyId } });
       const nextNum = String(countThisYear + 1).padStart(4, "0");
       finalOrderNumber = `OC-${currentYear}-${nextNum}`;
     }
 
     // Check uniqueness
-    const existing = await db.purchaseOrder.findUnique({
-      where: { orderNumber: finalOrderNumber },
+    const existing = await db.purchaseOrder.findFirst({
+      where: { orderNumber: finalOrderNumber, companyId },
     });
     if (existing) {
       // If already exists, append random suffix
@@ -244,6 +250,7 @@ export async function POST(request: NextRequest) {
 
     const newOrder = await db.purchaseOrder.create({
       data: {
+        companyId,
         orderNumber: finalOrderNumber,
         vendorId: vendorId || null,
         vendorName: vendorName.trim(),

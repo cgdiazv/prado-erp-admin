@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postSalesInvoiceEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
-// Initial seed data if database has no sales invoices yet
+// Initial seed data if database has no sales invoices yet for default company
 const initialSeedInvoices = [
   {
     invoiceNumber: "000-001-01-00036801",
@@ -58,20 +59,24 @@ const initialSeedInvoices = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
+
     let invoices = await prisma.salesInvoice.findMany({
+      where: { companyId },
       include: {
         lines: true,
       },
       orderBy: { invoiceDate: "desc" },
     });
 
-    // Seed if empty so the user has immediate data
-    if (invoices.length === 0) {
+    // Seed ONLY if company is "default" and has no invoices yet
+    if (invoices.length === 0 && companyId === "default") {
       for (const seed of initialSeedInvoices) {
         const created = await prisma.salesInvoice.create({
           data: {
+            companyId,
             invoiceNumber: seed.invoiceNumber,
             customerName: seed.customerName,
             customerRtn: seed.customerRtn,
@@ -104,6 +109,7 @@ export async function GET() {
         try {
           const entry = await postSalesInvoiceEntry({
             id: created.id,
+            companyId,
             invoiceNumber: created.invoiceNumber,
             customerName: created.customerName,
             invoiceDate: created.invoiceDate,
@@ -125,6 +131,7 @@ export async function GET() {
       }
 
       invoices = await prisma.salesInvoice.findMany({
+        where: { companyId },
         include: { lines: true },
         orderBy: { invoiceDate: "desc" },
       });
@@ -140,6 +147,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const {
       invoiceNumber,
@@ -173,9 +181,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upsert SalesInvoice in DB
-    const existing = await prisma.salesInvoice.findUnique({
-      where: { invoiceNumber },
+    // Upsert SalesInvoice in DB isolated by company
+    const existing = await prisma.salesInvoice.findFirst({
+      where: { invoiceNumber, companyId },
     });
 
     let savedInvoice;
@@ -224,6 +232,7 @@ export async function POST(request: NextRequest) {
     } else {
       savedInvoice = await prisma.salesInvoice.create({
         data: {
+          companyId,
           invoiceNumber,
           customerId: customerId || null,
           customerName,
@@ -265,6 +274,7 @@ export async function POST(request: NextRequest) {
     try {
       journalEntry = await postSalesInvoiceEntry({
         id: savedInvoice.id,
+        companyId,
         invoiceNumber: savedInvoice.invoiceNumber,
         customerName: savedInvoice.customerName,
         invoiceDate: savedInvoice.invoiceDate,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ serialId: string }>;
@@ -9,11 +10,12 @@ type RouteProps = {
 export async function PATCH(request: NextRequest, { params }: RouteProps) {
   try {
     const { serialId } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { serialNumber, status, notes } = body;
 
-    const existingSerial = await prisma.itemSerial.findUnique({
-      where: { id: serialId },
+    const existingSerial = await prisma.itemSerial.findFirst({
+      where: { id: serialId, inventoryItem: { companyId } },
     });
 
     if (!existingSerial) {
@@ -24,8 +26,12 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
     }
 
     if (serialNumber && serialNumber !== existingSerial.serialNumber) {
-      const conflict = await prisma.itemSerial.findUnique({
-        where: { serialNumber },
+      const conflict = await prisma.itemSerial.findFirst({
+        where: {
+          serialNumber,
+          inventoryItem: { companyId },
+          NOT: { id: serialId },
+        },
       });
       if (conflict) {
         return NextResponse.json(
@@ -69,9 +75,10 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 export async function DELETE(request: NextRequest, { params }: RouteProps) {
   try {
     const { serialId } = await params;
+    const companyId = await resolveCompanyId(request);
 
-    const existingSerial = await prisma.itemSerial.findUnique({
-      where: { id: serialId },
+    const existingSerial = await prisma.itemSerial.findFirst({
+      where: { id: serialId, inventoryItem: { companyId } },
     });
 
     if (!existingSerial) {

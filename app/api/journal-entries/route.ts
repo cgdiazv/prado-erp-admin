@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createJournalEntry } from "@/lib/accounting";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const referenceType = searchParams.get("referenceType");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const search = searchParams.get("search");
 
-    const where: any = {};
+    const where: any = { companyId };
 
     if (referenceType && referenceType !== "ALL") {
       where.referenceType = referenceType;
@@ -72,6 +74,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { date, concept, referenceType = "MANUAL", referenceId, currency = "USD", lines } = body;
 
@@ -83,6 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const entry = await createJournalEntry({
+      companyId,
       date,
       concept,
       referenceType,

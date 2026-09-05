@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 import { numberToSpanishWords } from "@/lib/numberToWords";
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       fundId,
@@ -23,8 +25,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Fetch Fund
-    const fund = await prisma.pettyCashFund.findUnique({
-      where: { id: fundId },
+    const fund = await prisma.pettyCashFund.findFirst({
+      where: { id: fundId, companyId },
       include: {
         transactions: {
           where: {
@@ -50,8 +52,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Fetch Bank Account
-    const bankAccount = await prisma.bankAccount.findUnique({
-      where: { id: bankAccountId },
+    const bankAccount = await prisma.bankAccount.findFirst({
+      where: { id: bankAccountId, companyId },
     });
 
     if (!bankAccount) {
@@ -73,7 +75,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate Policy and Reference numbers
-    const totalAuditsAndPolicies = await prisma.pettyCashAudit.count();
+    const totalAuditsAndPolicies = await prisma.pettyCashAudit.count({
+      where: { fund: { companyId } },
+    });
     const policyNumber = `POL-${new Date().getFullYear()}-${String(totalAuditsAndPolicies + 101).padStart(4, "0")}`;
     const assignedReference =
       referenceNumber ||

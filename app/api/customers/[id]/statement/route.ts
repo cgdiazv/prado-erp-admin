@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ id: string }>;
@@ -84,14 +85,16 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
     const rawId = decodeURIComponent(id);
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get("startDate"); // YYYY-MM-DD
     const endDate = searchParams.get("endDate") || new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     const currency = searchParams.get("currency") || "USD";
 
     // 1. Locate Customer
-    let customer = await prisma.customer.findFirst({
+    let customer: any = await prisma.customer.findFirst({
       where: {
+        companyId,
         OR: [
           { id: rawId },
           { macolaCode: rawId },
@@ -102,6 +105,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
 
     // 2. Fetch invoices for this customer
     const invoiceWhere: Record<string, unknown> = {
+      companyId,
       status: { notIn: ["Anulada", "ANULADA"] },
       OR: [
         ...(customer?.id ? [{ customerId: customer.id }] : []),
@@ -119,6 +123,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       const sampleInv = invoices[0];
       customer = {
         id: sampleInv?.customerId || rawId,
+        companyId,
         macolaCode: null,
         name: sampleInv?.customerName || rawId,
         email: sampleInv?.customerEmail || null,
@@ -136,6 +141,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
     // 3. Fetch payments
     const payments = await prisma.payment.findMany({
       where: {
+        companyId,
         OR: [
           ...(customer?.id ? [{ customerId: customer.id }] : []),
           { customerName: { equals: customerName, mode: "insensitive" } },
@@ -147,6 +153,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
     // 4. Fetch credit/debit notes
     const notes = await prisma.creditDebitNote.findMany({
       where: {
+        companyId,
         entityType: "CUSTOMER",
         status: { notIn: ["ANULADA", "Anulada", "BORRADOR"] },
         OR: [

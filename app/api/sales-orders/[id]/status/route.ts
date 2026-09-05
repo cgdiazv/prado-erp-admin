@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function PATCH(
   request: NextRequest,
@@ -7,6 +8,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { status, notes } = body;
 
@@ -27,8 +29,8 @@ export async function PATCH(
       );
     }
 
-    const existing = await prisma.salesOrder.findUnique({
-      where: { id },
+    const existing = await prisma.salesOrder.findFirst({
+      where: { id, companyId },
       include: { items: true },
     });
 

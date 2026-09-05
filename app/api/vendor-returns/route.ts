@@ -1,11 +1,12 @@
-﻿import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-const prisma = new PrismaClient();
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const returns = await (prisma as any).vendorReturn.findMany({
+      where: { companyId },
       include: { items: true },
       orderBy: { createdAt: "desc" },
     });
@@ -18,6 +19,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const { items = [], ...returnData } = body;
 
@@ -29,6 +31,7 @@ export async function POST(req: NextRequest) {
     const vendorReturn = await (prisma as any).vendorReturn.create({
       data: {
         ...returnData,
+        companyId,
         subtotal,
         total: subtotal,
         items: {
@@ -51,7 +54,7 @@ export async function POST(req: NextRequest) {
       for (const item of items) {
         if (!item.sku) continue;
         const invItem = await (prisma as any).inventoryItem.findFirst({
-          where: { sku: item.sku },
+          where: { sku: item.sku, companyId },
         });
         if (invItem) {
           await (prisma as any).inventoryItem.update({

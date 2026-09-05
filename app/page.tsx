@@ -2576,7 +2576,7 @@ export default function AdminDashboard() {
         throw new Error(data.error || "Falló el envío por correo.");
       }
 
-      setInvoiceSuccessMsg(`¡Factura N.º ${formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)} enviada a ${targetEmail} (From: notifications@indevasa.com, Reply-To: sac@waynetrademarkhn.com)!`);
+      setInvoiceSuccessMsg(`¡Factura N.º ${formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: sac@waynetrademarkhn.com)!`);
       setTimeout(() => setInvoiceSuccessMsg(""), 5000);
     } catch (err: any) {
       alert(`Error al enviar correo por Resend: ${err.message}`);

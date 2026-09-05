@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ id: string }>;
@@ -9,6 +10,18 @@ type RouteProps = {
 export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
+
+    const item = await prisma.inventoryItem.findFirst({
+      where: { id, companyId },
+    });
+
+    if (!item) {
+      return NextResponse.json(
+        { success: false, error: "Inventory item not found" },
+        { status: 404 }
+      );
+    }
 
     const lots = await prisma.itemLot.findMany({
       where: { inventoryItemId: id },
@@ -27,6 +40,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
 export async function POST(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { lotNumber, quantity, manufactureDate, expirationDate, notes } = body;
 
@@ -37,8 +51,8 @@ export async function POST(request: NextRequest, { params }: RouteProps) {
       );
     }
 
-    const item = await prisma.inventoryItem.findUnique({
-      where: { id },
+    const item = await prisma.inventoryItem.findFirst({
+      where: { id, companyId },
     });
 
     if (!item) {

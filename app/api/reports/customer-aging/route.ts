@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export interface AgingInvoiceDetail {
   id: string;
@@ -64,6 +65,7 @@ function calculateDueDate(invoiceDate: string, dueDate?: string | null, paymentT
 
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const asOfDateStr = searchParams.get("asOfDate") || new Date().toISOString().split("T")[0];
     const customerId = searchParams.get("customerId");
@@ -74,6 +76,7 @@ export async function GET(request: NextRequest) {
 
     // 1. Fetch sales invoices that are not cancelled or fully paid
     const whereInvoice: Record<string, unknown> = {
+      companyId,
       status: {
         notIn: ["Anulada", "ANULADA", "Pagada", "PAGADA", "Cobrada", "COBRADA"],
       },
@@ -95,6 +98,7 @@ export async function GET(request: NextRequest) {
     // 2. Fetch applied credit notes
     const creditNotes = await prisma.creditDebitNote.findMany({
       where: {
+        companyId,
         type: "CREDIT",
         entityType: "CUSTOMER",
         status: { in: ["APLICADA", "Emitida", "EMITIDA"] },

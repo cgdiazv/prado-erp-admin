@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export interface AgingBillDetail {
   id: string;
@@ -47,6 +48,7 @@ function calculateDueDate(issueDate: string, dueDate?: string | null): string {
 
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const asOfDateStr = searchParams.get("asOfDate") || new Date().toISOString().split("T")[0];
     const vendorId = searchParams.get("vendorId");
@@ -57,6 +59,7 @@ export async function GET(request: NextRequest) {
 
     // 1. Fetch purchase invoices that are not fully paid
     const whereInvoice: Record<string, unknown> = {
+      companyId,
       paymentStatus: {
         notIn: ["Pagada", "PAGADA", "PAGADO", "Cancelada", "CANCELADA"],
       },
@@ -78,6 +81,7 @@ export async function GET(request: NextRequest) {
     // 2. Fetch vendor credits (Credit notes + completed returns)
     const creditNotes = await prisma.creditDebitNote.findMany({
       where: {
+        companyId,
         type: "CREDIT",
         entityType: "VENDOR",
         status: { in: ["APLICADA", "Emitida", "EMITIDA"] },
@@ -86,6 +90,7 @@ export async function GET(request: NextRequest) {
 
     const vendorReturns = await prisma.vendorReturn.findMany({
       where: {
+        companyId,
         status: { in: ["APROBADA", "ENVIADA", "COMPLETADA"] },
       },
     });
@@ -93,6 +98,7 @@ export async function GET(request: NextRequest) {
     // 2b. Fetch active tax retentions
     const taxRetentions = await prisma.taxRetention.findMany({
       where: {
+        companyId,
         status: "ISSUED",
       },
     });
@@ -102,6 +108,7 @@ export async function GET(request: NextRequest) {
     const vendorPaymentLines = await db.vendorPaymentLine.findMany({
       where: {
         vendorPayment: {
+          companyId,
           status: "APLICADO",
         },
       },
@@ -235,7 +242,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 4. Enrich vendor info from Vendor catalog
-    const allVendors = await prisma.vendor.findMany();
+    const allVendors = await prisma.vendor.findMany({
+      where: { companyId },
+    });
     const vendorLookup = new Map<string, { macolaCode?: string | null; email?: string | null; phone?: string | null; id?: string }>();
     for (const v of allVendors) {
       vendorLookup.set(v.name.toLowerCase().trim(), {

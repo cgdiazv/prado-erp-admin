@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
   request: NextRequest,
@@ -8,9 +9,10 @@ export async function GET(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
 
-    const payment = await db.vendorPayment.findUnique({
-      where: { id },
+    const payment = await db.vendorPayment.findFirst({
+      where: { id, companyId },
       include: {
         lines: {
           include: {
@@ -46,10 +48,11 @@ export async function PATCH(
   try {
     const db = prisma as any;
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
-    const payment = await db.vendorPayment.findUnique({
-      where: { id },
+    const payment = await db.vendorPayment.findFirst({
+      where: { id, companyId },
       include: { lines: true },
     });
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 // PATCH /api/bank-transactions/[id] - Update transaction status (categorize, exclude, restore)
 export async function PATCH(
@@ -8,11 +9,15 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { status, suggestedAccount, ruleApplied } = body;
 
-    const existing = await prisma.bankTransaction.findUnique({
-      where: { id },
+    const existing = await prisma.bankTransaction.findFirst({
+      where: {
+        id,
+        bankAccount: { companyId },
+      },
     });
 
     if (!existing) {
@@ -41,11 +46,26 @@ export async function PATCH(
 
 // DELETE /api/bank-transactions/[id] - Delete a transaction
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
+
+    const existing = await prisma.bankTransaction.findFirst({
+      where: {
+        id,
+        bankAccount: { companyId },
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Transaction not found" },
+        { status: 404 }
+      );
+    }
 
     await prisma.bankTransaction.delete({
       where: { id },

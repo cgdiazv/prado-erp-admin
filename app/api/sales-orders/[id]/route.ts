@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const order = await prisma.salesOrder.findUnique({
-      where: { id },
+    const companyId = await resolveCompanyId(request);
+    const order = await prisma.salesOrder.findFirst({
+      where: { id, companyId },
       include: {
         items: true,
         quote: true,
@@ -39,10 +41,11 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
 
-    const existing = await prisma.salesOrder.findUnique({
-      where: { id },
+    const existing = await prisma.salesOrder.findFirst({
+      where: { id, companyId },
     });
     if (!existing) {
       return NextResponse.json(
@@ -148,13 +151,14 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const existing = await prisma.salesOrder.findUnique({
-      where: { id },
+    const companyId = await resolveCompanyId(request);
+    const existing = await prisma.salesOrder.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {

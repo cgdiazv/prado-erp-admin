@@ -519,7 +519,7 @@ export default function QuotesModule({
       });
       const data = await res.json();
       if (data.success) {
-        setSuccessAlert(`¡Cotización N.º ${formData.quoteNumber} enviada a ${targetEmail} (From: notifications@indevasa.com, Reply-To: sac@waynetrademarkhn.com)!`);
+        setSuccessAlert(`¡Cotización N.º ${formData.quoteNumber} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: sac@waynetrademarkhn.com)!`);
         setShowEditorModal(false);
         fetchQuotes();
       } else {

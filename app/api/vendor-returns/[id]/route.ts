@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
-const prisma = new PrismaClient();
-
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const companyId = await resolveCompanyId(req);
   try {
-    const vendorReturn = await (prisma as any).vendorReturn.findUnique({ where: { id }, include: { items: true } });
+    const vendorReturn = await (prisma as any).vendorReturn.findFirst({ where: { id, companyId }, include: { items: true } });
     if (!vendorReturn) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(vendorReturn);
   } catch (error) { return NextResponse.json({ error: "Error" }, { status: 500 }); }
@@ -14,9 +14,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const companyId = await resolveCompanyId(req);
   try {
     const body = await req.json();
-    const current = await (prisma as any).vendorReturn.findUnique({ where: { id }, include: { items: true } });
+    const current = await (prisma as any).vendorReturn.findFirst({ where: { id, companyId }, include: { items: true } });
     if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const wasNotCompleted = current.status !== "COMPLETADA";
     const willBeCompleted = body.status === "COMPLETADA";
@@ -24,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (wasNotCompleted && willBeCompleted) {
       for (const item of current.items) {
         if (!item.sku) continue;
-        const inv = await (prisma as any).inventoryItem.findFirst({ where: { sku: item.sku } });
+        const inv = await (prisma as any).inventoryItem.findFirst({ where: { sku: item.sku, companyId } });
         if (inv) await (prisma as any).inventoryItem.update({ where: { id: inv.id }, data: { quantity: Math.max(0, (inv.quantity ?? 0) - (item.quantity ?? 0)) } });
       }
     }
@@ -32,10 +33,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   } catch (error) { return NextResponse.json({ error: "Error updating" }, { status: 500 }); }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const companyId = await resolveCompanyId(req);
   try {
-    const current = await (prisma as any).vendorReturn.findUnique({ where: { id } });
+    const current = await (prisma as any).vendorReturn.findFirst({ where: { id, companyId } });
     if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (current.status !== "BORRADOR") return NextResponse.json({ error: "Solo se pueden eliminar devoluciones en estado BORRADOR." }, { status: 400 });
     await (prisma as any).vendorReturn.delete({ where: { id } });

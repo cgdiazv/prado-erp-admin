@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 const defaultSampleNotes = [
   {
@@ -60,20 +59,23 @@ const defaultSampleNotes = [
   },
 ];
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const companyId = await resolveCompanyId(req);
     const notes = await (prisma as any).creditDebitNote.findMany({
+      where: { companyId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ success: true, data: notes });
   } catch (error) {
-    console.error("Error fetching credit/debit notes from DB, returning samples:", error);
-    return NextResponse.json({ success: true, data: defaultSampleNotes });
+    console.error("Error fetching credit/debit notes from DB:", error);
+    return NextResponse.json({ success: false, error: "Failed to fetch credit/debit notes" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       noteNumber,
@@ -102,6 +104,7 @@ export async function POST(req: Request) {
     try {
       const newNote = await (prisma as any).creditDebitNote.create({
         data: {
+          companyId,
           noteNumber,
           type: type || "CREDIT",
           entityType: entityType || "CUSTOMER",

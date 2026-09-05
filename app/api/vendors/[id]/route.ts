@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ id: string }>;
 };
 
-// GET /api/vendors/[id] - Fetch single vendor by id or macolaCode
+// GET /api/vendors/[id] - Fetch single vendor by id or macolaCode for current company
 export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { id } = await params;
 
     const vendor = await prisma.vendor.findFirst({
       where: {
+        companyId,
         OR: [{ id }, { macolaCode: id }],
       },
     });
@@ -34,11 +37,12 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
 // PATCH /api/vendors/[id] - Update vendor
 export async function PATCH(request: NextRequest, { params }: RouteProps) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { id } = await params;
     const body = await request.json();
 
-    const existing = await prisma.vendor.findUnique({
-      where: { id },
+    const existing = await prisma.vendor.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -50,10 +54,10 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 
     const { macolaCode, name, email, phone, address, currency } = body;
 
-    // Check macolaCode uniqueness if changing
+    // Check macolaCode uniqueness in company if changing
     if (macolaCode && macolaCode !== existing.macolaCode) {
-      const codeConflict = await prisma.vendor.findUnique({
-        where: { macolaCode },
+      const codeConflict = await prisma.vendor.findFirst({
+        where: { macolaCode, companyId },
       });
       if (codeConflict) {
         return NextResponse.json(
@@ -64,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
     }
 
     const updated = await prisma.vendor.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         ...(name !== undefined && { name }),
         ...(macolaCode !== undefined && { macolaCode: macolaCode || null }),
@@ -86,10 +90,11 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
 // DELETE /api/vendors/[id] - Delete vendor
 export async function DELETE(request: NextRequest, { params }: RouteProps) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { id } = await params;
 
-    const existing = await prisma.vendor.findUnique({
-      where: { id },
+    const existing = await prisma.vendor.findFirst({
+      where: { id, companyId },
     });
 
     if (!existing) {
@@ -100,7 +105,7 @@ export async function DELETE(request: NextRequest, { params }: RouteProps) {
     }
 
     await prisma.vendor.delete({
-      where: { id },
+      where: { id: existing.id },
     });
 
     return NextResponse.json({ success: true, message: "Vendor deleted successfully" });

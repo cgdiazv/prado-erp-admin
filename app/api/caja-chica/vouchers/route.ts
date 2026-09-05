@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const { searchParams } = new URL(req.url);
     const fundId = searchParams.get("fundId");
 
-    const where: any = {};
+    const where: any = {
+      fund: { companyId },
+    };
     if (fundId) where.fundId = fundId;
 
     const rawVouchers = await prisma.pettyCashVoucher.findMany({
@@ -31,6 +35,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(req);
     const body = await req.json();
     const {
       action,
@@ -56,7 +61,9 @@ export async function POST(req: NextRequest) {
 
     // Handle Liquidate Action
     if (isLiquidate && targetVoucherId) {
-      const existing = await prisma.pettyCashVoucher.findUnique({ where: { id: targetVoucherId } });
+      const existing = await prisma.pettyCashVoucher.findFirst({
+        where: { id: targetVoucherId, fund: { companyId } },
+      });
       if (!existing) {
         return NextResponse.json({ success: false, error: "Vale no encontrado" }, { status: 404 });
       }
@@ -112,7 +119,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const count = await prisma.pettyCashVoucher.count();
+    const targetFund = await prisma.pettyCashFund.findFirst({
+      where: { id: fundId, companyId },
+    });
+
+    if (!targetFund) {
+      return NextResponse.json(
+        { success: false, error: "Fondo de caja chica no encontrado." },
+        { status: 404 }
+      );
+    }
+
+    const count = await prisma.pettyCashVoucher.count({
+      where: { fund: { companyId } },
+    });
     const voucherNumber = `VALE-${new Date().getFullYear()}-${String(count + 1).padStart(3, "0")}`;
 
     const voucher = await prisma.pettyCashVoucher.create({

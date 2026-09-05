@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(
   req: NextRequest,
@@ -7,9 +8,10 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
+    const companyId = await resolveCompanyId(req);
 
-    const quote = await prisma.quote.findUnique({
-      where: { id },
+    const quote = await prisma.quote.findFirst({
+      where: { id, companyId },
       include: {
         lines: true,
         salesInvoice: {
@@ -41,9 +43,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params;
+    const companyId = await resolveCompanyId(req);
 
-    const quote = await prisma.quote.findUnique({
-      where: { id },
+    const quote = await prisma.quote.findFirst({
+      where: { id, companyId },
     });
 
     if (!quote) {

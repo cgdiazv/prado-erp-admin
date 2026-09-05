@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveCompanyId } from "@/lib/tenant";
 
 // GET /api/bank-transactions - List bank feed transactions
 export async function GET(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const { searchParams } = new URL(request.url);
     const bankAccountId = searchParams.get("bankAccountId");
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      bankAccount: { companyId },
+    };
 
     if (bankAccountId && bankAccountId !== "all") {
       where.bankAccountId = bankAccountId;
@@ -52,6 +56,7 @@ export async function GET(request: NextRequest) {
 // POST /api/bank-transactions - Create a bank transaction
 export async function POST(request: NextRequest) {
   try {
+    const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const { bankAccountId, date, description, payee, type, amount, suggestedAccount, ruleApplied, status } = body;
 
@@ -59,6 +64,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: "bankAccountId, description, and amount are required" },
         { status: 400 }
+      );
+    }
+
+    const account = await prisma.bankAccount.findFirst({
+      where: { id: bankAccountId, companyId },
+    });
+    if (!account) {
+      return NextResponse.json(
+        { success: false, error: "Cuenta bancaria no encontrada" },
+        { status: 404 }
       );
     }
 
