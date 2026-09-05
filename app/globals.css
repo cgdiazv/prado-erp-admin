@@ -3,10 +3,10 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
-  --brand: #f6821f;
-  --brand-hover: #e07216;
-  --brand-light: #fff7ed;
-  --brand-border: #fed7aa;
+  --brand: #1b426e;
+  --brand-hover: #143355;
+  --brand-light: #f0f5fa;
+  --brand-border: #b8cee5;
 }
 
 @theme inline {

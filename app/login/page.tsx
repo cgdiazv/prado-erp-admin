@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
+import logoImg from "@/public/logo.webp";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,9 +53,10 @@ export default function LoginPage() {
         {/* Brand Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center">
-            <img
-              src="/logo.webp"
+            <Image
+              src={logoImg}
               alt="Wayne Trademark"
+              priority
               className="h-16 w-auto max-w-[260px] object-contain"
             />
           </div>
@@ -90,7 +93,7 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] focus:ring-2 focus:ring-[#f6821f]/20 transition-all text-sm font-medium"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/20 transition-all text-sm font-medium"
               placeholder="ejemplo@correo.com"
             />
           </div>
@@ -106,7 +109,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f6821f] focus:ring-2 focus:ring-[#f6821f]/20 transition-all text-sm font-medium"
+                className="w-full px-4 py-3 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/20 transition-all text-sm font-medium"
                 placeholder="••••••••"
               />
               <button
@@ -129,7 +132,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#f6821f] hover:bg-[#e07216] text-white font-semibold text-sm transition-all shadow-lg shadow-[#f6821f]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-sm transition-all shadow-lg shadow-[#1b426e]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
