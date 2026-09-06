@@ -458,7 +458,7 @@ export default function CreditDebitNotesModule({
                 {/* Header */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-6">
                   <div>
-                    <h1 className="text-2xl font-black text-[#1b426e] tracking-tight">WAYNE TRADEMARK</h1>
+                    <h1 className="text-2xl font-black text-[#1b426e] tracking-tight">{companySettings.nombre}</h1>
                     <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                     <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                     <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
@@ -553,7 +553,7 @@ export default function CreditDebitNotesModule({
                 <div className="mt-10 pt-6 border-t border-slate-200 grid grid-cols-2 gap-12 text-center text-xs text-slate-500">
                   <div>
                     <div className="border-b border-slate-400 w-48 mx-auto mb-2" />
-                    <p className="font-semibold text-slate-700">Autorizado por (Wayne Trademark)</p>
+                    <p className="font-semibold text-slate-700">Autorizado por ({companySettings.nombre})</p>
                   </div>
                   <div>
                     <div className="border-b border-slate-400 w-48 mx-auto mb-2" />

@@ -14,7 +14,7 @@ async function main() {
         code: "CC-001",
         name: "Caja Chica Principal - Planta Búfalo",
         custodianName: "Lic. Ruben Mondragón",
-        custodianEmail: "R.mondragon@waynetrademarkhn.com",
+        custodianEmail: "custodio@empresa.com",
         currency: "HNL",
         initialAmount: 10000.0,
         currentBalance: 7850.0,

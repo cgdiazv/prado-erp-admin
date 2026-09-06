@@ -2,22 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
-const WAYNE_COMPANY_DATA = {
+const DEFAULT_COMPANY_DATA = {
   id: "default",
-  nombre: "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
-  direccion: "ZIP Búfalo, Villanueva, Cortés 21100",
-  email: "contabilidad@waynetrademarkhn.com",
-  telefono: "+50494522666",
+  nombre: "",
+  direccion: "",
+  email: "",
+  telefono: "",
   sitioWeb: "Ninguno indicado",
-  sector: "Manufactura y Producción Industrial (Manufacturing)",
-  nombreLegal: "WAYNE TRADEMARK PRINTING AND PACKAGING DE HONDURAS S DE RL",
-  taxId: "05019008183490",
+  sector: "General",
+  nombreLegal: "",
+  taxId: "",
   cai: "Ninguno indicado",
   rangoAutorizado: "Ninguno indicado",
   fechaLimiteEmision: "Ninguno indicado",
-  tipoEmpresa: "Sociedad anónima (pequeña empresa) con dos o más propietarios",
-  domicilioLegal: "Zip Búfalo Edificio 1B, Villanueva, Cortés 21101",
-  emailCliente: "contabilidad@waynetrademarkhn.com",
+  tipoEmpresa: "Ninguno indicado",
+  domicilioLegal: "",
+  emailCliente: "",
   direccionCliente: "Ninguno indicado",
   contadorNombre: "",
   contadorTitulo: "Contador General",
@@ -67,13 +67,13 @@ export async function GET(request: NextRequest) {
       if (companyId === "default") {
         settings = await prisma.companySettings.create({
           data: {
-            ...WAYNE_COMPANY_DATA,
+            ...DEFAULT_COMPANY_DATA,
             id: companyId,
-            nombre: companyRecord?.name && companyRecord.name !== "Ninguno indicado" ? companyRecord.name : WAYNE_COMPANY_DATA.nombre,
-            nombreLegal: companyRecord?.legalName && companyRecord.legalName !== "Ninguno indicado" ? companyRecord.legalName : WAYNE_COMPANY_DATA.nombreLegal,
-            email: companyRecord?.email && companyRecord.email !== "Ninguno indicado" ? companyRecord.email : WAYNE_COMPANY_DATA.email,
-            telefono: companyRecord?.phone && companyRecord.phone !== "Ninguno indicado" ? companyRecord.phone : WAYNE_COMPANY_DATA.telefono,
-            direccion: companyRecord?.address && companyRecord.address !== "Ninguno indicado" ? companyRecord.address : WAYNE_COMPANY_DATA.direccion,
+            nombre: companyRecord?.name && companyRecord.name !== "Ninguno indicado" ? companyRecord.name : DEFAULT_COMPANY_DATA.nombre,
+            nombreLegal: companyRecord?.legalName && companyRecord.legalName !== "Ninguno indicado" ? companyRecord.legalName : DEFAULT_COMPANY_DATA.nombreLegal,
+            email: companyRecord?.email && companyRecord.email !== "Ninguno indicado" ? companyRecord.email : DEFAULT_COMPANY_DATA.email,
+            telefono: companyRecord?.phone && companyRecord.phone !== "Ninguno indicado" ? companyRecord.phone : DEFAULT_COMPANY_DATA.telefono,
+            direccion: companyRecord?.address && companyRecord.address !== "Ninguno indicado" ? companyRecord.address : DEFAULT_COMPANY_DATA.direccion,
           },
         });
       } else {
@@ -143,7 +143,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const defaultCreate = companyId === "default" ? WAYNE_COMPANY_DATA : {
+    const defaultCreate = companyId === "default" ? DEFAULT_COMPANY_DATA : {
       ...BLANK_COMPANY_DATA,
       id: companyId,
     };

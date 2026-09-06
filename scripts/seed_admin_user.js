@@ -4,9 +4,9 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = (process.env.ADMIN_EMAIL || "admin@waynetrademarkhn.com").toLowerCase().trim();
-  const rawPassword = process.env.ADMIN_PASSWORD || "WayneAdmin2026!";
-  const name = "Wayne Administrator";
+  const email = (process.env.ADMIN_EMAIL || "admin@empresa.com").toLowerCase().trim();
+  const rawPassword = process.env.ADMIN_PASSWORD || "Admin2026!";
+  const name = "Administrador";
   const role = "SUPER_ADMIN";
 
   console.log(`[Seed Admin] Processing initial administrator for: ${email}`);

@@ -160,7 +160,7 @@ export function InvoicesModule({
   const [sendingInvoiceEmail, setSendingInvoiceEmail] = useState(false);
 
   const [invoiceDesign, setInvoiceDesign] = useState<InvoiceDesign>({
-    preset: "Estándar Wayne Orange",
+    preset: "Estándar Naranja",
     template: "Moderno",
     color: "#1b426e",
     font: "Helvetica Neue",
@@ -216,7 +216,7 @@ export function InvoicesModule({
             productId: l.productId || "",
             productName: l.productName || "Artículo o Servicio Flexográfico",
             sku: l.sku || `SKU-${editingInvoice.num}`,
-            description: l.description || "Impresión y empaque industrial Wayne Trademark",
+            description: l.description || "Impresión y empaque industrial",
             quantity: Number(l.quantity) || 1,
             rate: Number(l.rate) || Number(editingInvoice.total) || 0,
             amount: Number(l.amount) || Number(editingInvoice.total) || 0,
@@ -654,7 +654,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
   };
 
   const handleSendInvoiceEmail = async () => {
-    const targetEmail = invoiceForm.customerEmail || "sac@waynetrademarkhn.com";
+    const targetEmail = invoiceForm.customerEmail || companySettings.email || "";
     setSendingInvoiceEmail(true);
     try {
       const res = await fetch("/api/send-invoice", {
@@ -681,7 +681,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
         throw new Error(data.error || "Falló el envío por correo.");
       }
 
-      setInvoiceSuccessMsg(`¡Factura N.º ${formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: sac@waynetrademarkhn.com)!`);
+      setInvoiceSuccessMsg(`¡Factura N.º ${formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: ${companySettings.email})!`);
       setTimeout(() => setInvoiceSuccessMsg(""), 5000);
     } catch (err: any) {
       alert(`Error al enviar correo por Resend: ${err.message}`);
@@ -933,7 +933,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   {/* Header */}
                 <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
                   <div>
-                    <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>WAYNE TRADEMARK</h1>
+                    <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>{companySettings.nombre}</h1>
                     <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                     <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                     <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
@@ -1275,7 +1275,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <img src={companyLogo} alt="Logo" className="h-12 object-contain ml-auto" />
                           ) : (
                             <div className="h-12 w-32 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center text-[10px] text-slate-400 ml-auto">
-                              Wayne Logo
+                              Logo empresa
                             </div>
                           )}
                         </div>
@@ -1712,13 +1712,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                     <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xs max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150">
                       <div className="border-b border-slate-200 pb-4">
                         <h3 className="font-bold text-base text-slate-900">Vista previa del correo electrónico para el cliente</h3>
-                        <p className="text-xs text-slate-500">Así es como el cliente visualizará el correo de facturación de Wayne.</p>
+                        <p className="text-xs text-slate-500">Así es como el cliente visualizará el correo de facturación.</p>
                       </div>
 
                       <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
                         <p><strong>De:</strong> {companySettings.email}</p>
                         <p><strong>Para:</strong> {invoiceForm.customerEmail || "cliente@empresa.hn"}</p>
-                        <p><strong>Asunto:</strong> Factura {formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)} de Wayne Trademark Honduras</p>
+                        <p><strong>Asunto:</strong> Factura {formatFiscalInvoiceNumber(invoiceForm.invoiceNumber)} de {companySettings.nombre}</p>
                       </div>
 
                       <div className="p-6 border border-slate-200 rounded-2xl space-y-4 bg-white text-xs text-slate-700 leading-relaxed">
@@ -1776,7 +1776,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                         <div className="space-y-6">
                           <div className="flex justify-between items-start border-b-2 pb-6" style={{ borderColor: activeInvoiceColor }}>
                             <div>
-                              <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>WAYNE TRADEMARK</h1>
+                              <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>{companySettings.nombre}</h1>
                               <p className="font-bold text-slate-900 mt-1">{companySettings.nombre}</p>
                               <p className="text-slate-500">{companySettings.direccion}</p>
                               <p className="text-slate-500">RTN: {companySettings.taxId}</p>
@@ -2057,7 +2057,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                   value={invoiceDesign.preset}
                                   onChange={(e) => {
                                     const p = e.target.value;
-                                    if (p === "Estándar Wayne Orange") {
+                                    if (p === "Estándar Naranja") {
                                       setInvoiceDesign({ ...invoiceDesign, preset: p, template: "Moderno", color: "#1b426e", font: "Helvetica Neue" });
                                     } else if (p === "Minimalista") {
                                       setInvoiceDesign({ ...invoiceDesign, preset: p, template: "Standard", color: "#555555", font: "Inter" });
@@ -2069,7 +2069,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                   }}
                                   className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] cursor-pointer font-medium"
                                 >
-                                  <option value="Estándar Wayne Orange">Estándar Wayne Orange</option>
+                                  <option value="Estándar Naranja">Estándar Naranja</option>
                                   <option value="Minimalista">Minimalista</option>
                                   <option value="Corporativo Industrial">Corporativo Industrial</option>
                                 </select>

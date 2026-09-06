@@ -1983,7 +1983,7 @@ export function PurchasesModule({
                   {/* Header */}
                   <div className="flex justify-between items-start border-b-2 border-[#1b426e] pb-6 mb-6">
                     <div>
-                      <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">WAYNE TRADEMARK</h1>
+                      <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">{companySettings.nombre}</h1>
                       <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                       <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                       <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
@@ -2019,7 +2019,7 @@ export function PurchasesModule({
                       <p className="font-bold text-slate-900 text-sm">{companySettings.nombre}</p>
                       <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                       <p className="text-slate-600 text-xs">Atención: Almacén de Insumos & Materia Prima</p>
-                      <p className="text-slate-600 text-xs">Tel: {companySettings.telefono} • compras@waynetrademark.com</p>
+                      <p className="text-slate-600 text-xs">Tel: {companySettings.telefono} • {companySettings.email}</p>
                     </div>
                   </div>
 
@@ -2068,7 +2068,7 @@ export function PurchasesModule({
                       </div>
                       <div className="pt-3 border-t border-slate-200/60 mt-3 flex items-center justify-between text-[11px] text-slate-400">
                         <span className="font-medium">Documento Comercial de Compra</span>
-                        <span className="font-mono font-semibold">Wayne Trademark</span>
+                        <span className="font-mono font-semibold">{companySettings.nombre}</span>
                       </div>
                     </div>
 
@@ -2420,9 +2420,9 @@ export function PurchasesModule({
 
                       <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4 text-xs text-slate-700 font-sans">
                         <div className="space-y-1 border-b border-slate-200 pb-3">
-                          <p><strong>De:</strong> compras@waynetrademark.com</p>
+                          <p><strong>De:</strong> {companySettings.email}</p>
                           <p><strong>Para:</strong> {poForm.vendorEmail}</p>
-                          <p><strong>Asunto:</strong> Orden de Compra {poForm.num} - Wayne Trademark</p>
+                          <p><strong>Asunto:</strong> Orden de Compra {poForm.num} - {companySettings.nombre}</p>
                         </div>
                         <p>Estimado equipo de {poForm.vendorName},</p>
                         <p>Adjunto a este correo enviamos la **Orden de Compra {poForm.num}** por un importe total de **${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })} USD** correspondiente a insumos de {poForm.category}.</p>
@@ -2439,7 +2439,7 @@ export function PurchasesModule({
                           {/* Header */}
                           <div className="flex justify-between items-start border-b-2 border-[#1b426e] pb-6">
                             <div>
-                              <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">WAYNE TRADEMARK</h1>
+                              <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">{companySettings.nombre}</h1>
                               <p className="font-bold text-slate-900 mt-1">{companySettings.nombre}</p>
                               <p className="text-slate-500">{companySettings.direccion}</p>
                               <p className="text-slate-500">RTN: {companySettings.taxId}</p>
@@ -2475,7 +2475,7 @@ export function PurchasesModule({
                               <p className="font-bold text-slate-900 text-sm">{companySettings.nombre}</p>
                               <p className="text-slate-500 text-xs">{companySettings.direccion}</p>
                               <p className="text-slate-500 text-xs">Atención: Almacén de Insumos & Materia Prima</p>
-                              <p className="text-slate-500 text-xs">Tel: {companySettings.telefono} • compras@waynetrademark.com</p>
+                              <p className="text-slate-500 text-xs">Tel: {companySettings.telefono} • {companySettings.email}</p>
                             </div>
                           </div>
 
@@ -2524,7 +2524,7 @@ export function PurchasesModule({
                               </div>
                               <div className="pt-3 border-t border-slate-200/60 mt-3 flex items-center justify-between text-[11px] text-slate-400">
                                 <span className="font-medium">Documento Comercial de Compra</span>
-                                <span className="font-mono font-semibold">Wayne Trademark</span>
+                                <span className="font-mono font-semibold">{companySettings.nombre}</span>
                               </div>
                             </div>
 

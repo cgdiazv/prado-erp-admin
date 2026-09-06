@@ -4255,7 +4255,7 @@ export default function AdminDashboard() {
                           <span className="text-sm font-bold text-slate-900">{formatCurrency(bank.bankBalance)}</span>
                         </div>
                         <div className="flex items-baseline justify-between text-[11px]">
-                          <span className="text-[10px] text-slate-400">En Wayne:</span>
+                          <span className="text-[10px] text-slate-400">En Libros:</span>
                           <span className="font-medium text-slate-600">{formatCurrency(bank.bookBalance)}</span>
                         </div>
                       </div>
@@ -4869,7 +4869,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
                   <div>
                     <h2 className="font-bold text-base text-slate-900">Centro de Reportes</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Informes financieros, contables y operativos de Wayne Trademark Honduras</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Informes financieros, contables y operativos de la empresa</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-500 font-medium">Período fiscal:</span>
@@ -9217,7 +9217,7 @@ export default function AdminDashboard() {
                             />
                           </div>
                           <div>
-                            <label className="block text-slate-700 font-semibold mb-1">Saldo en Libros (Wayne)</label>
+                            <label className="block text-slate-700 font-semibold mb-1">Saldo en Libros</label>
                             <input
                               type="number"
                               step="0.01"
@@ -9890,6 +9890,7 @@ export default function AdminDashboard() {
                         ) : editingConfigKey === "direccion" || editingConfigKey === "domicilioLegal" ? (
                           <textarea
                             rows={3}
+                            autoComplete="off"
                             value={editingConfigValue}
                             onChange={(e) => setEditingConfigValue(e.target.value)}
                             className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
@@ -9897,6 +9898,7 @@ export default function AdminDashboard() {
                         ) : (
                           <input
                             type="text"
+                            autoComplete="off"
                             value={editingConfigValue}
                             onChange={(e) => setEditingConfigValue(e.target.value)}
                             className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
@@ -10334,7 +10336,7 @@ export default function AdminDashboard() {
                       {quickActions.find((a) => a.id === activeModal)?.label}
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                      Acción configurada para Wayne Trademark Honduras. Este módulo se integrará con las cuentas contables y facturas del sistema.
+                      Acción configurada para la empresa. Este módulo se integrará con las cuentas contables y facturas del sistema.
                     </p>
                   </div>
 

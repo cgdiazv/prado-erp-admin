@@ -2592,7 +2592,7 @@ export default function CajaChicaModule({
                   <h3 className="font-bold text-sm text-slate-900">
                     Acta Oficial de Arqueo — {selectedAuditForPrint.auditNumber}
                   </h3>
-                  <span className="text-[11px] text-slate-500">Wayne Trademark de Honduras S. de R.L.</span>
+                  <span className="text-[11px] text-slate-500">{companySettings?.nombreLegal || companySettings?.nombre || ""}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -2625,11 +2625,11 @@ export default function CajaChicaModule({
                 <div className="border-b-2 border-slate-800 pb-4 flex justify-between items-start">
                   <div>
                     <h2 className="text-base font-black tracking-tight text-slate-900 uppercase">
-                      Wayne Trademark de Honduras S. de R.L.
+                      {companySettings?.nombreLegal || companySettings?.nombre || ""}
                     </h2>
-                    <p className="text-[11px] text-slate-600">RTN: 05019001123456 | PBX: +504 2565-8900</p>
+                    <p className="text-[11px] text-slate-600">{[companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "", companySettings?.telefono ? `Tel: ${companySettings.telefono}` : ""].filter(Boolean).join(" | ")}</p>
                     <p className="text-[11px] text-slate-600">
-                      Planta de Manufactura: Carretera a Búfalo, Villanueva, Cortés, Honduras
+                      {companySettings?.direccion || ""}
                     </p>
                   </div>
                   <div className="text-right">
@@ -2749,7 +2749,7 @@ export default function CajaChicaModule({
                     <div className="border-t border-slate-400 pt-2">
                       <span className="font-bold text-slate-900 block">{selectedAuditForPrint.custodianName}</span>
                       <span className="text-slate-500 text-[11px] block">Custodio Responsable</span>
-                      <span className="text-slate-400 text-[10px]">Wayne Trademark de Honduras S. de R.L.</span>
+                      <span className="text-slate-400 text-[10px]">{companySettings?.nombreLegal || companySettings?.nombre || ""}</span>
                     </div>
 
                     <div className="border-t border-slate-400 pt-2">
@@ -2852,7 +2852,7 @@ export default function CajaChicaModule({
               <div className="border-t border-black pt-2">
                 <span className="font-bold block">{selectedAuditForPrint.custodianName}</span>
                 <span className="text-slate-600 block">Custodio Responsable</span>
-                <span>Wayne Trademark de Honduras</span>
+                <span>{companySettings?.nombreLegal || companySettings?.nombre || ""}</span>
               </div>
               <div className="border-t border-black pt-2">
                 <span className="font-bold block">{selectedAuditForPrint.auditorName}</span>
@@ -3010,7 +3010,7 @@ export default function CajaChicaModule({
                   <h4 className="font-extrabold text-slate-900 uppercase tracking-wider text-xs">
                     Partida de Diario Contable
                   </h4>
-                  <span className="text-[11px] text-slate-500">Plan de Cuentas Wayne</span>
+                  <span className="text-[11px] text-slate-500">Plan de Cuentas Contables</span>
                 </div>
 
                 <div className="border border-slate-300 rounded-xl overflow-hidden">

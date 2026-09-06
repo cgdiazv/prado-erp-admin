@@ -485,7 +485,7 @@ export default function QuotesModule({
       return;
     }
 
-    const targetEmail = formData.customerEmail || customers.find((c) => c.name === formData.customerName)?.email || "sac@waynetrademarkhn.com";
+    const targetEmail = formData.customerEmail || customers.find((c) => c.name === formData.customerName)?.email || companySettings?.email || "";
     setSendingQuoteEmail(true);
     try {
       // 1. Envío de correo electrónico vía Resend
@@ -532,7 +532,7 @@ export default function QuotesModule({
       });
       const data = await res.json();
       if (data.success) {
-        setSuccessAlert(`¡Cotización N.º ${formData.quoteNumber} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: sac@waynetrademarkhn.com)!`);
+        setSuccessAlert(`¡Cotización N.º ${formData.quoteNumber} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: ${companySettings?.email || targetEmail})!`);
         setShowEditorModal(false);
         fetchQuotes();
       } else {
@@ -779,7 +779,7 @@ export default function QuotesModule({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Cotizaciones_Wayne_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute("download", `Cotizaciones_${new Date().toISOString().split("T")[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1876,19 +1876,19 @@ export default function QuotesModule({
                 <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xs max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150">
                   <div className="border-b border-slate-200 pb-4">
                     <h3 className="font-bold text-base text-slate-900">Vista previa del correo electrónico para el cliente</h3>
-                    <p className="text-xs text-slate-500">Así es como el cliente visualizará el correo de la cotización comercial de Wayne Trademark.</p>
+                    <p className="text-xs text-slate-500">Así es como el cliente visualizará el correo de la cotización comercial.</p>
                   </div>
 
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2 text-slate-700">
-                    <p><strong>De:</strong> info@waynetrademarkhn.com</p>
+                    <p><strong>De:</strong> {companySettings?.email || ""}</p>
                     <p><strong>Para:</strong> {formData.customerEmail || customers.find((c) => c.name === formData.customerName)?.email || "cliente@empresa.hn"}</p>
-                    <p><strong>Asunto:</strong> Cotización Comercial {formData.quoteNumber} de Wayne Trademark Printing &amp; Packaging</p>
+                    <p><strong>Asunto:</strong> Cotización Comercial {formData.quoteNumber} de {compName}</p>
                   </div>
 
                   <div className="p-6 border border-slate-200 rounded-2xl space-y-4 bg-white text-xs text-slate-700 leading-relaxed">
                     <p className="font-semibold text-slate-900">Estimado(a) {formData.customerName || "Cliente"},</p>
                     <p>
-                      Es un placer saludarle de parte de <strong>Wayne Trademark Printing and Packaging de Honduras S. de R.L.</strong> Adjunto encontrará la cotización formal <strong>{formData.quoteNumber}</strong> con la propuesta y detalle de precios para su requerimiento.
+                      Es un placer saludarle de parte de <strong>{compName}</strong> Adjunto encontrará la cotización formal <strong>{formData.quoteNumber}</strong> con la propuesta y detalle de precios para su requerimiento.
                     </p>
 
                     <div className="my-4 p-4 rounded-xl bg-[#fff7ed] border border-[#1b426e]/30 flex justify-between items-center">
@@ -1912,14 +1912,14 @@ export default function QuotesModule({
                     )}
 
                     <p>
-                      Para aprobar esta cotización o coordinar la corrida de muestras y producción, puede responder a este correo o comunicarse directamente con su ejecutivo asignado ({formData.salesRepName || "Wayne Sales"}).
+                      Para aprobar esta cotización o coordinar la corrida de muestras y producción, puede responder a este correo o comunicarse directamente con su ejecutivo asignado ({formData.salesRepName || "Ventas"}).
                     </p>
 
                     <p className="pt-4 border-t border-slate-100 text-slate-500">
                       Atentamente,<br />
-                      <strong>Wayne Trademark Printing and Packaging de Honduras</strong><br />
-                      Parque Industrial Zip Búfalo, Edificio 1B, Villanueva, Cortés<br />
-                      Tel: +504 9452-2666 | info@waynetrademarkhn.com
+                      <strong>{compName}</strong><br />
+                      {compAddress}<br />
+                      {compContact}
                     </p>
                   </div>
                 </div>
@@ -1964,7 +1964,7 @@ export default function QuotesModule({
                       <p className="text-slate-400 font-semibold uppercase text-[10px]">Condiciones:</p>
                       <p className="text-slate-700 mt-0.5"><span className="font-semibold">Términos:</span> {formData.paymentTerms}</p>
                       <p className="text-slate-700 mt-0.5"><span className="font-semibold">Moneda:</span> {formData.currency}</p>
-                      <p className="text-slate-700 mt-0.5"><span className="font-semibold">Vendedor:</span> {formData.salesRepName || "Wayne Sales"}</p>
+                      <p className="text-slate-700 mt-0.5"><span className="font-semibold">Vendedor:</span> {formData.salesRepName || "Sin asignar"}</p>
                     </div>
                   </div>
 
@@ -2024,7 +2024,7 @@ export default function QuotesModule({
                     {/* Firmas al pie de página */}
                     <div className="pt-12 grid grid-cols-2 gap-12 text-center text-xs text-slate-600">
                       <div className="border-t border-slate-300 pt-2">
-                        <p className="font-semibold text-slate-900">Wayne Trademark Printing & Packaging</p>
+                        <p className="font-semibold text-slate-900">{compName}</p>
                         <p className="text-[11px] text-slate-400">Firma y Sello Autorizado</p>
                       </div>
                       <div className="border-t border-slate-300 pt-2">
@@ -2074,7 +2074,7 @@ export default function QuotesModule({
                 <p className="text-slate-400 font-semibold uppercase text-[10px]">Condiciones:</p>
                 <p className="text-slate-700 mt-0.5"><span className="font-semibold">Términos:</span> {formData.paymentTerms}</p>
                 <p className="text-slate-700 mt-0.5"><span className="font-semibold">Moneda:</span> {formData.currency}</p>
-                <p className="text-slate-700 mt-0.5"><span className="font-semibold">Vendedor:</span> {formData.salesRepName || "Wayne Sales"}</p>
+                <p className="text-slate-700 mt-0.5"><span className="font-semibold">Vendedor:</span> {formData.salesRepName || "Sin asignar"}</p>
               </div>
             </div>
 
@@ -2132,7 +2132,7 @@ export default function QuotesModule({
             {/* Firmas */}
             <div className="pt-12 grid grid-cols-2 gap-12 text-center text-xs text-slate-600">
               <div className="border-t border-slate-300 pt-2">
-                <p className="font-semibold text-slate-900">Wayne Trademark Printing & Packaging</p>
+                <p className="font-semibold text-slate-900">{compName}</p>
                 <p className="text-[11px] text-slate-400">Firma y Sello Autorizado</p>
               </div>
               <div className="border-t border-slate-300 pt-2">
@@ -2487,7 +2487,7 @@ export default function QuotesModule({
                     <span className="font-semibold">Moneda:</span> {activePrintQuote.currency}
                   </p>
                   <p className="text-slate-700 mt-0.5">
-                    <span className="font-semibold">Vendedor:</span> {activePrintQuote.salesRepName || "Wayne Sales"}
+                    <span className="font-semibold">Vendedor:</span> {activePrintQuote.salesRepName || "Sin asignar"}
                   </p>
                 </div>
               </div>
@@ -2559,7 +2559,7 @@ export default function QuotesModule({
             {/* Firmas al pie de página */}
             <div className="pt-12 grid grid-cols-2 gap-12 text-center text-xs text-slate-600">
               <div className="border-t border-slate-300 pt-2">
-                <p className="font-semibold text-slate-900">Wayne Trademark Printing & Packaging</p>
+                <p className="font-semibold text-slate-900">{compName}</p>
                 <p className="text-[11px] text-slate-400">Firma y Sello Autorizado</p>
               </div>
               <div className="border-t border-slate-300 pt-2">

@@ -208,7 +208,7 @@ export default function VendorAgingReportModule({
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `antiguedad_saldos_proveedores_wayne_${asOfDate}.csv`
+      `antiguedad_saldos_proveedores_${asOfDate}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -885,7 +885,7 @@ export default function VendorAgingReportModule({
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-[#1b426e]" />
           <span>
-            <b>Política de Crédito Wayne:</b> Pagos a proveedores se rigen según condiciones de crédito (Neto 15, 30 o 60 días).
+            <b>Política de Crédito:</b> Pagos a proveedores se rigen según condiciones de crédito (Neto 15, 30 o 60 días).
           </span>
         </div>
         <div className="text-[11px] text-slate-400">

@@ -1420,7 +1420,7 @@ export default function TaxRetentionsModule({
                 <div className="grid grid-cols-2 gap-8 pt-12 text-center text-xs">
                   <div>
                     <div className="border-t border-slate-400 pt-2 font-bold text-slate-800">
-                      WAYNE TRADEMARK S. DE R.L.
+                      {companySettings?.nombreLegal || companySettings?.nombre || ""}
                     </div>
                     <div className="text-[10px] text-slate-500">
                       Firma Autorizada y Sello Agente Retenedor
