@@ -19,7 +19,9 @@ import {
   FileSpreadsheet,
   Calendar,
   X,
-  Layers
+  Layers,
+  ImageIcon,
+  Upload
 } from "lucide-react";
 
 interface InventoryModuleProps {
@@ -118,6 +120,8 @@ export default function InventoryModule({
     imageUrl: "",
   };
   const [newProductForm, setNewProductForm] = useState(defaultProductForm);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState("");
 
   // Edit Product Modal State
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
@@ -128,6 +132,7 @@ export default function InventoryModule({
     cost: 0,
     price: 0,
     trackingType: "NONE",
+    imageUrl: "",
   });
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
@@ -276,6 +281,24 @@ export default function InventoryModule({
   }, [localInventory, search, filterType]);
 
   // Handlers for Products
+  const uploadProductImage = async (file: File): Promise<string | null> => {
+    setImageUploadError("");
+    setImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/inventory/upload-image", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Error al subir la imagen");
+      return json.data.url as string;
+    } catch (err: any) {
+      setImageUploadError(err.message || "Error al subir la imagen");
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleCreateProduct = async (e?: React.FormEvent, createAnother: boolean = false) => {
     if (e) e.preventDefault();
     if (!newProductForm.name.trim()) return;
@@ -294,6 +317,7 @@ export default function InventoryModule({
           quantity: newProductForm.type === "Servicio" ? 1 : 10,
           cost: newProductForm.cost || 0,
           price: newProductForm.price || 0,
+          imageUrl: newProductForm.imageUrl || null,
         }),
       });
 
@@ -331,7 +355,9 @@ export default function InventoryModule({
       cost: prod.cost,
       price: prod.price,
       trackingType: prod.trackingType || "NONE",
+      imageUrl: prod.imageUrl || "",
     });
+    setImageUploadError("");
     setModalError("");
     setModalSuccess("");
   };
@@ -777,10 +803,22 @@ export default function InventoryModule({
                             <button
                               type="button"
                               onClick={() => handleOpenEditProduct(item)}
-                              className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium"
+                              className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium flex items-center gap-2.5"
                               title="Haz clic para editar producto"
                             >
-                              {item.description}
+                              {item.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={item.imageUrl}
+                                  alt=""
+                                  className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
+                                />
+                              ) : (
+                                <span className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                  <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
+                                </span>
+                              )}
+                              <span>{item.description}</span>
                             </button>
                           </td>
                           <td className="p-3.5">
@@ -1371,6 +1409,53 @@ export default function InventoryModule({
             )}
 
             <form onSubmit={handleSaveEditProduct} className="space-y-3.5 text-xs">
+              <div className="flex items-center gap-3">
+                {productForm.imageUrl ? (
+                  <div className="relative w-16 h-16 shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={productForm.imageUrl}
+                      alt="Foto del producto"
+                      className="w-16 h-16 rounded-lg object-cover border border-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProductForm({ ...productForm, imageUrl: "" })}
+                      className="absolute -top-1.5 -right-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full p-0.5 cursor-pointer shadow"
+                      title="Quitar foto"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 shrink-0 rounded-lg bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-slate-300" />
+                  </div>
+                )}
+                <div>
+                  <label className="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold cursor-pointer inline-flex items-center gap-1.5">
+                    <Upload className="w-3.5 h-3.5" />
+                    {imageUploading ? "Subiendo..." : productForm.imageUrl ? "Cambiar foto" : "Subir foto"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      disabled={imageUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        const url = await uploadProductImage(file);
+                        if (url) setProductForm((prev) => ({ ...prev, imageUrl: url }));
+                      }}
+                    />
+                  </label>
+                  {imageUploadError && (
+                    <p className="mt-1 text-[11px] font-semibold text-rose-600">{imageUploadError}</p>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">Descripción del Artículo *</label>
                 <input
@@ -1580,6 +1665,55 @@ export default function InventoryModule({
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Foto del producto</label>
+                      <div className="flex items-center gap-3">
+                        {newProductForm.imageUrl ? (
+                          <div className="relative w-16 h-16 shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={newProductForm.imageUrl}
+                              alt="Foto del producto"
+                              className="w-16 h-16 rounded-lg object-cover border border-slate-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setNewProductForm({ ...newProductForm, imageUrl: "" })}
+                              className="absolute -top-1.5 -right-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full p-0.5 cursor-pointer shadow"
+                              title="Quitar foto"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 shrink-0 rounded-lg bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center">
+                            <ImageIcon className="w-5 h-5 text-slate-300" />
+                          </div>
+                        )}
+                        <label className="px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold cursor-pointer inline-flex items-center gap-1.5">
+                          <Upload className="w-3.5 h-3.5" />
+                          {imageUploading ? "Subiendo..." : "Subir imagen"}
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className="hidden"
+                            disabled={imageUploading}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = "";
+                              if (!file) return;
+                              const url = await uploadProductImage(file);
+                              if (url) setNewProductForm((prev) => ({ ...prev, imageUrl: url }));
+                            }}
+                          />
+                        </label>
+                      </div>
+                      {imageUploadError && (
+                        <p className="mt-1 text-[11px] font-semibold text-rose-600">{imageUploadError}</p>
+                      )}
+                      <p className="mt-1 text-[11px] text-slate-400">JPG, PNG, WEBP o GIF. Máx. 5 MB.</p>
                     </div>
                   </div>
                 )}

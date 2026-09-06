@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   try {
     const companyId = await resolveCompanyId(request);
     const body = await request.json();
-    const { sku, description, quantity, cost, price, trackingType } = body;
+    const { sku, description, quantity, cost, price, trackingType, imageUrl } = body;
 
     if (!sku || !description) {
       return NextResponse.json(
@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
         cost: cost !== undefined ? Number(cost) : 0,
         price: price !== undefined ? Number(price) : 0,
         trackingType: trackingType || "NONE",
+        imageUrl: imageUrl || null,
       },
       include: {
         lots: true,

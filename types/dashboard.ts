@@ -54,6 +54,7 @@ export type InventoryItem = {
   cost: number;
   price: number;
   trackingType?: string; // "NONE" | "LOT" | "SERIAL"
+  imageUrl?: string | null;
   lots?: ItemLot[];
   serials?: ItemSerial[];
 };
