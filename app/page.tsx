@@ -1540,7 +1540,72 @@ export default function AdminDashboard() {
     }
   };
 
-  const [productCategoriesList, setProductCategoriesList] = useState<string[]>([]);
+  const [productCategoriesList, setProductCategoriesList] = useState<{ id: string; name: string }[]>([]);
+  const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
+  const [categoryActionError, setCategoryActionError] = useState("");
+
+  const loadProductCategories = async () => {
+    try {
+      const res = await fetch("/api/product-categories");
+      const json = await res.json();
+      if (json.success) setProductCategoriesList(json.data || []);
+    } catch (err) {
+      console.error("Error loading product categories:", err);
+    }
+  };
+
+  const handleAddProductCategory = async (name: string) => {
+    setCategoryActionError("");
+    try {
+      const res = await fetch("/api/product-categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Error al crear la categoría");
+      setProductCategoriesList((prev) =>
+        [...prev, json.data].sort((a, b) => a.name.localeCompare(b.name))
+      );
+      return true;
+    } catch (err: any) {
+      setCategoryActionError(err.message || "Error al crear la categoría");
+      return false;
+    }
+  };
+
+  const handleRenameProductCategory = async (id: string, name: string) => {
+    setCategoryActionError("");
+    try {
+      const res = await fetch(`/api/product-categories/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Error al renombrar la categoría");
+      setProductCategoriesList((prev) =>
+        prev
+          .map((c) => (c.id === id ? json.data : c))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      setEditingCategory(null);
+    } catch (err: any) {
+      setCategoryActionError(err.message || "Error al renombrar la categoría");
+    }
+  };
+
+  const handleDeleteProductCategory = async (id: string) => {
+    setCategoryActionError("");
+    try {
+      const res = await fetch(`/api/product-categories/${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Error al eliminar la categoría");
+      setProductCategoriesList((prev) => prev.filter((c) => c.id !== id));
+    } catch (err: any) {
+      setCategoryActionError(err.message || "Error al eliminar la categoría");
+    }
+  };
 
   const [physicalLocationsList, setPhysicalLocationsList] = useState<{ id: string; name: string; address: string }[]>([]);
 
@@ -2054,6 +2119,8 @@ export default function AdminDashboard() {
         fetch("/api/invoices").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/purchase-orders").then((r) => r.json()).catch(() => ({ success: false })),
       ]);
+
+      loadProductCategories();
 
       if (accRes.success) setAccounts(accRes.data || []);
       if (cusRes.success) setCustomers(cusRes.data || []);
@@ -4803,7 +4870,7 @@ export default function AdminDashboard() {
                 loading={loading}
                 onRefreshInventory={loadDashboardData}
                 accounts={accounts}
-                productCategories={productCategoriesList}
+                productCategories={productCategoriesList.map((c) => c.name)}
                 currentSubView={currentView}
                 onChangeSubView={(tab) => setCurrentView(tab)}
                 onBack={() => setCurrentView("dashboard")}
@@ -9340,13 +9407,13 @@ export default function AdminDashboard() {
                       {activeListModal === "categorias" && (
                         <div className="space-y-4">
                           <form
-                            onSubmit={(e) => {
+                            onSubmit={async (e) => {
                               e.preventDefault();
                               const form = e.target as HTMLFormElement;
                               const input = form.elements.namedItem("catName") as HTMLInputElement;
                               if (input && input.value.trim()) {
-                                setProductCategoriesList((prev) => [...prev, input.value.trim()]);
-                                input.value = "";
+                                const ok = await handleAddProductCategory(input.value.trim());
+                                if (ok) input.value = "";
                               }
                             }}
                             className="flex gap-2"
@@ -9365,20 +9432,82 @@ export default function AdminDashboard() {
                             </button>
                           </form>
 
+                          {categoryActionError && (
+                            <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                              {categoryActionError}
+                            </div>
+                          )}
+
                           <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
-                            {productCategoriesList.map((cat, idx) => (
-                              <div key={idx} className="p-3 flex items-center justify-between text-xs hover:bg-slate-50">
-                                <span className="font-medium text-slate-800">{cat}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setProductCategoriesList((prev) => prev.filter((_, i) => i !== idx))}
-                                  className="text-slate-400 hover:text-red-600 text-xs font-bold cursor-pointer p-1"
-                                  title="Eliminar"
-                                >
-                                  ✕
-                                </button>
+                            {productCategoriesList.map((cat) => (
+                              <div key={cat.id} className="p-3 flex items-center justify-between gap-2 text-xs hover:bg-slate-50">
+                                {editingCategory?.id === cat.id ? (
+                                  <form
+                                    onSubmit={(e) => {
+                                      e.preventDefault();
+                                      if (editingCategory.name.trim()) {
+                                        handleRenameProductCategory(cat.id, editingCategory.name.trim());
+                                      }
+                                    }}
+                                    className="flex-1 flex items-center gap-2"
+                                  >
+                                    <input
+                                      type="text"
+                                      autoFocus
+                                      value={editingCategory.name}
+                                      onChange={(e) =>
+                                        setEditingCategory({ id: cat.id, name: e.target.value })
+                                      }
+                                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#1b426e] text-slate-900 focus:outline-none"
+                                    />
+                                    <button
+                                      type="submit"
+                                      className="px-2.5 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-semibold cursor-pointer"
+                                    >
+                                      Guardar
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingCategory(null)}
+                                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold cursor-pointer"
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </form>
+                                ) : (
+                                  <>
+                                    <span className="font-medium text-slate-800">{cat.name}</span>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditingCategory({ id: cat.id, name: cat.name })}
+                                        className="text-slate-400 hover:text-[#1b426e] text-xs font-semibold cursor-pointer p-1"
+                                        title="Renombrar"
+                                      >
+                                        Editar
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (confirm(`¿Eliminar la categoría "${cat.name}"?`)) {
+                                            handleDeleteProductCategory(cat.id);
+                                          }
+                                        }}
+                                        className="text-slate-400 hover:text-red-600 text-xs font-bold cursor-pointer p-1"
+                                        title="Eliminar"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             ))}
+                            {productCategoriesList.length === 0 && (
+                              <div className="p-4 text-center text-slate-400 text-xs">
+                                No hay categorías registradas. Agrega la primera arriba.
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

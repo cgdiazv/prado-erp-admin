@@ -71,6 +71,7 @@ model InventoryItem {
   cost         Float        @default(0)
   price        Float        @default(0)
   trackingType String       @default("NONE") // "NONE" | "LOT" | "SERIAL"
+  category     String?
   imageUrl     String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -381,6 +382,19 @@ model Company {
   taxRetentions    TaxRetention[]
   vendorPayments   VendorPayment[]
   purchaseOrders   PurchaseOrder[]
+  productCategories ProductCategory[]
+}
+
+model ProductCategory {
+  id        String   @id @default(cuid())
+  companyId String?  @default("default")
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name])
+  @@index([companyId])
 }
 
 model User {

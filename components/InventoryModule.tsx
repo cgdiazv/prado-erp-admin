@@ -42,15 +42,7 @@ export default function InventoryModule({
   inventory: initialInventory,
   onRefreshInventory,
   accounts = [],
-  productCategories = [
-    "Empaque e Impresión Flexográfica",
-    "Materia Prima & Sustratos",
-    "Tintas & Solventes",
-    "Cintas & Adhesivos",
-    "Servicios de Troquelado & Laminado",
-    "Repuestos & Consumibles",
-    "General / Otros"
-  ],
+  productCategories = [],
   currentSubView = "inventario",
   onChangeSubView,
   onBack,
@@ -108,7 +100,7 @@ export default function InventoryModule({
     name: "",
     type: "Servicio",
     sku: "",
-    category: productCategories[0] || "Empaque e Impresión Flexográfica",
+    category: "",
     isSold: true,
     salesDescription: "",
     price: 0,
@@ -132,6 +124,7 @@ export default function InventoryModule({
     cost: 0,
     price: 0,
     trackingType: "NONE",
+    category: "",
     imageUrl: "",
   });
   const [modalLoading, setModalLoading] = useState(false);
@@ -317,6 +310,7 @@ export default function InventoryModule({
           quantity: newProductForm.type === "Servicio" ? 1 : 10,
           cost: newProductForm.cost || 0,
           price: newProductForm.price || 0,
+          category: newProductForm.category || null,
           imageUrl: newProductForm.imageUrl || null,
         }),
       });
@@ -329,10 +323,7 @@ export default function InventoryModule({
         setTimeout(() => setProductDrawerSuccess(""), 4000);
 
         if (createAnother) {
-          setNewProductForm({
-            ...defaultProductForm,
-            category: productCategories[0] || "Empaque e Impresión Flexográfica",
-          });
+          setNewProductForm({ ...defaultProductForm });
         } else {
           setShowNewProductDrawer(false);
         }
@@ -355,6 +346,7 @@ export default function InventoryModule({
       cost: prod.cost,
       price: prod.price,
       trackingType: prod.trackingType || "NONE",
+      category: prod.category || "",
       imageUrl: prod.imageUrl || "",
     });
     setImageUploadError("");
@@ -1491,6 +1483,26 @@ export default function InventoryModule({
               </div>
 
               <div>
+                <label className="block font-semibold text-slate-700 mb-1">Categoría</label>
+                <select
+                  value={productForm.category}
+                  onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-800 cursor-pointer"
+                >
+                  <option value="">Sin categoría</option>
+                  {/* Preserve the current value even if it no longer exists in the list */}
+                  {productForm.category && !productCategories.includes(productForm.category) && (
+                    <option value={productForm.category}>{productForm.category}</option>
+                  )}
+                  {productCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block font-semibold text-slate-700 mb-1">
                   Tipo de Rastreo de Inventario *
                 </label>
@@ -1659,12 +1671,18 @@ export default function InventoryModule({
                         onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
                       >
+                        <option value="">Sin categoría</option>
                         {productCategories.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
                           </option>
                         ))}
                       </select>
+                      {productCategories.length === 0 && (
+                        <p className="mt-1 text-[11px] text-slate-400">
+                          No hay categorías registradas. Admínistralas en Configuración → Todas las listas → Categorías de productos.
+                        </p>
+                      )}
                     </div>
 
                     <div>
