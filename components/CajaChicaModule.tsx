@@ -1589,7 +1589,7 @@ export default function CajaChicaModule({
             </div>
             <button
               onClick={() => setShowNewVoucherModal(true)}
-              className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-2 bg-[#1b426e] hover:bg-[#143355] text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

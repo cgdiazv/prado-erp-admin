@@ -994,6 +994,13 @@ export default function AdminDashboard() {
     return "$";
   }, [monedasSettings?.monedaPrincipal]);
 
+  const defaultCurrencyCode = useMemo(() => {
+    const main = monedasSettings?.monedaPrincipal || "";
+    if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) return "HNL";
+    if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) return "EUR";
+    return "USD";
+  }, [monedasSettings?.monedaPrincipal]);
+
   const [avanzadasSettings, setAvanzadasSettings] = useState({
     zonaHoraria: "(GMT-06:00) Hora estándar central (Honduras)",
     idioma: "Español (Latinoamérica)",
@@ -2559,14 +2566,14 @@ export default function AdminDashboard() {
     window.location.href = "/login";
   };
 
-  // Currency Formatter: $0,000.00
+  // Currency Formatter using the system's main currency symbol, e.g. L0,000.00
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    const value = amount || 0;
+    const formatted = Math.abs(value).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount || 0);
+    });
+    return `${value < 0 ? "-" : ""}${defaultCurrencySymbol}${formatted}`;
   };
 
   // Official Account Types and Subtypes Hierarchy
@@ -4114,6 +4121,7 @@ export default function AdminDashboard() {
           {currentView === "plan-cuentas" && (
             <AccountingBooksModule
               accounts={accounts}
+              defaultCurrencyCode={defaultCurrencyCode}
               onRefreshAccounts={async () => {
                 const res = await fetch("/api/accounts").then((r) => r.json());
                 if (res.success) setAccounts(res.data || []);
@@ -4129,7 +4137,7 @@ export default function AdminDashboard() {
                   parentAccountId: "",
                   description: "",
                   isLocked: false,
-                  currency: "USD",
+                  currency: defaultCurrencyCode,
                   balance: 0,
                   isActive: true,
                 });

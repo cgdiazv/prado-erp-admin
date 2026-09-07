@@ -38,6 +38,7 @@ interface JournalEntry {
 
 interface AccountingBooksProps {
   accounts: Account[];
+  defaultCurrencyCode?: string;
   onRefreshAccounts: () => Promise<void>;
   onOpenNewAccount: () => void;
   onOpenEditAccount: (acc: Account) => void;
@@ -47,6 +48,7 @@ interface AccountingBooksProps {
 
 export default function AccountingBooksModule({
   accounts,
+  defaultCurrencyCode = "USD",
   onRefreshAccounts,
   onOpenNewAccount,
   onOpenEditAccount,
@@ -342,7 +344,7 @@ export default function AccountingBooksModule({
                           {acc.type}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-600">{acc.currency}</td>
+                      <td className="py-3 px-4 font-mono text-slate-600">{defaultCurrencyCode}</td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">
                         {formatCurrency(acc.balance || 0)}
                       </td>
