@@ -21,7 +21,13 @@ export async function POST(request: NextRequest) {
       where: { email },
       include: {
         company: {
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+            subscriptionStatus: true,
+            trialEndsAt: true,
+            createdAt: true,
+          },
         },
       },
     });
@@ -42,6 +48,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Trial / subscription gate: block access if trial ended and no active subscription
+    const subscriptionStatus = user.company?.subscriptionStatus || "TRIAL";
+    const trialEndsAt =
+      user.company?.trialEndsAt ||
+      (user.company?.createdAt ? new Date(user.company.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000) : null);
+
+    if (subscriptionStatus !== "ACTIVE" && trialEndsAt && trialEndsAt.getTime() < Date.now()) {
+      return NextResponse.json(
+        {
+          success: false,
+          trialExpired: true,
+          error: "Su período de prueba de 30 días ha finalizado. Suscríbase a un plan para continuar.",
+        },
+        { status: 402 }
+      );
+    }
+
     const userData = {
       id: user.id,
       email: user.email,
@@ -49,6 +72,8 @@ export async function POST(request: NextRequest) {
       role: user.role,
       companyId: user.companyId || "default",
       companyName: user.company?.name || "Empresa Principal",
+      subscriptionStatus,
+      trialEndsAt: trialEndsAt ? trialEndsAt.toISOString() : null,
     };
 
     const sessionPayload = Buffer.from(JSON.stringify(userData)).toString("base64");

@@ -30,6 +30,10 @@ export default function LoginPage() {
 
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
+        if (data?.trialExpired) {
+          window.location.href = "/pricing?expired=1";
+          return;
+        }
         throw new Error(data?.error || "No se pudo iniciar sesión. Por favor verifique sus datos.");
       }
 

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendWelcomeEmail } from "@/lib/welcomeEmail";
 import { seedStandardChartOfAccounts } from "@/lib/accounting";
+import { TRIAL_DAYS } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,13 +57,15 @@ export async function POST(request: NextRequest) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create Company in database
+    // Create Company in database with 30-day trial
+    const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
     await prisma.$executeRawUnsafe(
-      `INSERT INTO "Company" ("id", "name", "legalName", "currency", "isActive", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, 'USD', true, NOW(), NOW())`,
+      `INSERT INTO "Company" ("id", "name", "legalName", "currency", "isActive", "subscriptionStatus", "trialEndsAt", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, 'USD', true, 'TRIAL', $4, NOW(), NOW())`,
       companyId,
       companyName,
-      companyName
+      companyName,
+      trialEndsAt
     );
 
     // Create User in database linked to Company
@@ -91,6 +94,8 @@ export async function POST(request: NextRequest) {
       role: "super_admin",
       companyId,
       companyName,
+      subscriptionStatus: "TRIAL",
+      trialEndsAt: trialEndsAt.toISOString(),
     };
 
     const sessionPayload = Buffer.from(JSON.stringify(userData)).toString("base64");

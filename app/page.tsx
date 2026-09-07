@@ -965,22 +965,25 @@ export default function AdminDashboard() {
     transferenciasAch: string;
   }
 
-  const [monedasSettings, setMonedasSettings] = useState<MonedasSettingsState>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("wayne_monedas_settings");
-        if (saved) return JSON.parse(saved) as MonedasSettingsState;
-      } catch { }
-    }
-    return {
-      monedaPrincipal: "USD ($) Dólar estadounidense",
-      multidivisa: "Activado (USD, HNL)",
-      bancoPrincipal: "Ninguno indicado",
-      transferenciasAch: "Habilitadas",
-    };
+  const [monedasSettings, setMonedasSettings] = useState<MonedasSettingsState>({
+    monedaPrincipal: "USD ($) Dólar estadounidense",
+    multidivisa: "Activado (USD, HNL)",
+    bancoPrincipal: "Ninguno indicado",
+    transferenciasAch: "Habilitadas",
   });
 
+  // Cargar de localStorage tras montar para evitar hydration mismatch (el SSR no lo conoce)
+  const monedasHydrated = useRef(false);
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem("wayne_monedas_settings");
+      if (saved) setMonedasSettings(JSON.parse(saved) as MonedasSettingsState);
+    } catch { }
+    monedasHydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!monedasHydrated.current) return;
     try {
       localStorage.setItem("wayne_monedas_settings", JSON.stringify(monedasSettings));
     } catch { }
