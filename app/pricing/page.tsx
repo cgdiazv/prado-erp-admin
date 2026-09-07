@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import PublicNavbar from "@/components/PublicNavbar";
+import PublicFooter from "@/components/PublicFooter";
 import { PLANS, TRIAL_DAYS } from "@/lib/plans";
 
 interface MeUser {
@@ -139,6 +140,8 @@ export default function PricingPage() {
           Los pagos se procesan de forma segura a través de Stripe. Puede cancelar su suscripción en cualquier momento.
         </p>
       </main>
+
+      <PublicFooter />
     </div>
   );
 }
