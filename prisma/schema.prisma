@@ -404,6 +404,16 @@ model ProductCategory {
   @@index([companyId])
 }
 
+model CancellationFeedback {
+  id        String   @id @default(cuid())
+  companyId String
+  reason    String
+  comments  String?
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique

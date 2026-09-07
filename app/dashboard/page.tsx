@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer, Database, ArrowUpDown, FileUp, FolderOpen, HelpCircle, Receipt, Check } from "lucide-react";
 import CajaChicaModule from "@/components/CajaChicaModule";
+import { getPlan } from "@/lib/plans";
 import AccountingBooksModule from "@/components/AccountingBooksModule";
 import CustomerAgingReportModule from "@/components/CustomerAgingReportModule";
 import CustomerStatementModule from "@/components/CustomerStatementModule";
@@ -1009,6 +1010,55 @@ export default function AdminDashboard() {
     idioma: "Español (Latinoamérica)",
     cierreSesionInactividad: "3 horas",
   });
+
+  // Plan & Suscripción (Opciones avanzadas)
+  const [subscriptionInfo, setSubscriptionInfo] = useState<{
+    plan: string | null;
+    subscriptionStatus: string;
+    trialEndsAt: string | null;
+    hasStripeSubscription: boolean;
+  } | null>(null);
+  const [showCancelSubModal, setShowCancelSubModal] = useState(false);
+  const [cancelSubReason, setCancelSubReason] = useState("");
+  const [cancelSubComments, setCancelSubComments] = useState("");
+  const [cancelSubLoading, setCancelSubLoading] = useState(false);
+  const [cancelSubError, setCancelSubError] = useState("");
+  const [cancelSubSuccess, setCancelSubSuccess] = useState("");
+
+  useEffect(() => {
+    fetch("/api/billing/subscription")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.success) setSubscriptionInfo(data.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCancelSubscription = async () => {
+    if (!cancelSubReason) {
+      setCancelSubError("Por favor seleccione un motivo para poder continuar.");
+      return;
+    }
+    setCancelSubLoading(true);
+    setCancelSubError("");
+    try {
+      const res = await fetch("/api/billing/subscription", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: cancelSubReason, comments: cancelSubComments }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || "No se pudo cancelar la suscripción.");
+      }
+      setCancelSubSuccess(data.message || "Suscripción cancelada.");
+      setSubscriptionInfo((prev) => (prev ? { ...prev, subscriptionStatus: "CANCELED" } : prev));
+    } catch (err) {
+      setCancelSubError(err instanceof Error ? err.message : "Error inesperado.");
+    } finally {
+      setCancelSubLoading(false);
+    }
+  };
 
   // Generic Edit Modal State for parameter subtabs
   const [paramEditModal, setParamEditModal] = useState<{
@@ -8308,6 +8358,75 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
+                        {/* PLAN & SUSCRIPCIÓN */}
+                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                          <h2 className="font-bold text-sm text-slate-900 mb-1">Plan y Suscripción</h2>
+                          <p className="text-xs text-slate-500 mb-4">Administre su plan, cambie de suscripción o cancele su cuenta.</p>
+
+                          <div className="divide-y divide-slate-100 text-xs">
+                            <div className="py-3 flex items-center justify-between gap-4">
+                              <span className="w-80 font-semibold text-slate-800 shrink-0 text-left">Plan actual</span>
+                              <span className="flex-1 text-slate-700 font-semibold text-left">
+                                {getPlan(subscriptionInfo?.plan)?.name || (subscriptionInfo?.subscriptionStatus === "ACTIVE" ? "Suscripción activa" : "Período de prueba")}
+                              </span>
+                            </div>
+                            <div className="py-3 flex items-center justify-between gap-4">
+                              <span className="w-80 font-semibold text-slate-800 shrink-0 text-left">Estado de la suscripción</span>
+                              <span className="flex-1 text-left">
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                    subscriptionInfo?.subscriptionStatus === "ACTIVE"
+                                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                      : subscriptionInfo?.subscriptionStatus === "TRIAL"
+                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                      : "bg-red-50 text-red-700 border border-red-200"
+                                  }`}
+                                >
+                                  {subscriptionInfo?.subscriptionStatus === "ACTIVE"
+                                    ? "Activa"
+                                    : subscriptionInfo?.subscriptionStatus === "TRIAL"
+                                    ? "Período de Prueba"
+                                    : subscriptionInfo?.subscriptionStatus === "CANCELED"
+                                    ? "Cancelada"
+                                    : subscriptionInfo?.subscriptionStatus === "EXPIRED"
+                                    ? "Vencida"
+                                    : "—"}
+                                </span>
+                              </span>
+                            </div>
+                            {subscriptionInfo?.subscriptionStatus === "TRIAL" && subscriptionInfo?.trialEndsAt && (
+                              <div className="py-3 flex items-center justify-between gap-4">
+                                <span className="w-80 font-semibold text-slate-800 shrink-0 text-left">La prueba finaliza</span>
+                                <span className="flex-1 text-slate-700 text-left">
+                                  {new Date(subscriptionInfo.trialEndsAt).toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-4 flex items-center gap-3">
+                            <a
+                              href="/pricing"
+                              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs cursor-pointer shadow-sm transition"
+                            >
+                              Cambiar de plan
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCancelSubReason("");
+                                setCancelSubComments("");
+                                setCancelSubError("");
+                                setCancelSubSuccess("");
+                                setShowCancelSubModal(true);
+                              }}
+                              className="px-4 py-2 rounded-xl bg-white border border-red-300 text-red-600 hover:bg-red-50 font-semibold text-xs cursor-pointer shadow-xs transition"
+                            >
+                              Cancelar suscripción
+                            </button>
+                          </div>
+                        </div>
+
                         <div className="border border-red-200 rounded-xl p-5 bg-red-50/40">
                           <h2 className="font-bold text-sm text-red-900 mb-1">Sesión Administrativa</h2>
                           <p className="text-xs text-red-700 mb-4">
@@ -8324,6 +8443,98 @@ export default function AdminDashboard() {
                             <span>Cerrar Sesión</span>
                           </button>
                         </div>
+
+                        {/* MODAL: ENCUESTA DE CANCELACIÓN */}
+                        {showCancelSubModal && (
+                          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-150">
+                              {cancelSubSuccess ? (
+                                <>
+                                  <h3 className="text-sm font-extrabold text-slate-900">Suscripción cancelada</h3>
+                                  <p className="text-xs text-slate-600 mt-3 leading-relaxed">{cancelSubSuccess}</p>
+                                  <p className="text-xs text-slate-500 mt-2">Gracias por sus comentarios. Puede reactivar su cuenta en cualquier momento desde la página de planes.</p>
+                                  <div className="mt-5 flex justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowCancelSubModal(false)}
+                                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs cursor-pointer transition"
+                                    >
+                                      Entendido
+                                    </button>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <h3 className="text-sm font-extrabold text-slate-900">¿Por qué desea cancelar su cuenta?</h3>
+                                  <p className="text-xs text-slate-500 mt-1 mb-4">
+                                    Su opinión nos ayuda a mejorar. Por favor indíquenos el motivo de su cancelación.
+                                  </p>
+
+                                  <div className="space-y-2">
+                                    {[
+                                      "Es muy costoso",
+                                      "Le faltan funciones que necesito",
+                                      "Es difícil de usar",
+                                      "Me cambio a otro sistema",
+                                      "Cierre o pausa del negocio",
+                                      "Otro motivo",
+                                    ].map((motivo) => (
+                                      <label
+                                        key={motivo}
+                                        className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition ${
+                                          cancelSubReason === motivo
+                                            ? "border-[#1b426e] bg-[#1b426e]/5 text-slate-900"
+                                            : "border-slate-200 text-slate-600 hover:border-slate-300"
+                                        }`}
+                                      >
+                                        <input
+                                          type="radio"
+                                          name="cancelReason"
+                                          value={motivo}
+                                          checked={cancelSubReason === motivo}
+                                          onChange={() => setCancelSubReason(motivo)}
+                                          className="accent-[#1b426e]"
+                                        />
+                                        {motivo}
+                                      </label>
+                                    ))}
+                                  </div>
+
+                                  <textarea
+                                    value={cancelSubComments}
+                                    onChange={(e) => setCancelSubComments(e.target.value)}
+                                    placeholder="Comentarios adicionales (opcional): ¿qué podríamos haber hecho mejor?"
+                                    rows={3}
+                                    className="mt-3 w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#1b426e] resize-none"
+                                  />
+
+                                  {cancelSubError && (
+                                    <p className="mt-2 text-xs text-red-600 font-semibold">{cancelSubError}</p>
+                                  )}
+
+                                  <div className="mt-5 flex items-center justify-end gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowCancelSubModal(false)}
+                                      disabled={cancelSubLoading}
+                                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs cursor-pointer transition"
+                                    >
+                                      Mantener mi suscripción
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={handleCancelSubscription}
+                                      disabled={cancelSubLoading}
+                                      className="px-4 py-2 rounded-xl bg-white border border-red-300 text-red-600 hover:bg-red-50 font-semibold text-xs cursor-pointer transition disabled:opacity-50"
+                                    >
+                                      {cancelSubLoading ? "Cancelando..." : "Confirmar cancelación"}
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
