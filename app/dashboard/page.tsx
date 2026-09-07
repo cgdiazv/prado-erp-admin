@@ -811,7 +811,7 @@ export default function AdminDashboard() {
           maximumFractionDigits: reportDecimalPlaces,
         });
 
-    const curr = reportHideCurrencySymbol ? "" : "$";
+    const curr = reportHideCurrencySymbol ? "" : defaultCurrencySymbol;
 
     if (!isNegative) {
       return `${curr}${formattedNumber}`;
@@ -4131,7 +4131,7 @@ export default function AdminDashboard() {
                           {/* Amount and Status */}
                           <div className="text-right shrink-0">
                             <span className="block text-xs font-bold text-slate-900 font-mono">
-                              ${item.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {formatCurrency(item.amount)}
                             </span>
                             <span
                               className={`inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${item.status === "URGENTE"
@@ -9993,7 +9993,7 @@ export default function AdminDashboard() {
                                   <span className="text-[11px] text-slate-500">{rec.type} • Frecuencia: {rec.frequency}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="font-mono font-bold text-slate-900">${rec.amount.toFixed(2)}</span>
+                                  <span className="font-mono font-bold text-slate-900">{formatCurrency(rec.amount)}</span>
                                   <button
                                     type="button"
                                     onClick={() => setRecurringTransactionsList((prev) => prev.filter((r) => r.id !== rec.id))}
@@ -10375,7 +10375,7 @@ export default function AdminDashboard() {
                 setInventory={setInventory}
                 companySettings={companySettings}
                 companyLogo={companyLogo}
-                defaultCurrencySymbol="$"
+                defaultCurrencySymbol={defaultCurrencySymbol}
                 loading={loading}
                 onNavigateToDashboard={() => setCurrentView("dashboard")}
                 onNavigateToView={(view) => setCurrentView(view)}
