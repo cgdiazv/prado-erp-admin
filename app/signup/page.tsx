@@ -35,7 +35,7 @@ export default function SignupPage() {
       }
 
       // Successfully registered and session cookie created -> redirect to dashboard
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error inesperado al registrar la cuenta.";
       setError(msg);

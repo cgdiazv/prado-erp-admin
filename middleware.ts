@@ -4,6 +4,15 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Landing de marketing: pública; usuarios autenticados van al dashboard
+  if (pathname === "/") {
+    const session = request.cookies.get("admin_session");
+    if (session?.value) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
   // Allow public assets, Next.js internals, and login/auth/recovery routes
   if (
     pathname.startsWith("/_next") ||
@@ -12,6 +21,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
     pathname.startsWith("/pricing") ||
+    pathname.startsWith("/privacidad") ||
+    pathname.startsWith("/terminos") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname === "/favicon.ico" ||

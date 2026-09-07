@@ -38,8 +38,8 @@ export default function LoginPage() {
       }
 
       const callbackUrl = typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("callbackUrl") || "/"
-        : "/";
+        ? new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard"
+        : "/dashboard";
       window.location.href = callbackUrl;
     } catch (err: unknown) {
       const rawMsg = err instanceof Error ? err.message : "";
