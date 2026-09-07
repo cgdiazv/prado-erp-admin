@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Check } from "lucide-react";
-import logoImg from "@/public/logo.webp";
+import PublicNavbar from "@/components/PublicNavbar";
 import { PLANS, TRIAL_DAYS } from "@/lib/plans";
 
 interface MeUser {
@@ -44,25 +43,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Image src={logoImg} alt="Prado ERP" priority className="h-10 w-auto object-contain" />
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
-            >
-              Iniciar Sesión
-            </Link>
-            <Link
-              href="/signup"
-              className="px-3.5 py-2 bg-[#1b426e] hover:bg-[#143355] text-white font-semibold rounded-xl text-xs transition shadow-sm"
-            >
-              Prueba Gratis
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicNavbar />
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         {expired && (

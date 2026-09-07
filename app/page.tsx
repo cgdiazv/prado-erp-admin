@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   BookOpen,
   Landmark,
@@ -12,7 +11,7 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react";
-import logoImg from "@/public/logo.webp";
+import PublicNavbar from "@/components/PublicNavbar";
 import { PLANS, TRIAL_DAYS } from "@/lib/plans";
 
 const FEATURES = [
@@ -58,34 +57,7 @@ export default function MarketingHomePage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* ================= NAV ================= */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Image src={logoImg} alt="Prado ERP" priority className="h-10 w-auto object-contain" />
-            <span className="text-lg font-black tracking-tight text-slate-900">Prado ERP</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
-              <a href="#funciones" className="hover:text-slate-900 transition">Funciones</a>
-              <a href="#precios" className="hover:text-slate-900 transition">Precios</a>
-            </nav>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/login"
-                className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
-              >
-                Iniciar Sesión
-              </Link>
-              <Link
-                href="/signup"
-                className="px-3.5 py-2 bg-[#1b426e] hover:bg-[#143355] text-white font-semibold rounded-xl text-xs transition shadow-sm"
-              >
-                Prueba Gratis
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PublicNavbar />
 
       {/* ================= HERO ================= */}
       <section className="relative overflow-hidden">

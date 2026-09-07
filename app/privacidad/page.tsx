@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import logoImg from "@/public/logo.webp";
+import PublicNavbar from "@/components/PublicNavbar";
 
 export const metadata = {
   title: "Política de Privacidad — Prado ERP",
@@ -68,7 +67,7 @@ const SECTIONS = [
   {
     title: "9. Contacto",
     body: [
-      "Si tiene preguntas sobre esta política o el tratamiento de sus datos, contáctenos en notifications@pradocommerce.com.",
+      "Si tiene preguntas sobre esta política o el tratamiento de sus datos, contáctenos en info@pradosys.com.",
     ],
   },
 ];
@@ -76,20 +75,7 @@ const SECTIONS = [
 export default function PrivacidadPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src={logoImg} alt="Prado ERP" priority className="h-10 w-auto object-contain" />
-            <span className="text-lg font-black tracking-tight text-slate-900">Prado ERP</span>
-          </Link>
-          <Link
-            href="/"
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
-          >
-            ← Volver al inicio
-          </Link>
-        </div>
-      </header>
+      <PublicNavbar />
 
       <main className="max-w-3xl mx-auto px-4 py-14">
         <h1 className="text-3xl font-black tracking-tight text-slate-900">Política de Privacidad</h1>

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import logoImg from "@/public/logo.webp";
+import PublicNavbar from "@/components/PublicNavbar";
 import { TRIAL_DAYS } from "@/lib/plans";
 
 export const metadata = {
@@ -86,27 +85,14 @@ export default function TerminosPage() {
     {
       title: "12. Contacto",
       body: [
-        "Para consultas sobre estos términos, escríbanos a notifications@pradocommerce.com.",
+        "Para consultas sobre estos términos, escríbanos a info@pradosys.com.",
       ],
     },
   ];
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src={logoImg} alt="Prado ERP" priority className="h-10 w-auto object-contain" />
-            <span className="text-lg font-black tracking-tight text-slate-900">Prado ERP</span>
-          </Link>
-          <Link
-            href="/"
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
-          >
-            ← Volver al inicio
-          </Link>
-        </div>
-      </header>
+      <PublicNavbar />
 
       <main className="max-w-3xl mx-auto px-4 py-14">
         <h1 className="text-3xl font-black tracking-tight text-slate-900">Términos y Condiciones</h1>
