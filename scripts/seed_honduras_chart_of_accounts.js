@@ -68,14 +68,16 @@ const STANDARD_HONDURAS_ACCOUNTS = {
 };
 
 async function main() {
-  console.log("Iniciando precarga del Plan de Cuentas Estándar de Honduras...");
+  // Usage: node scripts/seed_honduras_chart_of_accounts.js [companyId]
+  const companyId = process.argv[2] || "default";
+  console.log(`Iniciando precarga del Plan de Cuentas Estándar de Honduras para la empresa "${companyId}"...`);
 
   let createdCount = 0;
   let preservedCount = 0;
 
   for (const [code, meta] of Object.entries(STANDARD_HONDURAS_ACCOUNTS)) {
-    const existing = await prisma.account.findUnique({
-      where: { code },
+    const existing = await prisma.account.findFirst({
+      where: { code, companyId },
     });
 
     if (existing) {
@@ -84,6 +86,7 @@ async function main() {
     } else {
       const created = await prisma.account.create({
         data: {
+          companyId,
           code,
           name: meta.name,
           type: meta.type,
@@ -97,12 +100,12 @@ async function main() {
     }
   }
 
-  const totalAccounts = await prisma.account.count();
+  const totalAccounts = await prisma.account.count({ where: { companyId } });
   console.log("\n=======================================================");
   console.log(`Resumen de Precarga:`);
   console.log(`- Cuentas nuevas creadas: ${createdCount}`);
   console.log(`- Cuentas preexistentes preservadas: ${preservedCount}`);
-  console.log(`- Total de cuentas activas en la BD: ${totalAccounts}`);
+  console.log(`- Total de cuentas de la empresa "${companyId}" en la BD: ${totalAccounts}`);
   console.log("=======================================================\n");
 
   await prisma.$disconnect();

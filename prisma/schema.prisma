@@ -12,7 +12,7 @@ model Account {
   id           String             @id @default(cuid())
   companyId    String?            @default("default")
   company      Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  code         String             @unique // e.g., 1000-6000 standard numbering
+  code         String             // e.g., 1000-6000 standard numbering
   name         String
   type         String             // Asset, Liability, Equity, Income, Expense
   currency     String             @default("USD")
@@ -23,6 +23,7 @@ model Account {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
+  @@unique([companyId, code])
   @@index([companyId])
 }
 
@@ -505,7 +506,7 @@ model JournalEntry {
   id            String             @id @default(cuid())
   companyId     String?            @default("default")
   company       Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  entryNumber   String             @unique // e.g. "AS-2026-0001"
+  entryNumber   String             // e.g. "AS-2026-0001" (único por empresa)
   date          String             // e.g. "2026-09-04"
   concept       String
   referenceType String             // "INVOICE" | "PURCHASE_INVOICE" | "PAYMENT_CUSTOMER" | "PAYMENT_VENDOR" | "BANK_TX" | "PETTY_CASH" | "MANUAL"
@@ -516,6 +517,7 @@ model JournalEntry {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
+  @@unique([companyId, entryNumber])
   @@index([companyId])
 }
 

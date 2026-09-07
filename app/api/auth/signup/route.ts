@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendWelcomeEmail } from "@/lib/welcomeEmail";
+import { seedStandardChartOfAccounts } from "@/lib/accounting";
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,6 +75,13 @@ export async function POST(request: NextRequest) {
       hashedPassword,
       companyId
     );
+
+    // Seed the standard Honduras chart of accounts for the new tenant
+    try {
+      await seedStandardChartOfAccounts("USD", companyId);
+    } catch (seedErr) {
+      console.error("[Signup Chart of Accounts Seed Failed]:", seedErr);
+    }
 
     // User session payload
     const userData = {

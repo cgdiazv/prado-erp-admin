@@ -89,34 +89,28 @@ export const STANDARD_ACCOUNTS: Record<string, { name: string; type: string }> =
  * Seeds or synchronizes the standard Honduran chart of accounts.
  * Safely upserts accounts so existing balances and custom descriptions are preserved.
  */
-export async function seedStandardChartOfAccounts(currency: string = "USD") {
-  const createdOrUpdated = [];
-  for (const [code, meta] of Object.entries(STANDARD_ACCOUNTS)) {
-    const account = await prisma.account.upsert({
-      where: { code },
-      update: {
-        // Keep existing balance and isActive status
-      },
-      create: {
-        code,
-        name: meta.name,
-        type: meta.type,
-        currency,
-        balance: 0,
-        isActive: true,
-      },
-    });
-    createdOrUpdated.push(account);
-  }
-  return createdOrUpdated;
+export async function seedStandardChartOfAccounts(currency: string = "USD", companyId: string = "default") {
+  // skipDuplicates preserves existing accounts (balances, custom names) for the tenant
+  return await prisma.account.createMany({
+    data: Object.entries(STANDARD_ACCOUNTS).map(([code, meta]) => ({
+      companyId,
+      code,
+      name: meta.name,
+      type: meta.type,
+      currency,
+      balance: 0,
+      isActive: true,
+    })),
+    skipDuplicates: true,
+  });
 }
 
 /**
  * Finds an account by code or creates it with standard metadata if not present.
  */
-export async function getOrCreateAccount(code: string, preferredName?: string, preferredType?: string) {
-  const existing = await prisma.account.findUnique({
-    where: { code },
+export async function getOrCreateAccount(code: string, preferredName?: string, preferredType?: string, companyId: string = "default") {
+  const existing = await prisma.account.findFirst({
+    where: { code, companyId },
   });
   if (existing) return existing;
 
@@ -126,6 +120,7 @@ export async function getOrCreateAccount(code: string, preferredName?: string, p
 
   return await prisma.account.create({
     data: {
+      companyId,
       code,
       name,
       type,
@@ -175,11 +170,12 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
     );
   }
 
-  // Generate next entry number: AS-YYYY-XXXX
+  // Generate next entry number per tenant: AS-YYYY-XXXX
+  const entryCompanyId = input.companyId || "default";
   const currentYear = new Date(date).getFullYear() || new Date().getFullYear();
   const yearPrefix = `AS-${currentYear}-`;
   const latestEntry = await prisma.journalEntry.findFirst({
-    where: { entryNumber: { startsWith: yearPrefix } },
+    where: { companyId: entryCompanyId, entryNumber: { startsWith: yearPrefix } },
     orderBy: { entryNumber: "desc" },
   });
 
@@ -198,7 +194,7 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
     // 1. Create the Journal Entry
     const entry = await tx.journalEntry.create({
       data: {
-        companyId: input.companyId || "default",
+        companyId: entryCompanyId,
         entryNumber,
         date,
         concept,
@@ -211,16 +207,16 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
 
     // 2. Process each line and update Account balances
     for (const line of sanitizedLines) {
-      // Find or create account
-      let account = await tx.account.findUnique({
-        where: { code: line.accountCode },
+      // Find or create account (scoped to the tenant)
+      let account = await tx.account.findFirst({
+        where: { code: line.accountCode, companyId: entryCompanyId },
       });
 
       if (!account) {
         const std = STANDARD_ACCOUNTS[line.accountCode];
         account = await tx.account.create({
           data: {
-            companyId: input.companyId || "default",
+            companyId: entryCompanyId,
             code: line.accountCode,
             name: line.accountName || std?.name || `Cuenta ${line.accountCode}`,
             type: std?.type || "Asset",

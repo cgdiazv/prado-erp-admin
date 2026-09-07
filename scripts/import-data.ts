@@ -94,9 +94,9 @@ export async function importAccounts(filePath: string) {
     }
 
     await prisma.account.upsert({
-      where: { code },
+      where: { companyId_code: { companyId: "default", code } },
       update: { name, type, currency, isActive },
-      create: { code, name, type, currency, isActive },
+      create: { companyId: "default", code, name, type, currency, isActive },
     });
     upserted++;
   }

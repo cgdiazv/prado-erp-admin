@@ -31,7 +31,7 @@ async function main() {
 
   for (const acc of accountsToUpsert) {
     await prisma.account.upsert({
-      where: { code: acc.code },
+      where: { companyId_code: { companyId: "default", code: acc.code } },
       update: {
         name: acc.name,
         type: acc.type,
@@ -40,6 +40,7 @@ async function main() {
         isActive: true,
       },
       create: {
+        companyId: "default",
         code: acc.code,
         name: acc.name,
         type: acc.type,

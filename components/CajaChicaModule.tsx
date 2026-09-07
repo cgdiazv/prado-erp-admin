@@ -519,8 +519,8 @@ export default function CajaChicaModule({
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`Fondo "${data.data.name}" creado con éxito`);
-        setShowNewFundModal(false);
+        setSelectedFundId(data.data.id);
+        await onRefresh(data.data.id);
         setFundForm({
           code: "",
           name: "",
@@ -531,7 +531,8 @@ export default function CajaChicaModule({
           minThreshold: "",
           location: "Planta Búfalo, Villanueva",
         });
-        await onRefresh(data.data.id);
+        setShowNewFundModal(false);
+        showToast(`Fondo "${data.data.name}" creado con éxito`);
       } else {
         alert(data.error || "Error al crear fondo");
       }
@@ -673,7 +674,7 @@ export default function CajaChicaModule({
     );
   }
 
-  if (!currentFund && !loading) {
+  if (!currentFund && !loading && !showNewFundModal) {
     return (
       <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div className="w-16 h-16 rounded-full bg-orange-50 text-[#1b426e] flex items-center justify-center mx-auto">
@@ -687,7 +688,7 @@ export default function CajaChicaModule({
         </p>
         <button
           onClick={() => setShowNewFundModal(true)}
-          className="px-4 py-2.5 bg-[#1b426e] hover:bg-[#e07318] text-white font-semibold rounded-xl text-sm transition shadow-sm"
+          className="px-4 py-2.5 bg-[#1b426e] hover:bg-[#143355] text-white font-semibold rounded-xl text-sm transition shadow-sm"
         >
           + Crear Primer Fondo de Caja Chica
         </button>

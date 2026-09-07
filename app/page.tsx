@@ -2335,9 +2335,9 @@ export default function AdminDashboard() {
     setPettyCashLoading(true);
     try {
       const [fundsRes, auditsRes, vouchersRes] = await Promise.all([
-        fetch("/api/caja-chica/funds").then((r) => r.json()),
-        fetch("/api/caja-chica/audits").then((r) => r.json()),
-        fetch("/api/caja-chica/vouchers").then((r) => r.json()),
+        fetch("/api/caja-chica/funds", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/caja-chica/audits", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/caja-chica/vouchers", { cache: "no-store" }).then((r) => r.json()),
       ]);
       if (fundsRes.success && Array.isArray(fundsRes.data)) {
         setPettyCashFunds(fundsRes.data);
