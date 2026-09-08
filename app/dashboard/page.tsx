@@ -1075,6 +1075,30 @@ export default function AdminDashboard() {
           if (s.horas) setHorasSettings((prev) => ({ ...prev, ...s.horas }));
           if (s.monedas) setMonedasSettings((prev) => ({ ...prev, ...s.monedas }));
           if (s.avanzadas) setAvanzadasSettings((prev) => ({ ...prev, ...s.avanzadas }));
+          if (s.reportes) {
+            const r = s.reportes;
+            if (r.headerLogo !== undefined) setReportHeaderLogo(r.headerLogo);
+            if (r.headerPeriod !== undefined) setReportHeaderPeriod(r.headerPeriod);
+            if (r.headerLegalName !== undefined) setReportHeaderLegalName(r.headerLegalName);
+            if (r.headerAlignment) setReportHeaderAlignment(r.headerAlignment);
+            if (r.footerDate !== undefined) setReportFooterDate(r.footerDate);
+            if (r.footerTime !== undefined) setReportFooterTime(r.footerTime);
+            if (r.footerMethod !== undefined) setReportFooterMethod(r.footerMethod);
+            if (r.footerAlignment) setReportFooterAlignment(r.footerAlignment);
+            if (r.divideBy1000 !== undefined) setReportDivideBy1000(r.divideBy1000);
+            if (r.hideZeroAmounts !== undefined) setReportHideZeroAmounts(r.hideZeroAmounts);
+            if (r.hideCurrencySymbol !== undefined) setReportHideCurrencySymbol(r.hideCurrencySymbol);
+            if (r.negativeNumberFormat) setReportNegativeNumberFormat(r.negativeNumberFormat);
+            if (r.negativeInRed !== undefined) setReportNegativeInRed(r.negativeInRed);
+            if (r.decimalMode) setReportDecimalMode(r.decimalMode);
+            if (r.decimalPlaces !== undefined) setReportDecimalPlaces(r.decimalPlaces);
+            if (r.gridBorder) setGridBorderSetting(r.gridBorder);
+            if (r.emptyCellFormat) setReportEmptyCellFormat(r.emptyCellFormat);
+            if (r.expandSubaccounts !== undefined) setReportExpandSubaccounts(r.expandSubaccounts);
+            if (r.showGroupTotals !== undefined) setReportShowGroupTotals(r.showGroupTotals);
+            if (r.compactView !== undefined) setReportCompactView(r.compactView);
+            if (r.wrapText !== undefined) setReportWrapText(r.wrapText);
+          }
         }
       })
       .catch(() => { })
@@ -1097,11 +1121,63 @@ export default function AdminDashboard() {
           horas: horasSettings,
           monedas: monedasSettings,
           avanzadas: avanzadasSettings,
+          reportes: {
+            headerLogo: reportHeaderLogo,
+            headerPeriod: reportHeaderPeriod,
+            headerLegalName: reportHeaderLegalName,
+            headerAlignment: reportHeaderAlignment,
+            footerDate: reportFooterDate,
+            footerTime: reportFooterTime,
+            footerMethod: reportFooterMethod,
+            footerAlignment: reportFooterAlignment,
+            divideBy1000: reportDivideBy1000,
+            hideZeroAmounts: reportHideZeroAmounts,
+            hideCurrencySymbol: reportHideCurrencySymbol,
+            negativeNumberFormat: reportNegativeNumberFormat,
+            negativeInRed: reportNegativeInRed,
+            decimalMode: reportDecimalMode,
+            decimalPlaces: reportDecimalPlaces,
+            gridBorder: gridBorderSetting,
+            emptyCellFormat: reportEmptyCellFormat,
+            expandSubaccounts: reportExpandSubaccounts,
+            showGroupTotals: reportShowGroupTotals,
+            compactView: reportCompactView,
+            wrapText: reportWrapText,
+          },
         }),
       }).catch(() => { });
     }, 800);
     return () => clearTimeout(t);
-  }, [salesSettings, expenseSettings, contabilidadSettings, horasSettings, monedasSettings, avanzadasSettings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    salesSettings,
+    expenseSettings,
+    contabilidadSettings,
+    horasSettings,
+    monedasSettings,
+    avanzadasSettings,
+    reportHeaderLogo,
+    reportHeaderPeriod,
+    reportHeaderLegalName,
+    reportHeaderAlignment,
+    reportFooterDate,
+    reportFooterTime,
+    reportFooterMethod,
+    reportFooterAlignment,
+    reportDivideBy1000,
+    reportHideZeroAmounts,
+    reportHideCurrencySymbol,
+    reportNegativeNumberFormat,
+    reportNegativeInRed,
+    reportDecimalMode,
+    reportDecimalPlaces,
+    gridBorderSetting,
+    reportEmptyCellFormat,
+    reportExpandSubaccounts,
+    reportShowGroupTotals,
+    reportCompactView,
+    reportWrapText,
+  ]);
 
   // Plan & Suscripción (Opciones avanzadas)
   const [subscriptionInfo, setSubscriptionInfo] = useState<{
@@ -3106,13 +3182,37 @@ export default function AdminDashboard() {
   const escapeHtml = (s: string) =>
     String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+  // Celda numérica con el formato de Configuración → Reportes
+  const reportAmountCell = (v: number) =>
+    `<td class="num${reportNegativeInRed && v < 0 ? " neg" : ""}">${escapeHtml(formatReportAmount(v))}</td>`;
+
+  // Número para CSV según decimales configurados
+  const csvNumber = (v: number) =>
+    reportDecimalMode === "round" ? String(Math.round(v || 0)) : (v || 0).toFixed(reportDecimalPlaces);
+
   const openPrintReport = (title: string, bodyHtml: string) => {
     const w = window.open("", "_blank", "width=900,height=700");
     if (!w) {
       alert("Permita las ventanas emergentes para descargar el PDF.");
       return;
     }
-    const companyName = escapeHtml(companySettings.nombreLegal || companySettings.nombre || "Prado ERP");
+    const companyName = escapeHtml(
+      reportHeaderLegalName
+        ? companySettings.nombreLegal || companySettings.nombre || "Prado ERP"
+        : companySettings.nombre || companySettings.nombreLegal || "Prado ERP"
+    );
+    const headerAlign = reportHeaderAlignment === "Izquierda" ? "left" : reportHeaderAlignment === "Derecha" ? "right" : "center";
+    const footerAlign = reportFooterAlignment === "Izquierda" ? "left" : reportFooterAlignment === "Derecha" ? "right" : "center";
+    const now = new Date();
+    const footerBits: string[] = [];
+    if (reportFooterDate) footerBits.push(`Generado el ${now.toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}`);
+    if (reportFooterTime) footerBits.push(`a las ${now.toLocaleTimeString("es-HN", { hour: "2-digit", minute: "2-digit" })}`);
+    if (reportFooterMethod) footerBits.push(`Método contable: ${escapeHtml(contabilidadSettings.metodoContabilidad)}`);
+    const footerHtml = footerBits.length
+      ? `<div class="footer" style="text-align:${footerAlign}">${footerBits.join(" · ")}</div>`
+      : "";
+    const logoHtml = reportHeaderLogo && companyLogo ? `<img src="${companyLogo}" alt="Logo" style="height:48px;object-fit:contain;margin-bottom:8px;" />` : "";
+    const periodHtml = reportHeaderPeriod ? `<div class="sub">Período fiscal ${now.getFullYear()}</div>` : "";
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8" /><title>${escapeHtml(title)}</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 32px; font-size: 12px; }
@@ -3123,12 +3223,19 @@ export default function AdminDashboard() {
   th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
   th { background: #f8fafc; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.neg { color: #dc2626; }
   tr.total td { font-weight: 700; border-top: 2px solid #0f172a; border-bottom: none; }
+  .footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 10px; }
   @media print { body { padding: 0; } }
 </style></head><body>
+<div style="text-align:${headerAlign}">
+${logoHtml}
 <h1>${companyName}</h1>
-<div class="sub">${escapeHtml(title)} — Generado el ${new Date().toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}</div>
+${periodHtml}
+<div class="sub">${escapeHtml(title)} — Generado el ${now.toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}</div>
+</div>
 ${bodyHtml}
+${footerHtml}
 <script>window.onload = function () { window.print(); };</script>
 </body></html>`);
     w.document.close();
@@ -3138,7 +3245,7 @@ ${bodyHtml}
     accs
       .map(
         (a) =>
-          `<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td class="num">${escapeHtml(formatCurrency(Number(a.balance) || 0))}</td></tr>`
+          `<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td>${reportAmountCell(Number(a.balance) || 0)}</tr>`
       )
       .join("");
 
@@ -3148,16 +3255,16 @@ ${bodyHtml}
 <h2>Ingresos</h2>
 <table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
 ${accountRowsHtml(incomeAccounts)}
-<tr class="total"><td colspan="2">Total Ingresos</td><td class="num">${escapeHtml(formatCurrency(totalIncome))}</td></tr>
+<tr class="total"><td colspan="2">Total Ingresos</td>${reportAmountCell(totalIncome)}</tr>
 </tbody></table>
 <h2>Gastos y Costos</h2>
 <table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
 ${accountRowsHtml(expenseAccounts)}
-<tr class="total"><td colspan="2">Total Gastos</td><td class="num">${escapeHtml(formatCurrency(totalExpenses))}</td></tr>
+<tr class="total"><td colspan="2">Total Gastos</td>${reportAmountCell(totalExpenses)}</tr>
 </tbody></table>
 <h2>Resultado</h2>
 <table><tbody>
-<tr class="total"><td>${netIncome >= 0 ? "Utilidad Neta del Período" : "Pérdida Neta del Período"}</td><td class="num">${escapeHtml(formatCurrency(netIncome))}</td></tr>
+<tr class="total"><td>${netIncome >= 0 ? "Utilidad Neta del Período" : "Pérdida Neta del Período"}</td>${reportAmountCell(netIncome)}</tr>
 </tbody></table>`;
     openPrintReport("Estado de Pérdidas y Ganancias", body);
   };
@@ -3181,22 +3288,22 @@ ${accountRowsHtml(expenseAccounts)}
 <h2>Activos</h2>
 <table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
 ${accountRowsHtml(assets)}
-<tr class="total"><td colspan="2">Total Activos</td><td class="num">${escapeHtml(formatCurrency(totalAssets))}</td></tr>
+<tr class="total"><td colspan="2">Total Activos</td>${reportAmountCell(totalAssets)}</tr>
 </tbody></table>
 <h2>Pasivos</h2>
 <table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
 ${accountRowsHtml(liabilities)}
-<tr class="total"><td colspan="2">Total Pasivos</td><td class="num">${escapeHtml(formatCurrency(totalLiabilities))}</td></tr>
+<tr class="total"><td colspan="2">Total Pasivos</td>${reportAmountCell(totalLiabilities)}</tr>
 </tbody></table>
 <h2>Capital Contable</h2>
 <table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
 ${accountRowsHtml(equity)}
-<tr><td colspan="2">Utilidad / Pérdida del Período</td><td class="num">${escapeHtml(formatCurrency(periodResult))}</td></tr>
-<tr class="total"><td colspan="2">Total Capital Contable</td><td class="num">${escapeHtml(formatCurrency(totalEquity + periodResult))}</td></tr>
+<tr><td colspan="2">Utilidad / Pérdida del Período</td>${reportAmountCell(periodResult)}</tr>
+<tr class="total"><td colspan="2">Total Capital Contable</td>${reportAmountCell(totalEquity + periodResult)}</tr>
 </tbody></table>
 <h2>Comprobación</h2>
 <table><tbody>
-<tr class="total"><td>Total Pasivo + Capital</td><td class="num">${escapeHtml(formatCurrency(totalLiabilities + totalEquity + periodResult))}</td></tr>
+<tr class="total"><td>Total Pasivo + Capital</td>${reportAmountCell(totalLiabilities + totalEquity + periodResult)}</tr>
 </tbody></table>`;
     openPrintReport("Balance de Situación", body);
   };
@@ -3208,10 +3315,10 @@ ${accountRowsHtml(equity)}
       item.description || "",
       item.category || "",
       String(item.quantity || 0),
-      (item.cost || 0).toFixed(2),
-      ((item.quantity || 0) * (item.cost || 0)).toFixed(2),
+      csvNumber(item.cost || 0),
+      csvNumber((item.quantity || 0) * (item.cost || 0)),
     ]);
-    rows.push(["", "", "TOTAL", String(totalInventoryUnits), "", totalInventoryValuation.toFixed(2)]);
+    rows.push(["", "", "TOTAL", String(totalInventoryUnits), "", csvNumber(totalInventoryValuation)]);
     downloadCsvFile(
       `valoracion_inventario_${today}.csv`,
       ["SKU", "Descripción", "Categoría", "Cantidad", "Costo Unitario", "Valor Total"],
@@ -3226,7 +3333,7 @@ ${accountRowsHtml(equity)}
       a.name,
       a.type,
       a.currency,
-      (Number(a.balance) || 0).toFixed(2),
+      csvNumber(Number(a.balance) || 0),
       a.isActive ? "Activa" : "Inactiva",
     ]);
     downloadCsvFile(
