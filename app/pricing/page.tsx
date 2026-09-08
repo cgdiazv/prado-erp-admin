@@ -84,7 +84,10 @@ export default function PricingPage() {
                 <h2 className="text-lg font-extrabold text-slate-900">{plan.name}</h2>
                 <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{plan.description}</p>
 
-                <div className="mt-4 flex items-baseline gap-1">
+                <div className="mt-4 flex items-baseline gap-2">
+                  {plan.originalPrice && (
+                    <span className="text-lg font-bold text-slate-400 line-through">${plan.originalPrice}</span>
+                  )}
                   <span className="text-4xl font-black text-slate-900">${plan.price}</span>
                   <span className="text-xs text-slate-500 font-medium">USD / mes</span>
                 </div>

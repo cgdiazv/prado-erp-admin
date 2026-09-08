@@ -4,6 +4,7 @@ export interface Plan {
   id: string;
   name: string;
   price: number; // USD / mes
+  originalPrice?: number; // Precio regular cuando hay promoción
   description: string;
   features: string[];
   highlighted?: boolean;
@@ -17,7 +18,8 @@ export const PLANS: Plan[] = [
   {
     id: "basico",
     name: "Básico",
-    price: 29,
+    price: 10,
+    originalPrice: 29,
     description: "Para emprendedores y negocios pequeños que inician su operación.",
     features: [
       "1 usuario",
@@ -33,7 +35,8 @@ export const PLANS: Plan[] = [
   {
     id: "profesional",
     name: "Profesional",
-    price: 79,
+    price: 29,
+    originalPrice: 79,
     description: "Para empresas en crecimiento que necesitan control contable completo.",
     features: [
       "Hasta 5 usuarios",
@@ -51,7 +54,8 @@ export const PLANS: Plan[] = [
   {
     id: "empresarial",
     name: "Empresarial",
-    price: 149,
+    price: 49,
+    originalPrice: 179,
     description: "Para operaciones con múltiples áreas y alto volumen transaccional.",
     features: [
       "Usuarios ilimitados",

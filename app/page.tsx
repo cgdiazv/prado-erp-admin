@@ -170,7 +170,10 @@ export default function MarketingHomePage() {
                   </span>
                 )}
                 <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
-                <div className="mt-3 flex items-baseline gap-1">
+                <div className="mt-3 flex items-baseline gap-2">
+                  {plan.originalPrice && (
+                    <span className="text-lg font-bold text-slate-400 line-through">${plan.originalPrice}</span>
+                  )}
                   <span className="text-4xl font-black text-slate-900">${plan.price}</span>
                   <span className="text-xs text-slate-500 font-medium">USD / mes</span>
                 </div>
