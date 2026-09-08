@@ -22,6 +22,7 @@ import {
   Calendar,
   Layers,
   ChevronDown,
+  BookOpen,
 } from "lucide-react";
 
 export interface VendorPaymentLineItem {
@@ -1150,6 +1151,27 @@ export default function VendorPaymentsModule({
                   onChange={(e) => setPaymentNotes(e.target.value)}
                   className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e]"
                 />
+              </div>
+
+              {/* Tarjeta de Impacto Contable Proyectado */}
+              <div className="p-4 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-blue-900 space-y-2">
+                <div className="flex items-center gap-2 font-semibold text-xs text-blue-800">
+                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  <span>Partida Doble Automática en Libros (al Confirmar)</span>
+                </div>
+                <p className="text-[11px] text-blue-700">
+                  Al emitir este pago, el sistema generará de forma automática el asiento en el Libro Diario:
+                </p>
+                <div className="space-y-1 font-mono text-[11px] bg-white p-2.5 rounded-xl border border-blue-100">
+                  <div className="flex justify-between text-slate-700">
+                    <span>[Débito] 2000 - CxP Proveedores</span>
+                    <span className="font-semibold text-emerald-700">+{formatCurrency(totalAmountToPay, paymentCurrency)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-700">
+                    <span>[Crédito] 1100 - Bancos</span>
+                    <span className="font-semibold text-slate-900">-{formatCurrency(totalAmountToPay, paymentCurrency)}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Bottom Summary Bar */}
