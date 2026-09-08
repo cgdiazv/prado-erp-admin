@@ -405,7 +405,13 @@ export default function AdminDashboard() {
   };
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showAccionesDropdown, setShowAccionesDropdown] = useState(false);
+
+  // Close mobile drawer when navigating to another view
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [currentView]);
   const accionesDropdownRef = useRef<HTMLDivElement>(null);
 
 
@@ -3626,10 +3632,19 @@ ${accountRowsHtml(equity)}
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans antialiased">
 
 
+      {/* Mobile drawer overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* ===================== SIDEBAR ===================== */}
       <aside
-        className={`${sidebarCollapsed ? "w-20" : "w-64"
-          } shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 z-30 sticky top-0 h-screen`}
+        className={`w-64 ${sidebarCollapsed ? "md:w-20" : "md:w-64"
+          } shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 fixed inset-y-0 left-0 z-50 h-screen transform ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 md:sticky md:top-0 md:z-30`}
       >
         {/* Brand Header */}
         <div className="h-16 px-4 border-b border-slate-200 flex items-center justify-between shrink-0">
@@ -3650,6 +3665,15 @@ ${accountRowsHtml(equity)}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={sidebarCollapsed ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7m8 14l-7-7 7-7"} />
+            </svg>
+          </button>
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition md:hidden"
+            title="Cerrar menú"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -4128,7 +4152,7 @@ ${accountRowsHtml(equity)}
         <header className="h-16 border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs shrink-0">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onClick={() => setMobileSidebarOpen(true)}
               className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer md:hidden"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
