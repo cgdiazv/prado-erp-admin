@@ -950,7 +950,7 @@ export default function AdminDashboard() {
     primerMesFiscal: "Enero",
     primerMesImpuesto: "Igual que el ejercicio fiscal (Enero)",
     metodoContabilidad: "Criterio de devengo",
-    cierreLibros: "Desactivado (Periodo 2026 abierto)",
+    fechaCierreLibros: "", // "" = libros abiertos; "YYYY-MM-DD" bloquea asientos hasta esa fecha
     numerosCuenta: "Activado",
   });
 
@@ -1060,6 +1060,48 @@ export default function AdminDashboard() {
       events.forEach((e) => window.removeEventListener(e, reset));
     };
   }, [avanzadasSettings.cierreSesionInactividad]);
+
+  // ===== Persistencia de configuraciones en BD por empresa =====
+  const appSettingsHydrated = useRef(false);
+  useEffect(() => {
+    fetch("/api/settings", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        const s = data?.success ? data.data : null;
+        if (s) {
+          if (s.sales) setSalesSettings((prev) => ({ ...prev, ...s.sales }));
+          if (s.gastos) setExpenseSettings((prev) => ({ ...prev, ...s.gastos }));
+          if (s.contabilidad) setContabilidadSettings((prev) => ({ ...prev, ...s.contabilidad }));
+          if (s.horas) setHorasSettings((prev) => ({ ...prev, ...s.horas }));
+          if (s.monedas) setMonedasSettings((prev) => ({ ...prev, ...s.monedas }));
+          if (s.avanzadas) setAvanzadasSettings((prev) => ({ ...prev, ...s.avanzadas }));
+        }
+      })
+      .catch(() => { })
+      .finally(() => {
+        appSettingsHydrated.current = true;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!appSettingsHydrated.current) return;
+    const t = setTimeout(() => {
+      fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sales: salesSettings,
+          gastos: expenseSettings,
+          contabilidad: contabilidadSettings,
+          horas: horasSettings,
+          monedas: monedasSettings,
+          avanzadas: avanzadasSettings,
+        }),
+      }).catch(() => { });
+    }, 800);
+    return () => clearTimeout(t);
+  }, [salesSettings, expenseSettings, contabilidadSettings, horasSettings, monedasSettings, avanzadasSettings]);
 
   // Plan & Suscripción (Opciones avanzadas)
   const [subscriptionInfo, setSubscriptionInfo] = useState<{
@@ -6885,22 +6927,28 @@ ${accountRowsHtml(equity)}
                             </div>
                             <div className="py-3 flex items-center justify-between gap-4">
                               <span className="w-80 font-semibold text-slate-800 shrink-0 text-left">Cierre de los libros</span>
-                              <span className="flex-1 text-slate-500 text-left">{contabilidadSettings.cierreLibros}</span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setParamEditModal({
-                                    title: "Cierre de Libros",
-                                    label: "Estado de cierre de libros",
-                                    value: contabilidadSettings.cierreLibros,
-                                    options: ["Desactivado (Periodo 2026 abierto)", "Activado (Periodo cerrado)"],
-                                    onSave: (val) => setContabilidadSettings((prev) => ({ ...prev, cierreLibros: val })),
-                                  })
-                                }
-                                className="text-[#1b426e] font-semibold hover:underline cursor-pointer shrink-0"
-                              >
-                                Editar
-                              </button>
+                              <span className={`flex-1 text-left ${contabilidadSettings.fechaCierreLibros ? "text-red-700 font-semibold" : "text-slate-500"}`}>
+                                {contabilidadSettings.fechaCierreLibros
+                                  ? `Libros cerrados hasta el ${contabilidadSettings.fechaCierreLibros} (no se permiten asientos en o antes de esa fecha)`
+                                  : "Desactivado (todos los períodos abiertos)"}
+                              </span>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <input
+                                  type="date"
+                                  value={contabilidadSettings.fechaCierreLibros}
+                                  onChange={(e) => setContabilidadSettings((prev) => ({ ...prev, fechaCierreLibros: e.target.value }))}
+                                  className="px-2 py-1 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
+                                />
+                                {contabilidadSettings.fechaCierreLibros && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setContabilidadSettings((prev) => ({ ...prev, fechaCierreLibros: "" }))}
+                                    className="text-red-600 font-semibold hover:underline cursor-pointer"
+                                  >
+                                    Reabrir
+                                  </button>
+                                )}
+                              </div>
                             </div>
                             <div className="py-3 flex items-center justify-between gap-4">
                               <span className="w-80 font-semibold text-slate-800 shrink-0 text-left">Activar números de cuenta contable</span>

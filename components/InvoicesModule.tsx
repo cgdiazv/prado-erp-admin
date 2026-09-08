@@ -677,6 +677,9 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
 
   const handleSendInvoiceEmail = async () => {
     const targetEmail = invoiceForm.customerEmail || companySettings.email || "";
+    // Solo enviar el mensaje predeterminado si el usuario lo personalizó
+    const defaultMsg = String(salesSettings?.mensajePredeterminado || "");
+    const customMessage = defaultMsg && !defaultMsg.startsWith("Mensaje de correo electrónico predeterminado") ? defaultMsg : undefined;
     setSendingInvoiceEmail(true);
     try {
       const res = await fetch("/api/send-invoice", {
@@ -695,6 +698,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
           total: invoiceTotal,
           paymentInstructions: invoiceForm.paymentInstructions,
           customerNote: invoiceForm.customerNote,
+          customMessage,
         }),
       });
 
@@ -1477,8 +1481,8 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               <tr>
                                 <th className="p-3 w-8 text-center">#</th>
                                 {salesSettings?.fechaServicio && <th className="p-3 w-32">Fecha servicio</th>}
-                                <th className="p-3 min-w-[180px]">Producto / Servicio</th>
-                                <th className="p-3 w-28">SKU</th>
+                                {salesSettings?.mostrarColumnaProductoServicio !== false && <th className="p-3 min-w-[180px]">Producto / Servicio</th>}
+                                {salesSettings?.mostrarColumnaSku && <th className="p-3 w-28">SKU</th>}
                                 <th className="p-3 min-w-[200px]">Descripción</th>
                                 <th className="p-3 w-20 text-right">Cant.</th>
                                 <th className="p-3 w-24 text-right">Tarifa</th>
@@ -1500,24 +1504,28 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                       />
                                     </td>
                                   )}
-                                  <td className="p-3">
-                                    <input
-                                      type="text"
-                                      list={`inventory-list-${line.id}`}
-                                      placeholder="Buscar artículo..."
-                                      value={line.productName}
-                                      onChange={(e) => updateInvoiceLine(line.id, "productName", e.target.value)}
-                                      className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                                    />
-                                    <datalist id={`inventory-list-${line.id}`}>
-                                      {inventory.map((item) => (
-                                        <option key={item.id} value={item.description} />
-                                      ))}
-                                    </datalist>
-                                  </td>
-                                  <td className="p-3 font-mono text-[11px] text-[#1b426e] font-semibold">
-                                    {line.sku || "—"}
-                                  </td>
+                                  {salesSettings?.mostrarColumnaProductoServicio !== false && (
+                                    <td className="p-3">
+                                      <input
+                                        type="text"
+                                        list={`inventory-list-${line.id}`}
+                                        placeholder="Buscar artículo..."
+                                        value={line.productName}
+                                        onChange={(e) => updateInvoiceLine(line.id, "productName", e.target.value)}
+                                        className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                                      />
+                                      <datalist id={`inventory-list-${line.id}`}>
+                                        {inventory.map((item) => (
+                                          <option key={item.id} value={item.description} />
+                                        ))}
+                                      </datalist>
+                                    </td>
+                                  )}
+                                  {salesSettings?.mostrarColumnaSku && (
+                                    <td className="p-3 font-mono text-[11px] text-[#1b426e] font-semibold">
+                                      {line.sku || "—"}
+                                    </td>
+                                  )}
                                   <td className="p-3">
                                     <input
                                       type="text"

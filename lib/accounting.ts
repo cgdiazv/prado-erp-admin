@@ -172,6 +172,19 @@ export async function createJournalEntry(input: CreateJournalEntryInput) {
 
   // Generate next entry number per tenant: AS-YYYY-XXXX
   const entryCompanyId = input.companyId || "default";
+
+  // Cierre de libros: bloquear asientos en períodos cerrados (Configuración → Contabilidad)
+  const settingsRow = await prisma.companySettings.findUnique({
+    where: { id: entryCompanyId },
+    select: { appSettings: true },
+  });
+  const closingDate = (settingsRow?.appSettings as { contabilidad?: { fechaCierreLibros?: string } } | null)?.contabilidad?.fechaCierreLibros;
+  if (closingDate && date <= closingDate) {
+    throw new Error(
+      `Los libros contables están cerrados hasta el ${closingDate}. No se pueden registrar asientos con fecha ${date}. Reabra el período en Configuración → Contabilidad.`
+    );
+  }
+
   const currentYear = new Date(date).getFullYear() || new Date().getFullYear();
   const yearPrefix = `AS-${currentYear}-`;
   const latestEntry = await prisma.journalEntry.findFirst({

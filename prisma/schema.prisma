@@ -130,6 +130,8 @@ model CompanySettings {
   contadorTelefono    String?  @default("")
   contadorEmail       String?  @default("")
   logoUrl             String?  @db.Text
+  // Configuraciones de la app (ventas, contabilidad, monedas, etc.) por empresa
+  appSettings         Json?
   updatedAt           DateTime @updatedAt
 }
 

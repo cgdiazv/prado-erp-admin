@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       total = 0,
       paymentInstructions = "",
       customerNote = "",
+      customMessage = "",
       apiKey: customApiKey,
     } = body;
 
@@ -43,6 +44,12 @@ export async function POST(req: NextRequest) {
     const apiKey = customApiKey || process.env.RESEND_API_KEY || "re_dummy_key";
 
     const resend = new Resend(apiKey);
+
+    const escapeHtml = (s: string) =>
+      String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const introMessage = customMessage
+      ? escapeHtml(customMessage)
+      : `Adjuntamos los detalles oficiales de su factura correspondiente a la emisión del ${invoiceDate}. Agradecemos su confianza en ${compName}.`;
 
     const itemsTableRowsHtml = lines
       .map(
@@ -95,7 +102,7 @@ export async function POST(req: NextRequest) {
             <td style="padding: 32px;">
               <p style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: #0f172a;">Estimado/a ${customerName},</p>
               <p style="margin: 0 0 24px 0; font-size: 13px; color: #475569; line-height: 1.6;">
-                Adjuntamos los detalles oficiales de su factura correspondiente a la emisión del ${invoiceDate}. Agradecemos su confianza en ${compName}.
+                ${introMessage}
               </p>
 
               <!-- METADATA BOX -->
