@@ -8,6 +8,7 @@ export interface Plan {
   features: string[];
   highlighted?: boolean;
   paymentLink: string; // Stripe Payment Link
+  maxUsers: number | null; // null = ilimitados
 }
 
 export const TRIAL_DAYS = 30;
@@ -27,6 +28,7 @@ export const PLANS: Plan[] = [
       "Soporte por correo",
     ],
     paymentLink: "https://pay.delvalletradings.com/b/3cI3cuaCrfaAg5o1Uh4Ni07",
+    maxUsers: 1,
   },
   {
     id: "profesional",
@@ -44,6 +46,7 @@ export const PLANS: Plan[] = [
     ],
     highlighted: true,
     paymentLink: "https://pay.delvalletradings.com/b/14A3cueSH5A09H08iF4Ni08",
+    maxUsers: 5,
   },
   {
     id: "empresarial",
@@ -59,9 +62,21 @@ export const PLANS: Plan[] = [
       "Soporte dedicado",
     ],
     paymentLink: "https://pay.delvalletradings.com/b/eVqcN4cKz6E4cTceH34Ni09",
+    maxUsers: null,
   },
 ];
 
 export function getPlan(id: string | null | undefined): Plan | undefined {
   return PLANS.find((p) => p.id === id);
+}
+
+/**
+ * Límite de usuarios según el plan. Durante la prueba se otorga el nivel Profesional (5).
+ * null = usuarios ilimitados.
+ */
+export function getUserLimit(planId: string | null | undefined, subscriptionStatus?: string | null): number | null {
+  const plan = getPlan(planId);
+  if (plan) return plan.maxUsers;
+  if (subscriptionStatus === "TRIAL") return 5;
+  return 1;
 }

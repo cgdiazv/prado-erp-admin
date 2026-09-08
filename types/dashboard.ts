@@ -202,6 +202,10 @@ export type InvoiceFormData = {
   customerNote: string;
   statementNote: string;
   lines: InvoiceLine[];
+  shipping?: number;
+  deposit?: number;
+  tags?: string;
+  deliveryMethod?: string;
 };
 
 export type InvoiceDesign = {

@@ -714,7 +714,7 @@ export default function AdminDashboard() {
   ];
 
   const [configSubTab, setConfigSubTab] = useState<
-    "empresa" | "reportes" | "contabilidad" | "ventas" | "gastos" | "horas" | "monedas" | "avanzadas" | "listas" | "importar"
+    "empresa" | "reportes" | "contabilidad" | "ventas" | "gastos" | "horas" | "monedas" | "usuarios" | "avanzadas" | "listas" | "importar"
   >("empresa");
 
   const [companySettings, setCompanySettings] = useState({
@@ -1011,6 +1011,55 @@ export default function AdminDashboard() {
     cierreSesionInactividad: "3 horas",
   });
 
+  // Cargar tras montar para evitar hydration mismatch
+  const avanzadasHydrated = useRef(false);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("wayne_avanzadas_settings");
+      if (saved) setAvanzadasSettings(JSON.parse(saved));
+    } catch { }
+    avanzadasHydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!avanzadasHydrated.current) return;
+    try {
+      localStorage.setItem("wayne_avanzadas_settings", JSON.stringify(avanzadasSettings));
+    } catch { }
+  }, [avanzadasSettings]);
+
+  // Cierre de sesión automático por inactividad según la configuración
+  useEffect(() => {
+    const parseIdleMs = (v: string): number | null => {
+      if (v.includes("30 minutos")) return 30 * 60 * 1000;
+      if (v.includes("1 hora")) return 60 * 60 * 1000;
+      if (v.includes("3 horas")) return 3 * 60 * 60 * 1000;
+      if (v.includes("8 horas")) return 8 * 60 * 60 * 1000;
+      return null;
+    };
+    const idleMs = parseIdleMs(avanzadasSettings.cierreSesionInactividad);
+    if (!idleMs) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    const logoutForIdle = async () => {
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+      } catch { }
+      window.location.href = "/login?idle=1";
+    };
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(logoutForIdle, idleMs);
+    };
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [avanzadasSettings.cierreSesionInactividad]);
+
   // Plan & Suscripción (Opciones avanzadas)
   const [subscriptionInfo, setSubscriptionInfo] = useState<{
     plan: string | null;
@@ -1058,6 +1107,100 @@ export default function AdminDashboard() {
     } finally {
       setCancelSubLoading(false);
     }
+  };
+
+  // ===== Gestión de Usuarios y Equipo (límite por plan) =====
+  type TeamUser = { id: string; email: string; name: string; role: string; isActive: boolean; createdAt: string };
+  const [teamUsers, setTeamUsers] = useState<TeamUser[]>([]);
+  const [teamMaxUsers, setTeamMaxUsers] = useState<number | null>(null);
+  const [teamPlanName, setTeamPlanName] = useState<string | null>(null);
+  const [teamCanManage, setTeamCanManage] = useState(false);
+  const [teamCurrentUserId, setTeamCurrentUserId] = useState("");
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [editingTeamUser, setEditingTeamUser] = useState<TeamUser | null>(null);
+  const [userForm, setUserForm] = useState({ name: "", email: "", password: "", role: "user" });
+  const [userModalError, setUserModalError] = useState("");
+  const [userModalLoading, setUserModalLoading] = useState(false);
+
+  const teamLimitReached = teamMaxUsers !== null && teamUsers.length >= teamMaxUsers;
+
+  const loadTeamUsers = async () => {
+    setTeamLoading(true);
+    try {
+      const res = await fetch("/api/users", { cache: "no-store" });
+      const data = await res.json();
+      if (data?.success) {
+        setTeamUsers(data.data.users || []);
+        setTeamMaxUsers(data.data.maxUsers ?? null);
+        setTeamPlanName(data.data.planName || null);
+        setTeamCanManage(Boolean(data.data.canManage));
+        setTeamCurrentUserId(data.data.currentUserId || "");
+      }
+    } catch {
+      // silencioso; la tabla mostrará vacío
+    } finally {
+      setTeamLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (configSubTab === "usuarios") loadTeamUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configSubTab]);
+
+  const roleLabel = (role: string) => {
+    const r = (role || "").toLowerCase();
+    if (r === "super_admin") return "Propietario";
+    if (r === "admin") return "Administrador";
+    return "Usuario";
+  };
+
+  const handleSaveTeamUser = async () => {
+    setUserModalError("");
+    setUserModalLoading(true);
+    try {
+      const isEdit = Boolean(editingTeamUser);
+      const res = await fetch(isEdit ? `/api/users/${editingTeamUser!.id}` : "/api/users", {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isEdit
+            ? { name: userForm.name, role: userForm.role, password: userForm.password || undefined }
+            : userForm
+        ),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || "No se pudo guardar el usuario.");
+      }
+      setShowUserModal(false);
+      setEditingTeamUser(null);
+      await loadTeamUsers();
+    } catch (err) {
+      setUserModalError(err instanceof Error ? err.message : "Error inesperado.");
+    } finally {
+      setUserModalLoading(false);
+    }
+  };
+
+  const handleToggleTeamUserActive = async (u: TeamUser) => {
+    const res = await fetch(`/api/users/${u.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: !u.isActive }),
+    });
+    const data = await res.json().catch(() => null);
+    if (data?.success) await loadTeamUsers();
+    else alert(data?.error || "No se pudo actualizar el usuario.");
+  };
+
+  const handleDeleteTeamUser = async (u: TeamUser) => {
+    if (!confirm(`¿Eliminar al usuario ${u.name} (${u.email})? Esta acción no se puede deshacer.`)) return;
+    const res = await fetch(`/api/users/${u.id}`, { method: "DELETE" });
+    const data = await res.json().catch(() => null);
+    if (data?.success) await loadTeamUsers();
+    else alert(data?.error || "No se pudo eliminar el usuario.");
   };
 
   // Generic Edit Modal State for parameter subtabs
@@ -2303,6 +2446,7 @@ export default function AdminDashboard() {
   };
 
   const [currentAdminUser, setCurrentAdminUser] = useState<{ id: string; email: string; name: string; role: string } | null>(null);
+  const isAdminUser = ["super_admin", "admin"].includes((currentAdminUser?.role || "").toLowerCase());
 
   const loadCurrentUser = async () => {
     try {
@@ -3959,7 +4103,8 @@ ${accountRowsHtml(equity)}
               <span>Reportes</span>
             </button>
 
-            {/* Configuración Button */}
+            {/* Configuración Button (solo administradores) */}
+            {isAdminUser && (
             <button
               onClick={() => setCurrentView("configuracion")}
               title="Configuración del Sistema"
@@ -3974,6 +4119,7 @@ ${accountRowsHtml(equity)}
               </svg>
               <span>Configuración</span>
             </button>
+            )}
           </div>
         </header>
 
@@ -5396,7 +5542,21 @@ ${accountRowsHtml(equity)}
           )}
 
           {/* ================= VIEW: CONFIGURACIÓN ================= */}
-          {currentView === "configuracion" && (
+          {currentView === "configuracion" && !isAdminUser && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 shadow-xs text-center">
+              <p className="text-sm font-bold text-slate-900">Acceso restringido</p>
+              <p className="text-xs text-slate-500 mt-2">La configuración del sistema solo está disponible para administradores.</p>
+              <button
+                type="button"
+                onClick={() => setCurrentView("dashboard")}
+                className="mt-5 px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs cursor-pointer transition"
+              >
+                Regresar a Dashboard
+              </button>
+            </div>
+          )}
+
+          {currentView === "configuracion" && isAdminUser && (
             <div className="space-y-4">
               <button
                 type="button"
@@ -5423,6 +5583,7 @@ ${accountRowsHtml(equity)}
                         { id: "gastos", label: "Gastos" },
                         { id: "horas", label: "Horas trabajadas" },
                         { id: "monedas", label: "Monedas" },
+                        { id: "usuarios", label: "Usuarios y equipo" },
                         { id: "listas", label: "Todas las listas" },
                         { id: "importar", label: "Importar / Exportar" },
                         { id: "avanzadas", label: "Opciones avanzadas" },
@@ -8431,6 +8592,241 @@ ${accountRowsHtml(equity)}
                             </div>
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* SUBTAB: USUARIOS Y EQUIPO */}
+                    {configSubTab === "usuarios" && (
+                      <div className="max-w-3xl space-y-6">
+                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div>
+                              <h2 className="font-bold text-sm text-slate-900 mb-1">Usuarios y Equipo</h2>
+                              <p className="text-xs text-slate-500">
+                                {teamMaxUsers === null
+                                  ? `${teamUsers.length} usuario${teamUsers.length === 1 ? "" : "s"} — su plan permite usuarios ilimitados`
+                                  : `${teamUsers.length} de ${teamMaxUsers} usuario${teamMaxUsers === 1 ? "" : "s"} disponibles según su plan`}
+                                {teamPlanName ? ` (${teamPlanName})` : ""}
+                              </p>
+                            </div>
+                            {teamCanManage && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingTeamUser(null);
+                                  setUserForm({ name: "", email: "", password: "", role: "user" });
+                                  setUserModalError("");
+                                  setShowUserModal(true);
+                                }}
+                                disabled={teamLimitReached}
+                                title={teamLimitReached ? "Límite de usuarios del plan alcanzado" : ""}
+                                className={`px-4 py-2 rounded-xl font-semibold text-xs shadow-sm transition ${
+                                  teamLimitReached
+                                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    : "bg-[#1b426e] hover:bg-[#143355] text-white cursor-pointer"
+                                }`}
+                              >
+                                + Agregar usuario
+                              </button>
+                            )}
+                          </div>
+
+                          {teamLimitReached && (
+                            <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                              Ha alcanzado el límite de usuarios de su plan.{" "}
+                              <a href="/pricing" className="font-bold underline hover:text-amber-900">
+                                Actualice su plan
+                              </a>{" "}
+                              para agregar más miembros a su equipo.
+                            </div>
+                          )}
+
+                          <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table className="w-full text-left text-xs border-collapse">
+                              <thead>
+                                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                                  <th className="py-2.5 px-4">Nombre</th>
+                                  <th className="py-2.5 px-4">Correo</th>
+                                  <th className="py-2.5 px-4">Rol</th>
+                                  <th className="py-2.5 px-4 text-center">Estado</th>
+                                  {teamCanManage && <th className="py-2.5 px-4 text-right">Acciones</th>}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {teamLoading ? (
+                                  <tr>
+                                    <td colSpan={5} className="py-8 text-center text-slate-400">Cargando usuarios...</td>
+                                  </tr>
+                                ) : teamUsers.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={5} className="py-8 text-center text-slate-400">No hay usuarios registrados</td>
+                                  </tr>
+                                ) : (
+                                  teamUsers.map((u) => {
+                                    const r = (u.role || "").toLowerCase();
+                                    const isOwnerRow = r === "super_admin";
+                                    const isSelf = u.id === teamCurrentUserId;
+                                    return (
+                                      <tr key={u.id} className="hover:bg-slate-50/60 transition">
+                                        <td className="py-2.5 px-4 font-semibold text-slate-900">
+                                          {u.name}
+                                          {isSelf && <span className="ml-1.5 text-[10px] text-slate-400 font-medium">(usted)</span>}
+                                        </td>
+                                        <td className="py-2.5 px-4 text-slate-600">{u.email}</td>
+                                        <td className="py-2.5 px-4">
+                                          <span
+                                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                              isOwnerRow
+                                                ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                                : r === "admin"
+                                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                                : "bg-slate-100 text-slate-600 border border-slate-200"
+                                            }`}
+                                          >
+                                            {roleLabel(u.role)}
+                                          </span>
+                                        </td>
+                                        <td className="py-2.5 px-4 text-center">
+                                          <span
+                                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                              u.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                            }`}
+                                          >
+                                            {u.isActive ? "Activo" : "Inactivo"}
+                                          </span>
+                                        </td>
+                                        {teamCanManage && (
+                                          <td className="py-2.5 px-4 text-right space-x-3 whitespace-nowrap">
+                                            {!isOwnerRow && (
+                                              <>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setEditingTeamUser(u);
+                                                    setUserForm({ name: u.name, email: u.email, password: "", role: r === "admin" ? "admin" : "user" });
+                                                    setUserModalError("");
+                                                    setShowUserModal(true);
+                                                  }}
+                                                  className="text-[#1b426e] font-semibold hover:underline cursor-pointer"
+                                                >
+                                                  Editar
+                                                </button>
+                                                {!isSelf && (
+                                                  <>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleToggleTeamUserActive(u)}
+                                                      className="text-slate-500 font-semibold hover:underline cursor-pointer"
+                                                    >
+                                                      {u.isActive ? "Desactivar" : "Activar"}
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleDeleteTeamUser(u)}
+                                                      className="text-red-600 font-semibold hover:underline cursor-pointer"
+                                                    >
+                                                      Eliminar
+                                                    </button>
+                                                  </>
+                                                )}
+                                              </>
+                                            )}
+                                          </td>
+                                        )}
+                                      </tr>
+                                    );
+                                  })
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* MODAL: CREAR / EDITAR USUARIO */}
+                        {showUserModal && (
+                          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-150">
+                              <h3 className="text-sm font-extrabold text-slate-900">
+                                {editingTeamUser ? `Editar usuario: ${editingTeamUser.name}` : "Agregar nuevo usuario"}
+                              </h3>
+                              <p className="text-xs text-slate-500 mt-1 mb-4">
+                                {editingTeamUser
+                                  ? "Modifique el nombre, rol o restablezca la contraseña."
+                                  : "El usuario podrá iniciar sesión con el correo y la contraseña asignados."}
+                              </p>
+
+                              <div className="space-y-3 text-xs">
+                                <div>
+                                  <label className="block font-semibold text-slate-700 mb-1">Nombre completo</label>
+                                  <input
+                                    type="text"
+                                    value={userForm.name}
+                                    onChange={(e) => setUserForm((p) => ({ ...p, name: e.target.value }))}
+                                    className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1b426e]"
+                                    placeholder="Ej. María López"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block font-semibold text-slate-700 mb-1">Correo electrónico</label>
+                                  <input
+                                    type="email"
+                                    value={userForm.email}
+                                    disabled={Boolean(editingTeamUser)}
+                                    onChange={(e) => setUserForm((p) => ({ ...p, email: e.target.value }))}
+                                    className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1b426e] disabled:bg-slate-50 disabled:text-slate-400"
+                                    placeholder="usuario@empresa.com"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block font-semibold text-slate-700 mb-1">
+                                    {editingTeamUser ? "Nueva contraseña (opcional)" : "Contraseña"}
+                                  </label>
+                                  <input
+                                    type="password"
+                                    value={userForm.password}
+                                    onChange={(e) => setUserForm((p) => ({ ...p, password: e.target.value }))}
+                                    className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1b426e]"
+                                    placeholder={editingTeamUser ? "Dejar en blanco para no cambiar" : "Mínimo 6 caracteres"}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block font-semibold text-slate-700 mb-1">Rol</label>
+                                  <select
+                                    value={userForm.role}
+                                    onChange={(e) => setUserForm((p) => ({ ...p, role: e.target.value }))}
+                                    className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1b426e] bg-white"
+                                  >
+                                    <option value="user">Usuario — acceso operativo</option>
+                                    <option value="admin">Administrador — gestión completa</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              {userModalError && (
+                                <p className="mt-3 text-xs text-red-600 font-semibold">{userModalError}</p>
+                              )}
+
+                              <div className="mt-5 flex items-center justify-end gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => setShowUserModal(false)}
+                                  disabled={userModalLoading}
+                                  className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 font-semibold text-xs cursor-pointer transition"
+                                >
+                                  Cancelar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleSaveTeamUser}
+                                  disabled={userModalLoading}
+                                  className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs cursor-pointer transition disabled:opacity-50"
+                                >
+                                  {userModalLoading ? "Guardando..." : editingTeamUser ? "Guardar cambios" : "Crear usuario"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveCompanyId } from "@/lib/tenant";
+import { resolveCompanyId, getTenantSession } from "@/lib/tenant";
 
 const DEFAULT_COMPANY_DATA = {
   id: "default",
@@ -109,7 +109,17 @@ export async function GET(request: NextRequest) {
 // PUT /api/company - Update official company settings for current company
 export async function PUT(request: NextRequest) {
   try {
-    const companyId = await resolveCompanyId(request);
+    const session = await getTenantSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "No autorizado." }, { status: 401 });
+    }
+    if (!["super_admin", "admin"].includes((session.role || "").toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: "Solo los administradores pueden modificar la configuración de la empresa." },
+        { status: 403 }
+      );
+    }
+    const companyId = session.companyId;
     const body = await request.json();
 
     const allowedFields = [

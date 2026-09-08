@@ -199,6 +199,21 @@ export function InvoicesModule({
     lines: [],
   });
 
+  // Términos de pago según Configuración → Ventas
+  const TERMS_DAYS: Record<string, number> = { "Contado": 0, "Neto 15": 15, "Neto 30": 30, "Neto 60": 60 };
+  const settingsDefaultTerms = () => {
+    const pref = String(salesSettings?.preferidofacturaCondiciones || "Net 30");
+    if (pref.includes("15")) return "Neto 15";
+    if (pref.includes("60")) return "Neto 60";
+    if (pref.toLowerCase().includes("recibo")) return "Contado";
+    return "Neto 30";
+  };
+  const dueDateForTerms = (terms: string, fromDate?: string) => {
+    const days = TERMS_DAYS[terms] ?? 30;
+    const base = fromDate ? new Date(fromDate + "T00:00:00") : new Date();
+    return new Date(base.getTime() + days * 86400000).toISOString().split("T")[0];
+  };
+
   // Sync / Initialize invoice form when entering editor mode or changing editingInvoice
   useEffect(() => {
     if (currentView !== "factura-editor") return;
@@ -265,6 +280,7 @@ export function InvoicesModule({
       });
     } else {
       // Create new invoice
+      const defTerms = settingsDefaultTerms();
       const nextNum = (Math.max(0, ...invoicesList.map((i) => parseInt(i.num) || 0)) + 1).toString();
       setInvoiceForm({
         invoiceNumber: nextNum,
@@ -286,12 +302,16 @@ export function InvoicesModule({
         applyIsv18: false,
         isExonerated: false,
         isExempt: false,
-        paymentTerms: "Neto 30",
+        paymentTerms: defTerms,
         invoiceDate: new Date().toISOString().split("T")[0],
-        dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+        dueDate: dueDateForTerms(defTerms),
         paymentInstructions: "",
         customerNote: "",
         statementNote: "",
+        shipping: 0,
+        deposit: 0,
+        tags: "",
+        deliveryMethod: salesSettings?.metodoEntregaPreferido || "Ninguno",
         lines: [
           {
             id: `line-${Date.now()}`,
@@ -390,8 +410,10 @@ export function InvoicesModule({
   const invoiceIsv15 = invoiceForm.applyIsv15 ? Number((invoiceGravado15 * configuredIsvRate).toFixed(2)) : 0;
   const invoiceIsv18 = (salesSettings?.permitirIsv18 && invoiceForm.applyIsv18) ? Number((invoiceGravado18 * 0.18).toFixed(2)) : 0;
 
-  // 7. Total a Pagar
-  const invoiceTotal = Number((invoiceSubtotal + invoiceIsv15 + invoiceIsv18).toFixed(2));
+  // 7. Total a Pagar (incluye Envío si está habilitado en Configuración → Ventas)
+  const invoiceShipping = salesSettings?.envio ? Number(invoiceForm.shipping || 0) : 0;
+  const invoiceDeposit = salesSettings?.deposito ? Number(invoiceForm.deposit || 0) : 0;
+  const invoiceTotal = Number((invoiceSubtotal + invoiceIsv15 + invoiceIsv18 + invoiceShipping).toFixed(2));
 
   const getInvoiceFontFamily = (fontName: string) => {
     switch (fontName) {
@@ -1094,6 +1116,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                         </div>
                       )}
 
+                      {invoiceShipping > 0 && (
+                        <div className="flex justify-between items-center py-[2px] text-slate-600">
+                          <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Envío</span>
+                          <span className="font-mono font-medium text-slate-700">{formatFiscalMoney(invoiceShipping, true)}</span>
+                        </div>
+                      )}
+
                       {/* 7. TOTAL A PAGAR */}
                       {invoiceDesign.showTotal && (
                         <div className="pt-1">
@@ -1347,9 +1376,11 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <input
                               type="text"
                               value={invoiceForm.invoiceNumber}
+                              disabled={!salesSettings?.numerosTransaccionesPersonalizados}
+                              title={!salesSettings?.numerosTransaccionesPersonalizados ? "Numeración automática — active 'Números de transacciones personalizados' en Configuración → Ventas para editarla" : ""}
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceNumber: e.target.value })}
                               placeholder="00000001 o 1001"
-                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#1b426e]"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#1b426e] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
                             />
                           </div>
 
@@ -1373,7 +1404,10 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <label className="block font-semibold text-slate-700 mb-1">Términos de pago</label>
                             <select
                               value={invoiceForm.paymentTerms}
-                              onChange={(e) => setInvoiceForm({ ...invoiceForm, paymentTerms: e.target.value })}
+                              onChange={(e) => {
+                                const terms = e.target.value;
+                                setInvoiceForm({ ...invoiceForm, paymentTerms: terms, dueDate: dueDateForTerms(terms, invoiceForm.invoiceDate) });
+                              }}
                               className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer"
                             >
                               <option value="Contado">Contado</option>
@@ -1402,6 +1436,32 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
+
+                          <div>
+                            <label className="block font-semibold text-slate-700 mb-1">Método de entrega</label>
+                            <select
+                              value={invoiceForm.deliveryMethod || "Ninguno"}
+                              onChange={(e) => setInvoiceForm({ ...invoiceForm, deliveryMethod: e.target.value })}
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer"
+                            >
+                              <option value="Ninguno">Ninguno</option>
+                              <option value="Imprimir más tarde">Imprimir más tarde</option>
+                              <option value="Enviar más tarde">Enviar más tarde</option>
+                            </select>
+                          </div>
+
+                          {salesSettings?.etiquetas && (
+                            <div>
+                              <label className="block font-semibold text-slate-700 mb-1">Etiquetas</label>
+                              <input
+                                type="text"
+                                value={invoiceForm.tags || ""}
+                                onChange={(e) => setInvoiceForm({ ...invoiceForm, tags: e.target.value })}
+                                placeholder="Ej. urgente, mayorista"
+                                className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -1416,7 +1476,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                               <tr>
                                 <th className="p-3 w-8 text-center">#</th>
-                                <th className="p-3 w-32">Fecha servicio</th>
+                                {salesSettings?.fechaServicio && <th className="p-3 w-32">Fecha servicio</th>}
                                 <th className="p-3 min-w-[180px]">Producto / Servicio</th>
                                 <th className="p-3 w-28">SKU</th>
                                 <th className="p-3 min-w-[200px]">Descripción</th>
@@ -1430,14 +1490,16 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               {invoiceForm.lines.map((line, idx) => (
                                 <tr key={line.id} className="hover:bg-slate-50/60 transition">
                                   <td className="p-3 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</td>
-                                  <td className="p-3">
-                                    <input
-                                      type="date"
-                                      value={line.serviceDate}
-                                      onChange={(e) => updateInvoiceLine(line.id, "serviceDate", e.target.value)}
-                                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#1b426e]"
-                                    />
-                                  </td>
+                                  {salesSettings?.fechaServicio && (
+                                    <td className="p-3">
+                                      <input
+                                        type="date"
+                                        value={line.serviceDate}
+                                        onChange={(e) => updateInvoiceLine(line.id, "serviceDate", e.target.value)}
+                                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#1b426e]"
+                                      />
+                                    </td>
+                                  )}
                                   <td className="p-3">
                                     <input
                                       type="text"
@@ -1585,12 +1647,42 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 type="number"
                                 min={0}
                                 step={0.01}
+                                disabled={!salesSettings?.descuento}
+                                title={!salesSettings?.descuento ? "Active 'Descuento' en Configuración → Ventas para usar este campo" : ""}
                                 value={invoiceForm.discount || ""}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, discount: parseFloat(e.target.value) || 0 })}
                                 placeholder="0.00"
-                                className="w-full px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-800"
+                                className="w-full px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-800 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                               />
                             </div>
+                            {salesSettings?.envio && (
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-700 mb-1">Envío</label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={0.01}
+                                  value={invoiceForm.shipping || ""}
+                                  onChange={(e) => setInvoiceForm({ ...invoiceForm, shipping: parseFloat(e.target.value) || 0 })}
+                                  placeholder="0.00"
+                                  className="w-full px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-800"
+                                />
+                              </div>
+                            )}
+                            {salesSettings?.deposito && (
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-700 mb-1">Depósito recibido</label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={0.01}
+                                  value={invoiceForm.deposit || ""}
+                                  onChange={(e) => setInvoiceForm({ ...invoiceForm, deposit: parseFloat(e.target.value) || 0 })}
+                                  placeholder="0.00"
+                                  className="w-full px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-800"
+                                />
+                              </div>
+                            )}
                             <div className="flex flex-col justify-center gap-1">
                               <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 cursor-pointer">
                                 <input
@@ -1691,11 +1783,33 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               </div>
                             )}
 
+                            {/* ENVÍO */}
+                            {salesSettings?.envio && (
+                              <div className="flex justify-between items-center text-slate-600">
+                                <span className="text-[11px] uppercase font-semibold text-slate-500">ENVÍO:</span>
+                                <span className="font-mono font-bold text-slate-900">{invoiceShipping > 0 ? `${invoiceCurrencySymbol} ${invoiceShipping.toLocaleString("es-HN", { minimumFractionDigits: 2 })}` : "—"}</span>
+                              </div>
+                            )}
+
                             {/* 7. TOTAL A PAGAR */}
                             <div className="border-t border-slate-300 pt-2 flex justify-between items-center text-sm font-bold text-slate-900">
                               <span className="text-xs uppercase">TOTAL A PAGAR:</span>
                               <span className="text-2xl font-bold text-slate-900 font-mono">{invoiceCurrencySymbol} {invoiceTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
                             </div>
+
+                            {/* DEPÓSITO Y SALDO PENDIENTE */}
+                            {salesSettings?.deposito && invoiceDeposit > 0 && (
+                              <>
+                                <div className="flex justify-between items-center text-slate-600">
+                                  <span className="text-[11px] uppercase font-semibold text-slate-500">DEPÓSITO RECIBIDO:</span>
+                                  <span className="font-mono font-bold text-emerald-700">-{invoiceCurrencySymbol} {invoiceDeposit.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-slate-900">
+                                  <span className="text-[11px] uppercase font-bold">SALDO PENDIENTE:</span>
+                                  <span className="font-mono font-bold text-slate-900">{invoiceCurrencySymbol} {Math.max(0, invoiceTotal - invoiceDeposit).toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                                </div>
+                              </>
+                            )}
                           </div>
 
                           <div className="pt-2 border-t border-slate-200 text-left">
@@ -1927,6 +2041,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 <div className="flex justify-between items-center py-[2px] text-slate-600">
                                   <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Total I.S.V. 18%</span>
                                   <span className="font-mono font-medium text-slate-700">{formatFiscalMoney(invoiceIsv18, invoiceForm.applyIsv18) || "—"}</span>
+                                </div>
+                              )}
+
+                              {invoiceShipping > 0 && (
+                                <div className="flex justify-between items-center py-[2px] text-slate-600">
+                                  <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Envío</span>
+                                  <span className="font-mono font-medium text-slate-700">{formatFiscalMoney(invoiceShipping, true)}</span>
                                 </div>
                               )}
 

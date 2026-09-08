@@ -16,6 +16,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("idle") === "1") {
+      setError("Su sesión se cerró automáticamente por inactividad. Vuelva a iniciar sesión.");
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

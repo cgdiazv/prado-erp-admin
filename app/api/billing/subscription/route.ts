@@ -44,6 +44,12 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getTenantSession(request);
     if (!session) return unauthorizedResponse();
+    if (!["super_admin", "admin"].includes((session.role || "").toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: "Solo los administradores pueden cancelar la suscripción." },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json().catch(() => ({}));
     const reason = typeof body.reason === "string" ? body.reason.trim() : "";
