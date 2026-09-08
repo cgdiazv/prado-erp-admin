@@ -384,6 +384,13 @@ export default function AdminDashboard() {
   const [comprasOpen, setComprasOpen] = useState(false);
   const [inventarioOpen, setInventarioOpen] = useState(false);
 
+  const toggleSidebarSection = (section: "contabilidad" | "ventas" | "compras" | "inventario") => {
+    setContabilidadOpen(section === "contabilidad" ? !contabilidadOpen : false);
+    setVentasOpen(section === "ventas" ? !ventasOpen : false);
+    setComprasOpen(section === "compras" ? !comprasOpen : false);
+    setInventarioOpen(section === "inventario" ? !inventarioOpen : false);
+  };
+
   // Credit & Debit Notes State
   const [creditDebitNotes, setCreditDebitNotes] = useState<CreditDebitNote[]>([]);
 
@@ -413,6 +420,7 @@ export default function AdminDashboard() {
     setMobileSidebarOpen(false);
   }, [currentView]);
   const accionesDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileAccionesDropdownRef = useRef<HTMLDivElement>(null);
 
 
   const [search, setSearch] = useState("");
@@ -3610,7 +3618,10 @@ ${accountRowsHtml(equity)}
 
     const handleGlobalClick = (e: MouseEvent) => {
       // Close Acciones if click is outside its ref'd container
-      if (accionesDropdownRef.current && !accionesDropdownRef.current.contains(e.target as Node)) {
+      if (
+        !accionesDropdownRef.current?.contains(e.target as Node) &&
+        !mobileAccionesDropdownRef.current?.contains(e.target as Node)
+      ) {
         setShowAccionesDropdown(false);
       }
       // For split-button dropdowns: close when clicking outside any [data-dropdown] wrapper
@@ -3697,7 +3708,7 @@ ${accountRowsHtml(equity)}
           {/* Contabilidad Section (Collapsible Dropdown matching screenshot) */}
           <div className="pt-2">
             <button
-              onClick={() => setContabilidadOpen(!contabilidadOpen)}
+              onClick={() => toggleSidebarSection("contabilidad")}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "macola-sync" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
                   ? "font-semibold text-slate-900"
                   : ""
@@ -3778,7 +3789,7 @@ ${accountRowsHtml(equity)}
           {/* Ventas Collapsible Group */}
           <div className="pt-1">
             <button
-              onClick={() => setVentasOpen(!ventasOpen)}
+              onClick={() => toggleSidebarSection("ventas")}
               title={sidebarCollapsed ? "Ventas" : undefined}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
                   currentView === "cotizaciones" ||
@@ -3913,7 +3924,7 @@ ${accountRowsHtml(equity)}
           {/* Compras Collapsible Group */}
           <div className="pt-1">
             <button
-              onClick={() => setComprasOpen(!comprasOpen)}
+              onClick={() => toggleSidebarSection("compras")}
               title={sidebarCollapsed ? "Compras" : undefined}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
                   currentView === "lista-ordenes-compra" ||
@@ -4049,7 +4060,7 @@ ${accountRowsHtml(equity)}
           {/* Inventario Collapsible Group */}
           <div className="pt-1">
             <button
-              onClick={() => setInventarioOpen(!inventarioOpen)}
+              onClick={() => toggleSidebarSection("inventario")}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
                   ? "font-semibold text-slate-900"
                   : ""
@@ -4107,6 +4118,44 @@ ${accountRowsHtml(equity)}
 
 
         </nav>
+
+        {/* Mobile navbar actions */}
+        <div className="p-3 border-t border-slate-100 space-y-1 md:hidden">
+          <button
+            onClick={loadDashboardData}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+          >
+            <svg className={`w-4 h-4 text-[#1b426e] ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Sincronizar datos
+          </button>
+          <button
+            onClick={() => setCurrentView("reportes")}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition cursor-pointer ${currentView === "reportes"
+                ? "bg-[#fff7ed] text-[#1b426e]"
+                : "text-slate-700 hover:bg-slate-100"
+              }`}
+          >
+            <FileText className="w-4 h-4" />
+            Reportes
+          </button>
+          {isAdminUser && (
+            <button
+              onClick={() => setCurrentView("configuracion")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition cursor-pointer ${currentView === "configuracion"
+                  ? "bg-[#fff7ed] text-[#1b426e]"
+                  : "text-slate-700 hover:bg-slate-100"
+                }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Configuración
+            </button>
+          )}
+        </div>
 
         {/* Footer / User Profile */}
         <div className="p-3 border-t border-slate-100">
@@ -4199,7 +4248,44 @@ ${accountRowsHtml(equity)}
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="relative md:hidden" ref={mobileAccionesDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setShowAccionesDropdown(!showAccionesDropdown)}
+              className="px-3 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20"
+            >
+              <span>Acciones</span>
+              <svg
+                className={`w-3.5 h-3.5 transition-transform duration-150 ${showAccionesDropdown ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showAccionesDropdown && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 text-xs space-y-0.5">
+                <div className="px-3 py-1.5 font-bold text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
+                  Acciones Rápidas
+                </div>
+                {quickActions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={() => handleQuickAction(action.id)}
+                    className="w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-[#fff7ed] hover:text-[#1b426e] font-semibold transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>{action.label}</span>
+                    <span className="text-[#1b426e] font-bold text-sm group-hover:scale-110 transition-transform">+</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="hidden md:flex items-center gap-2.5">
             <div className="relative w-56 hidden md:block">
               <input
                 type="text"
