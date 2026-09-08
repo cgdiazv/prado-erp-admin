@@ -2900,6 +2900,155 @@ export default function AdminDashboard() {
     window.print();
   };
 
+  // ===== Descargas del Centro de Reportes =====
+  const downloadCsvFile = (filename: string, headers: string[], rows: string[][]) => {
+    const escapeCell = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    // BOM para que Excel reconozca acentos UTF-8
+    const csv = "\uFEFF" + [headers.map(escapeCell).join(","), ...rows.map((r) => r.map(escapeCell).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const escapeHtml = (s: string) =>
+    String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const openPrintReport = (title: string, bodyHtml: string) => {
+    const w = window.open("", "_blank", "width=900,height=700");
+    if (!w) {
+      alert("Permita las ventanas emergentes para descargar el PDF.");
+      return;
+    }
+    const companyName = escapeHtml(companySettings.nombreLegal || companySettings.nombre || "Prado ERP");
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8" /><title>${escapeHtml(title)}</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 32px; font-size: 12px; }
+  h1 { font-size: 18px; margin: 0; }
+  h2 { font-size: 13px; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #334155; }
+  .sub { color: #64748b; font-size: 11px; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+  th { background: #f8fafc; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.total td { font-weight: 700; border-top: 2px solid #0f172a; border-bottom: none; }
+  @media print { body { padding: 0; } }
+</style></head><body>
+<h1>${companyName}</h1>
+<div class="sub">${escapeHtml(title)} — Generado el ${new Date().toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}</div>
+${bodyHtml}
+<script>window.onload = function () { window.print(); };</script>
+</body></html>`);
+    w.document.close();
+  };
+
+  const accountRowsHtml = (accs: Account[]) =>
+    accs
+      .map(
+        (a) =>
+          `<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td class="num">${escapeHtml(formatCurrency(Number(a.balance) || 0))}</td></tr>`
+      )
+      .join("");
+
+  const handleDownloadPnLPdf = () => {
+    const netIncome = totalIncome - totalExpenses;
+    const body = `
+<h2>Ingresos</h2>
+<table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
+${accountRowsHtml(incomeAccounts)}
+<tr class="total"><td colspan="2">Total Ingresos</td><td class="num">${escapeHtml(formatCurrency(totalIncome))}</td></tr>
+</tbody></table>
+<h2>Gastos y Costos</h2>
+<table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
+${accountRowsHtml(expenseAccounts)}
+<tr class="total"><td colspan="2">Total Gastos</td><td class="num">${escapeHtml(formatCurrency(totalExpenses))}</td></tr>
+</tbody></table>
+<h2>Resultado</h2>
+<table><tbody>
+<tr class="total"><td>${netIncome >= 0 ? "Utilidad Neta del Período" : "Pérdida Neta del Período"}</td><td class="num">${escapeHtml(formatCurrency(netIncome))}</td></tr>
+</tbody></table>`;
+    openPrintReport("Estado de Pérdidas y Ganancias", body);
+  };
+
+  const handleDownloadBalancePdf = () => {
+    const active = accounts.filter((a) => a.isActive);
+    const byType = (matches: string[]) =>
+      active.filter((a) => {
+        const t = (a.type || "").toLowerCase();
+        return matches.some((m) => t.includes(m));
+      });
+    const assets = byType(["asset", "activo"]);
+    const liabilities = byType(["liab", "pasivo"]);
+    const equity = byType(["equity", "patrimonio", "capital"]);
+    const sum = (accs: Account[]) => accs.reduce((s, a) => s + (Number(a.balance) || 0), 0);
+    const totalAssets = sum(assets);
+    const totalLiabilities = sum(liabilities);
+    const totalEquity = sum(equity);
+    const periodResult = totalIncome - totalExpenses;
+    const body = `
+<h2>Activos</h2>
+<table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
+${accountRowsHtml(assets)}
+<tr class="total"><td colspan="2">Total Activos</td><td class="num">${escapeHtml(formatCurrency(totalAssets))}</td></tr>
+</tbody></table>
+<h2>Pasivos</h2>
+<table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
+${accountRowsHtml(liabilities)}
+<tr class="total"><td colspan="2">Total Pasivos</td><td class="num">${escapeHtml(formatCurrency(totalLiabilities))}</td></tr>
+</tbody></table>
+<h2>Capital Contable</h2>
+<table><thead><tr><th>Código</th><th>Cuenta</th><th class="num">Saldo</th></tr></thead><tbody>
+${accountRowsHtml(equity)}
+<tr><td colspan="2">Utilidad / Pérdida del Período</td><td class="num">${escapeHtml(formatCurrency(periodResult))}</td></tr>
+<tr class="total"><td colspan="2">Total Capital Contable</td><td class="num">${escapeHtml(formatCurrency(totalEquity + periodResult))}</td></tr>
+</tbody></table>
+<h2>Comprobación</h2>
+<table><tbody>
+<tr class="total"><td>Total Pasivo + Capital</td><td class="num">${escapeHtml(formatCurrency(totalLiabilities + totalEquity + periodResult))}</td></tr>
+</tbody></table>`;
+    openPrintReport("Balance de Situación", body);
+  };
+
+  const handleDownloadInventoryExcel = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = inventory.map((item) => [
+      item.sku || "",
+      item.description || "",
+      item.category || "",
+      String(item.quantity || 0),
+      (item.cost || 0).toFixed(2),
+      ((item.quantity || 0) * (item.cost || 0)).toFixed(2),
+    ]);
+    rows.push(["", "", "TOTAL", String(totalInventoryUnits), "", totalInventoryValuation.toFixed(2)]);
+    downloadCsvFile(
+      `valoracion_inventario_${today}.csv`,
+      ["SKU", "Descripción", "Categoría", "Cantidad", "Costo Unitario", "Valor Total"],
+      rows
+    );
+  };
+
+  const handleDownloadLedgerExcel = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = accounts.map((a) => [
+      a.code,
+      a.name,
+      a.type,
+      a.currency,
+      (Number(a.balance) || 0).toFixed(2),
+      a.isActive ? "Activa" : "Inactiva",
+    ]);
+    downloadCsvFile(
+      `libro_mayor_catalogo_${today}.csv`,
+      ["Código", "Nombre de la Cuenta", "Tipo", "Moneda", "Saldo Acumulado", "Estado"],
+      rows
+    );
+  };
+
   const handleOpenEditAccount = (acc: Account) => {
     setEditingAccountId(acc.id);
     setNewAccountForm({
@@ -5021,7 +5170,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">Actualizado hoy</span>
-                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar PDF</button>
+                      <button onClick={handleDownloadPnLPdf} className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar PDF</button>
                     </div>
                   </div>
 
@@ -5038,7 +5187,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">Mensual</span>
-                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar PDF</button>
+                      <button onClick={handleDownloadBalancePdf} className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar PDF</button>
                     </div>
                   </div>
 
@@ -5055,7 +5204,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">En tiempo real</span>
-                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar Excel</button>
+                      <button onClick={handleDownloadInventoryExcel} className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar Excel</button>
                     </div>
                   </div>
 
@@ -5138,7 +5287,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-400">{accounts.length} cuentas activas</span>
-                      <button className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar Excel</button>
+                      <button onClick={handleDownloadLedgerExcel} className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer">Descargar Excel</button>
                     </div>
                   </div>
                 </div>
