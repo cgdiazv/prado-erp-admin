@@ -62,7 +62,15 @@ export default function MarketingHomePage() {
 
       {/* ================= HERO ================= */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white" />
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=2000&q=60')",
+          }}
+        />
+        {/* Overlay para legibilidad del texto */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white" />
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
           <span className="inline-block px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold uppercase tracking-wider mb-6">
             {TRIAL_DAYS} días gratis — sin tarjeta de crédito
