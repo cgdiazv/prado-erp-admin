@@ -65,12 +65,14 @@ export default function LoginPage() {
         {/* Brand Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center">
-            <Image
-              src={logoImg}
-              alt="Prado ERP"
-              priority
-              className="h-16 w-auto max-w-[260px] object-contain"
-            />
+            <Link href="/" title="Ir a la página principal">
+              <Image
+                src={logoImg}
+                alt="Prado ERP"
+                priority
+                className="h-16 w-auto max-w-[260px] object-contain cursor-pointer"
+              />
+            </Link>
           </div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-5">
             Iniciar Sesión
