@@ -3608,6 +3608,51 @@ ${accountRowsHtml(equity)}
     return list.slice(0, 3);
   }, [purchaseInvoices, purchaseOrders]);
 
+  // Cobros pendientes (Upcoming Receivables from pending invoices)
+  const upcomingReceivables = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return invoicesList
+      .filter((inv) => inv.status === "Pendiente")
+      .map((inv) => {
+        const dueDate = inv.due ? new Date(inv.due) : null;
+        const diffDays = dueDate
+          ? Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+          : null;
+        let status: "VENCIDA" | "PROXIMO" | "PROGRAMADO" = "PROGRAMADO";
+        let daysLeft = "Programado";
+        if (diffDays !== null) {
+          if (diffDays < 0) {
+            status = "VENCIDA";
+            daysLeft = `Hace ${Math.abs(diffDays)} día${Math.abs(diffDays) === 1 ? "" : "s"}`;
+          } else if (diffDays === 0) {
+            status = "VENCIDA";
+            daysLeft = "Hoy";
+          } else if (diffDays <= 7) {
+            status = "PROXIMO";
+            daysLeft = `En ${diffDays} día${diffDays === 1 ? "" : "s"}`;
+          } else {
+            daysLeft = `En ${diffDays} días`;
+          }
+        }
+        return {
+          id: `inv-${inv.num}`,
+          customer: inv.customer,
+          concept: `Factura ${inv.num}`,
+          dueDate: dueDate
+            ? dueDate.toLocaleDateString("es-HN", { day: "2-digit", month: "short" })
+            : "—",
+          daysLeft,
+          amount: inv.total,
+          sortKey: dueDate ? dueDate.getTime() : Number.MAX_SAFE_INTEGER,
+          status,
+        };
+      })
+      .sort((a, b) => a.sortKey - b.sortKey)
+      .slice(0, 3);
+  }, [invoicesList]);
+
   // Global click-outside handler: closes ALL open dropdowns when clicking outside them
   useEffect(() => {
     const anyOpen =
@@ -4705,20 +4750,70 @@ ${accountRowsHtml(equity)}
                 </div>
 
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
-                  <h2 className="text-sm font-bold text-slate-900">Infraestructura del Sistema</h2>
-                  <div className="space-y-2.5 text-xs">
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                      <span className="text-slate-700 font-medium">Motor de Base de Datos</span>
-                      <span className="text-emerald-700 font-mono font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">PostgreSQL 17.6</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                      <span className="text-slate-700 font-medium">Cliente ORM</span>
-                      <span className="text-[#1b426e] font-mono font-medium bg-[#fff7ed] px-2 py-0.5 rounded border border-[#fed7aa]">Prisma 6.19.3</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                      <span className="text-slate-700 font-medium">Organización</span>
-                      <span className="text-slate-800 font-medium">{companySettings.nombreLegal || companySettings.nombre || "Prado ERP"}</span>
-                    </div>
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-bold text-slate-900">Cobros Pendientes</h2>
+                    <span
+                      className="text-xs text-[#1b426e] font-medium cursor-pointer hover:underline"
+                      onClick={() => setCurrentView("lista-facturas")}
+                    >
+                      Ver todo →
+                    </span>
+                  </div>
+
+                  {/* Receivables List */}
+                  <div className="space-y-2">
+                    {upcomingReceivables.length === 0 ? (
+                      <div className="py-8 text-center text-slate-400 text-xs">
+                        No hay facturas pendientes de cobro
+                      </div>
+                    ) : (
+                      upcomingReceivables.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => setCurrentView("lista-facturas")}
+                          className="p-3 rounded-xl bg-white border border-slate-200 hover:border-[#1b426e]/50 hover:bg-orange-50/20 hover:shadow-xs transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Date Box */}
+                            <div className="px-2.5 py-1.5 rounded-lg bg-slate-100 group-hover:bg-orange-100/60 transition-colors text-center shrink-0 min-w-[54px]">
+                              <span className="block font-bold text-slate-800 text-[11px] leading-tight">
+                                {item.dueDate}
+                              </span>
+                              <span className="text-[9px] text-slate-500 font-medium block leading-none mt-0.5">
+                                {item.daysLeft}
+                              </span>
+                            </div>
+
+                            {/* Customer Info */}
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-slate-900 truncate group-hover:text-[#1b426e] transition-colors">
+                                {item.customer}
+                              </p>
+                              <p className="text-[11px] text-slate-500 truncate">
+                                {item.concept}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Amount and Status */}
+                          <div className="text-right shrink-0">
+                            <span className="block text-xs font-bold text-slate-900 font-mono">
+                              {formatCurrency(item.amount)}
+                            </span>
+                            <span
+                              className={`inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${item.status === "VENCIDA"
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                  : item.status === "PROXIMO"
+                                    ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                    : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                }`}
+                            >
+                              {item.status === "VENCIDA" ? "Vencida" : item.status === "PROXIMO" ? "Por cobrar" : "Programado"}
+                            </span>
+                          </div>
+                        </div>
+                      )))}
                   </div>
                 </div>
               </div>
