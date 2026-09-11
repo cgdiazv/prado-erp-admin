@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Clock, ArrowRight } from "lucide-react";
 import { getTrialDaysLeft, TRIAL_DAYS } from "@/lib/trialCheck";
 
@@ -18,7 +18,6 @@ export default function TrialBanner({
 }: TrialBannerProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   // If already active or not a trial, do not render
   const normalizedStatus = (subscriptionStatus || "").toUpperCase();
@@ -36,9 +35,11 @@ export default function TrialBanner({
       onUpgradeClick();
       return;
     }
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("billing", "true");
-    router.push(`${pathname}?${params.toString()}`);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      params.set("billing", "true");
+      router.push(`${pathname}?${params.toString()}`);
+    }
   };
 
   return (

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Lock, ShieldCheck, Check, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Lock, ShieldCheck, X } from "lucide-react";
 import { PLANS, TRIAL_DAYS } from "@/lib/plans";
 
 interface BillingModalProps {
@@ -20,26 +20,31 @@ export default function BillingModal({
   isOpenOverride = false,
   onClose,
 }: BillingModalProps) {
-  const searchParams = useSearchParams();
   const router = useRouter();
 
-  const isExpiredParam =
-    searchParams.get("expired") === "true" ||
-    searchParams.get("expired") === "1" ||
-    isExpiredOverride;
-  const isBillingParam =
-    searchParams.get("billing") === "true" ||
-    searchParams.get("billing") === "1" ||
-    isOpenOverride;
-
-  const [isOpen, setIsOpen] = useState(false);
+  const [isExpired, setIsExpired] = useState(isExpiredOverride);
+  const [isOpen, setIsOpen] = useState(isOpenOverride || isExpiredOverride);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
-    if (isExpiredParam || isBillingParam || isOpenOverride) {
+    let expired = isExpiredOverride;
+    let billing = isOpenOverride;
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("expired") === "true" || params.get("expired") === "1") {
+        expired = true;
+      }
+      if (params.get("billing") === "true" || params.get("billing") === "1") {
+        billing = true;
+      }
+    }
+
+    if (expired || billing) {
+      setIsExpired(expired);
       setIsOpen(true);
     }
-  }, [isExpiredParam, isBillingParam, isOpenOverride]);
+  }, [isExpiredOverride, isOpenOverride]);
 
   if (!isOpen && !isOpenOverride) return null;
 
@@ -57,14 +62,16 @@ export default function BillingModal({
   };
 
   const handleClose = () => {
-    if (!isExpiredParam) {
+    if (!isExpired) {
       setIsOpen(false);
       if (onClose) onClose();
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("billing");
-      params.delete("expired");
-      const nextQuery = params.toString() ? `?${params.toString()}` : "";
-      router.push(`/dashboard${nextQuery}`);
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        params.delete("billing");
+        params.delete("expired");
+        const nextQuery = params.toString() ? `?${params.toString()}` : "";
+        router.push(`/dashboard${nextQuery}`);
+      }
     }
   };
 
@@ -72,7 +79,7 @@ export default function BillingModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="max-w-lg w-full bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-5 text-center shadow-2xl relative text-slate-900 font-sans">
         {/* Botón de cierre: sólo si la prueba NO está vencida */}
-        {!isExpiredParam && (
+        {!isExpired && (
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition cursor-pointer p-1.5 rounded-full hover:bg-slate-100"
@@ -85,12 +92,12 @@ export default function BillingModal({
         {/* Icono de estado */}
         <div
           className={`h-14 w-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs ${
-            isExpiredParam
+            isExpired
               ? "bg-amber-50 border border-amber-200 text-amber-600"
               : "bg-emerald-50 border border-emerald-200 text-emerald-600"
           }`}
         >
-          {isExpiredParam ? (
+          {isExpired ? (
             <Lock className="w-7 h-7" />
           ) : (
             <ShieldCheck className="w-7 h-7" />
@@ -100,12 +107,12 @@ export default function BillingModal({
         {/* Textos principales */}
         <div className="space-y-2">
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-            {isExpiredParam
+            {isExpired
               ? `Su período de prueba de ${TRIAL_DAYS} días ha finalizado`
               : "Seleccione su Plan de Suscripción"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
-            {isExpiredParam
+            {isExpired
               ? "Para desbloquear y continuar operando sus módulos contables, facturación, compras, inventario y reportes, elija uno de los siguientes planes."
               : "Elija el plan operativo ideal para su empresa con acceso completo a todas las funcionalidades."}
           </p>
