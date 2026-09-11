@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer, Database, ArrowUpDown, FileUp, FolderOpen, HelpCircle, Receipt, Check } from "lucide-react";
+import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer, Database, ArrowUpDown, FileUp, FolderOpen, HelpCircle, Receipt, Check, Trash2 } from "lucide-react";
 import CajaChicaModule from "@/components/CajaChicaModule";
 import { getPlan } from "@/lib/plans";
 import AccountingBooksModule from "@/components/AccountingBooksModule";
@@ -24,6 +24,10 @@ import { PurchasesModule } from "@/components/PurchasesModule";
 import { VendorReturnRecord } from "@/types/dashboard";
 import { CashMovementsModule } from "@/components/CashMovementsModule";
 import CreditDebitNotesModule from "@/components/CreditDebitNotesModule";
+import TrialBanner from "@/components/TrialBanner";
+import BillingModal from "@/components/BillingModal";
+import { checkTrialExpiry } from "@/lib/trialCheck";
+import DeleteAccountModal from "@/components/DeleteAccountModal";
 
 
 
@@ -1199,8 +1203,12 @@ export default function AdminDashboard() {
     subscriptionStatus: string;
     trialEndsAt: string | null;
     hasStripeSubscription: boolean;
+    companyId?: string;
+    userEmail?: string;
   } | null>(null);
+  const [showBillingModal, setShowBillingModal] = useState(false);
   const [showCancelSubModal, setShowCancelSubModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [cancelSubReason, setCancelSubReason] = useState("");
   const [cancelSubComments, setCancelSubComments] = useState("");
   const [cancelSubLoading, setCancelSubLoading] = useState(false);
@@ -4430,6 +4438,12 @@ ${accountRowsHtml(equity)}
 
         {/* Workspace Body */}
         <main className="flex-1 p-6 lg:p-8 space-y-6 w-full">
+          <TrialBanner
+            trialEndsAt={subscriptionInfo?.trialEndsAt}
+            subscriptionStatus={subscriptionInfo?.subscriptionStatus}
+            onUpgradeClick={() => setShowBillingModal(true)}
+          />
+
           {/* ================= VIEW: DASHBOARD ================= */}
           {currentView === "dashboard" && (
             <>
@@ -9350,6 +9364,29 @@ ${accountRowsHtml(equity)}
                           </button>
                         </div>
 
+                        {/* ZONA DE PELIGRO: ELIMINAR CUENTA Y DATOS */}
+                        <div className="border border-red-300 rounded-xl p-5 bg-red-50/70">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                              <h2 className="font-bold text-sm text-red-900 mb-1 flex items-center gap-2">
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                                <span>Zona de Peligro &mdash; Eliminar cuenta y todos mis datos</span>
+                              </h2>
+                              <p className="text-xs text-red-700 max-w-xl leading-relaxed">
+                                Elimine permanentemente su cuenta empresarial y todos los registros asociados (facturas, cuentas contables, compras, inventario, clientes y proveedores). Esta acción no se puede deshacer.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShowDeleteAccountModal(true)}
+                              className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer shadow-sm transition whitespace-nowrap self-start sm:self-center flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Eliminar cuenta y datos</span>
+                            </button>
+                          </div>
+                        </div>
+
                         {/* MODAL: ENCUESTA DE CANCELACIÓN */}
                         {showCancelSubModal && (
                           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
@@ -12528,8 +12565,25 @@ ${accountRowsHtml(equity)}
 
       {/* ================= MODAL / DRAWER: NUEVA NOTA DE CRÉDITO / DÉBITO ================= */}
 
+      {/* ================= BILLING & TRIAL MODAL ================= */}
+      <BillingModal
+        userEmail={subscriptionInfo?.userEmail}
+        companyId={subscriptionInfo?.companyId}
+        isExpiredOverride={
+          subscriptionInfo
+            ? checkTrialExpiry(subscriptionInfo.trialEndsAt, subscriptionInfo.subscriptionStatus).isExpired
+            : false
+        }
+        isOpenOverride={showBillingModal}
+        onClose={() => setShowBillingModal(false)}
+      />
 
-
+      {/* ================= MODAL: ELIMINAR CUENTA Y DATOS ================= */}
+      <DeleteAccountModal
+        isOpen={showDeleteAccountModal}
+        onClose={() => setShowDeleteAccountModal(false)}
+        companyName={companySettings.nombre || "su empresa"}
+      />
 
     </div>
   );

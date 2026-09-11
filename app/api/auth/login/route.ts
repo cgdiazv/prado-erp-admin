@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { TRIAL_DAYS } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,14 +53,14 @@ export async function POST(request: NextRequest) {
     const subscriptionStatus = user.company?.subscriptionStatus || "TRIAL";
     const trialEndsAt =
       user.company?.trialEndsAt ||
-      (user.company?.createdAt ? new Date(user.company.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000) : null);
+      (user.company?.createdAt ? new Date(user.company.createdAt.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000) : null);
 
     if (subscriptionStatus !== "ACTIVE" && trialEndsAt && trialEndsAt.getTime() < Date.now()) {
       return NextResponse.json(
         {
           success: false,
           trialExpired: true,
-          error: "Su período de prueba de 30 días ha finalizado. Suscríbase a un plan para continuar.",
+          error: `Su período de prueba de ${TRIAL_DAYS} días ha finalizado. Suscríbase a un plan para continuar.`,
         },
         { status: 402 }
       );

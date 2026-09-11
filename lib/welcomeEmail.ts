@@ -11,7 +11,7 @@ export async function sendWelcomeEmail({
   to,
   companyName,
   companyId,
-  origin = "https://pradocommerce.com",
+  origin = "https://admin.pradosys.com",
 }: WelcomeEmailParams) {
   try {
     const apiKey = process.env.RESEND_API_KEY || "re_dummy_key";
@@ -200,7 +200,7 @@ export async function sendWelcomeEmail({
                 Prado ERP &mdash; Solución Integral en la Nube
               </p>
               <p style="margin: 0 0 10px 0; font-size: 11px; color: #64748b;">
-                Mensaje automático enviado para notificar la apertura de cuenta en pradocommerce.com.
+                Mensaje automático enviado para notificar la apertura de cuenta en <a href="https://admin.pradosys.com" style="color: #1b426e; text-decoration: underline; font-weight: 600;">Prado ERP</a>.
               </p>
               <p style="margin: 0; font-size: 11px; color: #94a3b8;">
                 Para iniciar sesión en cualquier momento, visita: <a href="${loginUrl}" style="color: #1b426e; text-decoration: underline;">${loginUrl}</a>

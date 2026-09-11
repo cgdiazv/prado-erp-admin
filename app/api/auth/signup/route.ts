@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       request.headers.get("origin") ||
       request.nextUrl.origin ||
       process.env.NEXT_PUBLIC_SITE_URL ||
-      "https://pradocommerce.com";
+      "https://admin.pradosys.com";
 
     sendWelcomeEmail({
       to: email,

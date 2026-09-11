@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
         subscriptionStatus: company.subscriptionStatus,
         trialEndsAt: company.trialEndsAt,
         hasStripeSubscription: Boolean(company.stripeSubscriptionId),
+        companyId: session.companyId,
+        userEmail: session.email,
       },
     });
   } catch (error: unknown) {
