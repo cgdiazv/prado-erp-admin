@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import logoImg from "@/public/logo.webp";
+import { TRIAL_DAYS } from "@/lib/plans";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -64,7 +65,7 @@ export default function SignupPage() {
             Registrarse
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Cree su cuenta de prueba de 30 días
+            Cree su cuenta de prueba de {TRIAL_DAYS} días
           </p>
         </div>
 

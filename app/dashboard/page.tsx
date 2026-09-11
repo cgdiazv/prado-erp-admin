@@ -24,6 +24,9 @@ import { PurchasesModule } from "@/components/PurchasesModule";
 import { VendorReturnRecord } from "@/types/dashboard";
 import { CashMovementsModule } from "@/components/CashMovementsModule";
 import CreditDebitNotesModule from "@/components/CreditDebitNotesModule";
+import TrialBanner from "@/components/TrialBanner";
+import BillingModal from "@/components/BillingModal";
+import { checkTrialExpiry } from "@/lib/trialCheck";
 
 
 
@@ -1191,7 +1194,10 @@ export default function AdminDashboard() {
     subscriptionStatus: string;
     trialEndsAt: string | null;
     hasStripeSubscription: boolean;
+    companyId?: string;
+    userEmail?: string;
   } | null>(null);
+  const [showBillingModal, setShowBillingModal] = useState(false);
   const [showCancelSubModal, setShowCancelSubModal] = useState(false);
   const [cancelSubReason, setCancelSubReason] = useState("");
   const [cancelSubComments, setCancelSubComments] = useState("");
@@ -4299,6 +4305,12 @@ ${accountRowsHtml(equity)}
 
         {/* Workspace Body */}
         <main className="flex-1 p-6 lg:p-8 space-y-6 w-full">
+          <TrialBanner
+            trialEndsAt={subscriptionInfo?.trialEndsAt}
+            subscriptionStatus={subscriptionInfo?.subscriptionStatus}
+            onUpgradeClick={() => setShowBillingModal(true)}
+          />
+
           {/* ================= VIEW: DASHBOARD ================= */}
           {currentView === "dashboard" && (
             <>
@@ -12347,8 +12359,18 @@ ${accountRowsHtml(equity)}
 
       {/* ================= MODAL / DRAWER: NUEVA NOTA DE CRÉDITO / DÉBITO ================= */}
 
-
-
+      {/* ================= BILLING & TRIAL MODAL ================= */}
+      <BillingModal
+        userEmail={subscriptionInfo?.userEmail}
+        companyId={subscriptionInfo?.companyId}
+        isExpiredOverride={
+          subscriptionInfo
+            ? checkTrialExpiry(subscriptionInfo.trialEndsAt, subscriptionInfo.subscriptionStatus).isExpired
+            : false
+        }
+        isOpenOverride={showBillingModal}
+        onClose={() => setShowBillingModal(false)}
+      />
 
     </div>
   );

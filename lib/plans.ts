@@ -12,7 +12,7 @@ export interface Plan {
   maxUsers: number | null; // null = ilimitados
 }
 
-export const TRIAL_DAYS = 30;
+export const TRIAL_DAYS = 60;
 
 export const PLANS: Plan[] = [
   {
