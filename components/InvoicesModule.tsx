@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -258,7 +258,7 @@ export function InvoicesModule({
         customerAddress: matchedCust?.address || "",
         deliveredTo: editingInvoice.customer || "",
         deliveryAddress: matchedCust?.address || "",
-        currency: "USD",
+        currency: editingInvoice.currency || defaultCurrencySymbol,
         status: editingInvoice.status || "Pendiente",
         discount: 0,
         importeExonerado: 0,
@@ -290,7 +290,7 @@ export function InvoicesModule({
         customerAddress: "",
         deliveredTo: "",
         deliveryAddress: "",
-        currency: "USD",
+        currency: defaultCurrencySymbol,
         status: "Pendiente",
         discount: 0,
         importeExonerado: 0,
@@ -1630,6 +1630,33 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, statementNote: e.target.value })}
                               className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
                             />
+                          </div>
+
+                          {/* Tarjeta de Impacto Contable Proyectado */}
+                          <div className="p-4 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-blue-900 space-y-2">
+                            <div className="flex items-center gap-2 font-semibold text-xs text-blue-800">
+                              <BookOpen className="w-4 h-4 text-blue-600" />
+                              <span>Partida Doble Automática en Libros (al Guardar)</span>
+                            </div>
+                            <p className="text-[11px] text-blue-700">
+                              Al guardar esta factura, el sistema generará de forma automática el asiento en el Libro Diario:
+                            </p>
+                            <div className="space-y-1 font-mono text-[11px] bg-white p-2.5 rounded-xl border border-blue-100">
+                              <div className="flex justify-between text-slate-700">
+                                <span>[Débito] 1200 - CxC Clientes</span>
+                                <span className="font-semibold text-emerald-700">+{invoiceCurrencySymbol}{invoiceTotal.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-slate-700">
+                                <span>[Crédito] 4000 - Ingresos Ventas</span>
+                                <span className="font-semibold text-slate-900">-{invoiceCurrencySymbol}{(invoiceTotal - invoiceIsv15 - invoiceIsv18).toFixed(2)}</span>
+                              </div>
+                              {(invoiceIsv15 + invoiceIsv18) > 0 && (
+                                <div className="flex justify-between text-slate-700">
+                                  <span>[Crédito] 2150 - Débito Fiscal ISV</span>
+                                  <span className="font-semibold text-slate-900">-{invoiceCurrencySymbol}{(invoiceIsv15 + invoiceIsv18).toFixed(2)}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 

@@ -14,6 +14,7 @@ import {
   FileText,
   AlertCircle,
   HelpCircle,
+  BookOpen,
 } from "lucide-react";
 import {
   Account,
@@ -2215,6 +2216,27 @@ export function CashMovementsModule({
                         <p className="text-[11px] text-slate-400">
                           {recibirPagoForm.attachmentName ? `Adjunto: ${recibirPagoForm.attachmentName}` : "Tamaño máximo de archivo: 20 MB"}
                         </p>
+                      </div>
+                    </div>
+
+                    {/* Tarjeta de Impacto Contable Proyectado */}
+                    <div className="max-w-md p-4 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-blue-900 space-y-2">
+                      <div className="flex items-center gap-2 font-semibold text-xs text-blue-800">
+                        <BookOpen className="w-4 h-4 text-blue-600" />
+                        <span>Partida Doble Automática en Libros (al Guardar)</span>
+                      </div>
+                      <p className="text-[11px] text-blue-700">
+                        Al registrar este pago, el sistema generará de forma automática el asiento en el Libro Diario:
+                      </p>
+                      <div className="space-y-1 font-mono text-[11px] bg-white p-2.5 rounded-xl border border-blue-100">
+                        <div className="flex justify-between text-slate-700">
+                          <span>[Débito] 1100 - Bancos</span>
+                          <span className="font-semibold text-emerald-700">+${(recibirPagoForm.amount || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-700">
+                          <span>[Crédito] 1200 - CxC Clientes</span>
+                          <span className="font-semibold text-slate-900">-${(recibirPagoForm.amount || 0).toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
