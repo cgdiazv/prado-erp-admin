@@ -298,11 +298,11 @@ export default function AccountingBooksModule({
                 className="px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:outline-none focus:border-[#1b426e] cursor-pointer"
               >
                 <option value="Todo">Todos los tipos</option>
-                <option value="Asset">Activo (Asset)</option>
-                <option value="Liability">Pasivo (Liability)</option>
-                <option value="Equity">Patrimonio (Equity)</option>
-                <option value="Income">Ingresos (Income)</option>
-                <option value="Expense">Gastos (Expense)</option>
+                <option value="Asset">Activo</option>
+                <option value="Liability">Pasivo</option>
+                <option value="Equity">Patrimonio</option>
+                <option value="Income">Ingresos</option>
+                <option value="Expense">Gastos</option>
               </select>
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function AccountingBooksModule({
                               : "bg-rose-50 text-rose-700 border border-rose-200"
                           }`}
                         >
-                          {acc.type}
+                          {({ Asset: "Activo", Liability: "Pasivo", Equity: "Patrimonio", Income: "Ingresos", Expense: "Gastos" } as Record<string, string>)[acc.type] ?? acc.type}
                         </span>
                       </td>
                       <td className="py-3 px-4 font-mono text-slate-600">{defaultCurrencyCode}</td>
