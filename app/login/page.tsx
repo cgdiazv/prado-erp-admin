@@ -17,8 +17,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("idle") === "1") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("idle") === "1") {
       setError("Su sesión se cerró automáticamente por inactividad. Vuelva a iniciar sesión.");
+    } else if (params.get("account_deleted") === "1") {
+      setError("Su cuenta y todos sus datos han sido eliminados de forma permanente.");
     }
   }, []);
 
