@@ -29,7 +29,7 @@ export const PLANS: Plan[] = [
       "Reportes básicos",
       "Soporte por correo",
     ],
-    paymentLink: "https://pay.delvalletradings.com/b/3cI3cuaCrfaAg5o1Uh4Ni07",
+    paymentLink: "https://pay.delvalletradings.com/b/bJe14mfWL5A0cTc0Qd4Ni0a",
     maxUsers: 1,
   },
   {
@@ -48,7 +48,7 @@ export const PLANS: Plan[] = [
       "Soporte prioritario",
     ],
     highlighted: true,
-    paymentLink: "https://pay.delvalletradings.com/b/14A3cueSH5A09H08iF4Ni08",
+    paymentLink: "https://pay.delvalletradings.com/b/fZucN49yn2nO9H042p4Ni0b",
     maxUsers: 5,
   },
   {
@@ -65,7 +65,7 @@ export const PLANS: Plan[] = [
       "Notas de crédito/débito",
       "Soporte dedicado",
     ],
-    paymentLink: "https://pay.delvalletradings.com/b/eVqcN4cKz6E4cTceH34Ni09",
+    paymentLink: "https://pay.delvalletradings.com/b/cNiaEW5i75A0dXg56t4Ni0c",
     maxUsers: null,
   },
 ];
