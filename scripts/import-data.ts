@@ -243,6 +243,7 @@ export async function importInventory(filePath: string) {
     const quantityStr = getField(record, "quantity", "qty", "qty_on_hand", "stock");
     const costStr = getField(record, "cost", "unit_cost", "avg_cost");
     const priceStr = getField(record, "price", "unit_price", "selling_price");
+    const category = getField(record, "category", "categoria", "cat", "rubro", "grupo");
 
     if (!sku) {
       console.warn(`Skipping inventory record without SKU:`, record);
@@ -256,8 +257,21 @@ export async function importInventory(filePath: string) {
 
     await prisma.inventoryItem.upsert({
       where: { sku },
-      update: { description, quantity, cost, price },
-      create: { sku, description, quantity, cost, price },
+      update: {
+        description,
+        quantity,
+        cost,
+        price,
+        ...(category !== undefined && { category }),
+      },
+      create: {
+        sku,
+        description,
+        quantity,
+        cost,
+        price,
+        category: category || null,
+      },
     });
     upserted++;
   }

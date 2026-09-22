@@ -75,6 +75,24 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       }
     }
 
+    const itemCategory = category !== undefined ? (typeof category === "string" && category.trim() ? category.trim() : null) : undefined;
+
+    // Auto-register category in ProductCategory catalog if not existing yet
+    if (itemCategory) {
+      try {
+        const existingCat = await prisma.productCategory.findFirst({
+          where: { companyId, name: { equals: itemCategory, mode: "insensitive" } },
+        });
+        if (!existingCat) {
+          await prisma.productCategory.create({
+            data: { companyId, name: itemCategory },
+          });
+        }
+      } catch (catErr) {
+        console.warn("Auto-register category warning on update:", catErr);
+      }
+    }
+
     const updated = await prisma.inventoryItem.update({
       where: { id: existing.id },
       data: {
@@ -85,7 +103,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
         ...(price !== undefined && { price: Number(price) }),
         ...(trackingType !== undefined && { trackingType }),
         ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
-        ...(category !== undefined && { category: category || null }),
+        ...(itemCategory !== undefined && { category: itemCategory }),
       },
       include: {
         lots: true,

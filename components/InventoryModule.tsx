@@ -76,6 +76,7 @@ export default function InventoryModule({
   // Filters for Catalog
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"todos" | "con-stock" | "bajo-stock" | "macola">("todos");
+  const [selectedCategory, setSelectedCategory] = useState<string>("todas");
 
   // Filters for Lotes
   const [lotesFilter, setLotesFilter] = useState<"todos" | "vencidos" | "por-vencer" | "vigentes">("todos");
@@ -261,7 +262,8 @@ export default function InventoryModule({
       const matchesSearch =
         !search ||
         i.sku.toLowerCase().includes(search.toLowerCase()) ||
-        i.description.toLowerCase().includes(search.toLowerCase());
+        i.description.toLowerCase().includes(search.toLowerCase()) ||
+        (i.category && i.category.toLowerCase().includes(search.toLowerCase()));
 
       if (!matchesSearch) return false;
 
@@ -269,9 +271,43 @@ export default function InventoryModule({
       if (filterType === "bajo-stock") return i.quantity <= 5;
       if (filterType === "macola") return i.sku.startsWith("MAC-") || i.sku.length > 6;
 
+      if (selectedCategory !== "todas") {
+        if (selectedCategory === "sin-categoria") {
+          return !i.category || i.category.trim() === "";
+        }
+        return (i.category || "").toLowerCase() === selectedCategory.toLowerCase();
+      }
+
       return true;
     });
-  }, [localInventory, search, filterType]);
+  }, [localInventory, search, filterType, selectedCategory]);
+
+  const handleExportInventoryCsv = () => {
+    if (filteredInventory.length === 0) {
+      alert("No hay artículos en la lista para exportar.");
+      return;
+    }
+    const headers = ["SKU", "Descripcion", "Categoria", "Rastreo", "Existencias", "Costo", "Precio", "Valor_Inventario"];
+    const rows = filteredInventory.map((item) => [
+      `"${item.sku.replace(/"/g, '""')}"`,
+      `"${item.description.replace(/"/g, '""')}"`,
+      `"${(item.category || "").replace(/"/g, '""')}"`,
+      `"${item.trackingType || "NONE"}"`,
+      item.quantity,
+      item.cost,
+      item.price,
+      (item.quantity * item.cost).toFixed(2),
+    ]);
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Catalogo_Inventario_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Handlers for Products
   const uploadProductImage = async (file: File): Promise<string | null> => {
@@ -721,15 +757,33 @@ export default function InventoryModule({
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
               </div>
+
+              {/* Category Filter Select */}
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer pr-8 font-medium appearance-none"
+                >
+                  <option value="todas">Todas las categorías</option>
+                  <option value="sin-categoria">Sin categoría</option>
+                  {productCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+              </div>
             </div>
 
             {/* Right Action Icons */}
             <div className="flex items-center gap-1.5 self-end md:self-auto text-slate-400">
               <button
                 type="button"
-                onClick={() => alert("Exportando catálogo de productos...")}
+                onClick={handleExportInventoryCsv}
                 className="p-1.5 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition cursor-pointer"
-                title="Exportar catálogo"
+                title="Exportar catálogo en CSV"
               >
                 <Download className="w-4 h-4" />
               </button>
@@ -766,6 +820,7 @@ export default function InventoryModule({
                   <tr>
                     <th className="p-3.5">SKU / CÓDIGO</th>
                     <th className="p-3.5">DESCRIPCIÓN DEL ARTÍCULO</th>
+                    <th className="p-3.5">CATEGORÍA</th>
                     <th className="p-3.5">RASTREO</th>
                     <th className="p-3.5 text-right">EXISTENCIAS</th>
                     <th className="p-3.5 text-right">COSTO PROM.</th>
@@ -776,7 +831,7 @@ export default function InventoryModule({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <TableRowsSkeleton cols={8} rows={8} />
+                    <TableRowsSkeleton cols={9} rows={8} />
                   ) : (
                     <>
                       {filteredInventory.map((item) => (
@@ -812,6 +867,15 @@ export default function InventoryModule({
                               )}
                               <span>{item.description}</span>
                             </button>
+                          </td>
+                          <td className="p-3.5 font-medium">
+                            {item.category ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                {item.category}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-[11px] italic">Sin categoría</span>
+                            )}
                           </td>
                           <td className="p-3.5">
                             {item.trackingType === "LOT" ? (
@@ -890,7 +954,7 @@ export default function InventoryModule({
                       ))}
                       {filteredInventory.length === 0 && (
                         <tr>
-                          <td colSpan={8} className="p-8 text-center text-slate-400">
+                          <td colSpan={9} className="p-8 text-center text-slate-400">
                             No se encontraron artículos en inventario
                           </td>
                         </tr>

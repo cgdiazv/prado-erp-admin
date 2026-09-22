@@ -1445,15 +1445,17 @@ export default function AdminDashboard() {
       fields: [
         { key: "sku", label: "Código SKU / Artículo", required: true, hint: "Ej: FLEX-1001" },
         { key: "description", label: "Descripción del Producto", required: true, hint: "Ej: Cajas Flexográficas 12x12" },
+        { key: "category", label: "Categoría", required: false, hint: "Ej: Empaques, Tintas, Materia Prima" },
         { key: "quantity", label: "Stock Inicial", required: false, hint: "Ej: 500" },
         { key: "cost", label: "Costo Unitario", required: false, hint: "Ej: 1.25" },
         { key: "price", label: "Precio de Venta", required: false, hint: "Ej: 2.10" },
         { key: "trackingType", label: "Tipo Seguimiento (NONE / LOT / SERIAL)", required: false, hint: "NONE, LOT o SERIAL" },
       ],
-      sampleCsv: "SKU,Descripcion,Cantidad,Costo,Precio,Seguimiento\nFLEX-1001,Cajas Flexográficas Flauta B 12x12,500,1.25,2.10,NONE\nETIQ-2002,Etiquetas BOPP Termoencogibles Rollo,1200,4.50,8.75,LOT",
+      sampleCsv: "SKU,Descripcion,Categoria,Cantidad,Costo,Precio,Seguimiento\nFLEX-1001,Cajas Flexográficas Flauta B 12x12,Cajas y Cartón,500,1.25,2.10,NONE\nETIQ-2002,Etiquetas BOPP Termoencogibles Rollo,Etiquetas,1200,4.50,8.75,LOT",
       mapRowToPayload: (m: Record<string, string>) => ({
         sku: m.sku?.trim(),
         description: m.description?.trim(),
+        category: m.category?.trim() || null,
         quantity: m.quantity ? Number(m.quantity.replace(/[^0-9.-]/g, "")) || 0 : 0,
         cost: m.cost ? Number(m.cost.replace(/[^0-9.-]/g, "")) || 0 : 0,
         price: m.price ? Number(m.price.replace(/[^0-9.-]/g, "")) || 0 : 0,
@@ -1601,7 +1603,8 @@ export default function AdminDashboard() {
         else if (field.key === "quantity" && (hNorm.includes("cant") || hNorm.includes("stock") || hNorm.includes("qty"))) matchIndex = idx;
         else if (field.key === "total" && (hNorm.includes("tot") || hNorm.includes("mont") || hNorm.includes("imp"))) matchIndex = idx;
         else if (field.key === "code" && (hNorm.includes("cod") || hNorm.includes("num") || hNorm.includes("code"))) matchIndex = idx;
-        else if (field.key === "type" && (hNorm.includes("tip") || hNorm.includes("type") || hNorm.includes("cat"))) matchIndex = idx;
+        else if (field.key === "category" && (hNorm.includes("cat") || hNorm.includes("rubro") || hNorm.includes("clasif") || hNorm.includes("familia") || hNorm.includes("grupo"))) matchIndex = idx;
+        else if (field.key === "type" && (hNorm.includes("tip") || hNorm.includes("type"))) matchIndex = idx;
         else if (field.key === "invoiceNumber" && (hNorm.includes("fact") || hNorm.includes("num") || hNorm.includes("inv"))) matchIndex = idx;
         else if (field.key === "currency" && (hNorm.includes("mon") || hNorm.includes("curr") || hNorm.includes("div"))) matchIndex = idx;
       });
@@ -1717,6 +1720,7 @@ export default function AdminDashboard() {
         fetch("/api/inventory").then((r) => r.json()).then((j) => {
           if (j.success && Array.isArray(j.data)) setInventory(j.data);
         });
+        loadProductCategories();
       } else if (selectedImportCategory === "facturas_compra") {
         fetch("/api/purchase-invoices").then((r) => r.json()).then((j) => {
           if (j.success && Array.isArray(j.data)) setPurchaseInvoices(j.data);

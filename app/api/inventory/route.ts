@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const lowStock = searchParams.get("lowStock");
+    const categoryParam = searchParams.get("category");
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
     const skip = (page - 1) * limit;
@@ -16,6 +17,10 @@ export async function GET(request: NextRequest) {
     const where: Record<string, unknown> = {
       companyId,
     };
+
+    if (categoryParam) {
+      where.category = categoryParam;
+    }
 
     if (lowStock) {
       where.quantity = { lte: parseFloat(lowStock) };
@@ -28,6 +33,7 @@ export async function GET(request: NextRequest) {
           OR: [
             { sku: { contains: search, mode: "insensitive" } },
             { description: { contains: search, mode: "insensitive" } },
+            { category: { contains: search, mode: "insensitive" } },
           ],
         },
       ];
@@ -94,6 +100,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const itemCategory = typeof category === "string" && category.trim() ? category.trim() : null;
+
+    // Auto-register category in ProductCategory catalog if not existing yet
+    if (itemCategory) {
+      try {
+        const existingCat = await prisma.productCategory.findFirst({
+          where: { companyId, name: { equals: itemCategory, mode: "insensitive" } },
+        });
+        if (!existingCat) {
+          await prisma.productCategory.create({
+            data: { companyId, name: itemCategory },
+          });
+        }
+      } catch (catErr) {
+        console.warn("Auto-register category warning:", catErr);
+      }
+    }
+
     const item = await prisma.inventoryItem.create({
       data: {
         companyId,
@@ -104,7 +128,7 @@ export async function POST(request: NextRequest) {
         price: price !== undefined ? Number(price) : 0,
         trackingType: trackingType || "NONE",
         imageUrl: imageUrl || null,
-        category: category || null,
+        category: itemCategory,
       },
       include: {
         lots: true,
