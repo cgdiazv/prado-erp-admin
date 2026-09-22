@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     });
 
     const company = await db.companySettings.findFirst({
-      where: { companyId },
+      where: { id: companyId },
     }).catch(() => null);
     const activeContador = company?.contadorNombre?.trim()
       ? `${company.contadorNombre.trim()} (${company.contadorTitulo?.trim() || "Contador General"})`

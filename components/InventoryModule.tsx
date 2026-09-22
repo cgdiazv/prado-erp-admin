@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { InventoryItem, ItemLot, ItemSerial, Account } from "@/types/dashboard";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
@@ -33,11 +33,13 @@ import {
   Eye,
   SlidersHorizontal,
   Check,
-  FileCheck
+  FileCheck,
+  Trash2
 } from "lucide-react";
 
 interface InventoryModuleProps {
   inventory: InventoryItem[];
+  setInventory?: React.Dispatch<React.SetStateAction<InventoryItem[]>>;
   onRefreshInventory?: () => Promise<void> | void;
   accounts?: Account[];
   productCategories?: string[];
@@ -62,6 +64,7 @@ interface InventoryModuleProps {
 
 export default function InventoryModule({
   inventory: initialInventory,
+  setInventory,
   onRefreshInventory,
   accounts = [],
   productCategories = [],
@@ -363,13 +366,96 @@ export default function InventoryModule({
     return filteredInventory.slice(start, start + pageSize);
   }, [filteredInventory, safeCurrentPage, pageSize]);
 
-  const handleExportInventoryCsv = () => {
-    if (filteredInventory.length === 0) {
+  // Selection State for Inventory Table Rows
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
+  const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+  const selectedSet = useMemo(() => new Set(selectedItemIds), [selectedItemIds]);
+
+  const allPageSelected = useMemo(() => {
+    if (paginatedInventory.length === 0) return false;
+    return paginatedInventory.every((item) => selectedSet.has(item.id));
+  }, [paginatedInventory, selectedSet]);
+
+  const somePageSelected = useMemo(() => {
+    return paginatedInventory.some((item) => selectedSet.has(item.id));
+  }, [paginatedInventory, selectedSet]);
+
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate = !allPageSelected && somePageSelected;
+    }
+  }, [allPageSelected, somePageSelected]);
+
+  const toggleSelectAllPage = () => {
+    if (allPageSelected) {
+      const pageIdSet = new Set(paginatedInventory.map((i) => i.id));
+      setSelectedItemIds((prev) => prev.filter((id) => !pageIdSet.has(id)));
+    } else {
+      const combined = new Set([...selectedItemIds, ...paginatedInventory.map((i) => i.id)]);
+      setSelectedItemIds(Array.from(combined));
+    }
+  };
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedItemIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk Delete State & Handlers
+  const [showDeleteBulkModal, setShowDeleteBulkModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState("");
+
+  const selectedPreviewItems = useMemo(() => {
+    if (selectedItemIds.length === 0) return [];
+    const previewIds = new Set(selectedItemIds.slice(0, 5));
+    return localInventory.filter((item) => previewIds.has(item.id));
+  }, [selectedItemIds, localInventory]);
+
+  const handleConfirmBulkDelete = async () => {
+    if (selectedItemIds.length === 0) return;
+    setIsBulkDeleting(true);
+    setBulkDeleteError("");
+    try {
+      const res = await fetch("/api/inventory", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedItemIds }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Error al eliminar los artículos seleccionados");
+      }
+      const deletedSet = new Set(selectedItemIds);
+      setLocalInventory((prev) => prev.filter((item) => !deletedSet.has(item.id)));
+      if (setInventory) {
+        setInventory((prev) => prev.filter((item) => !deletedSet.has(item.id)));
+      }
+      setSelectedItemIds([]);
+      setShowDeleteBulkModal(false);
+      if (onRefreshInventory) {
+        await onRefreshInventory();
+      }
+    } catch (err: any) {
+      setBulkDeleteError(err.message || "Error al eliminar los artículos seleccionados");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const handleExportInventoryCsv = (onlySelected: boolean = false) => {
+    const targetItems = onlySelected && selectedItemIds.length > 0
+      ? filteredInventory.filter((item) => selectedSet.has(item.id))
+      : filteredInventory;
+
+    if (targetItems.length === 0) {
       alert("No hay artículos en la lista para exportar.");
       return;
     }
     const headers = ["SKU", "Descripcion", "Categoria", "Rastreo", "Existencias", "Costo", "Precio", "Valor_Inventario"];
-    const rows = filteredInventory.map((item) => [
+    const rows = targetItems.map((item) => [
       `"${item.sku.replace(/"/g, '""')}"`,
       `"${item.description.replace(/"/g, '""')}"`,
       `"${(item.category || "").replace(/"/g, '""')}"`,
@@ -384,7 +470,8 @@ export default function InventoryModule({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `Catalogo_Inventario_${new Date().toISOString().slice(0, 10)}.csv`);
+    const prefix = onlySelected ? "Articulos_Seleccionados" : "Catalogo_Inventario";
+    link.setAttribute("download", `${prefix}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -659,6 +746,9 @@ export default function InventoryModule({
         throw new Error(data.error || "Error al eliminar artículo de inventario");
       }
       setLocalInventory((prev) => prev.filter((item) => item.id !== editingProduct.id));
+      if (setInventory) {
+        setInventory((prev) => prev.filter((item) => item.id !== editingProduct.id));
+      }
       if (onRefreshInventory) await onRefreshInventory();
       setModalSuccess("¡Artículo de inventario eliminado!");
       setTimeout(() => {
@@ -996,7 +1086,7 @@ export default function InventoryModule({
             <div className="flex items-center gap-1.5 self-end md:self-auto text-slate-400">
               <button
                 type="button"
-                onClick={handleExportInventoryCsv}
+                onClick={() => handleExportInventoryCsv(false)}
                 className="p-1.5 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition cursor-pointer"
                 title="Exportar catálogo en CSV"
               >
@@ -1109,10 +1199,77 @@ export default function InventoryModule({
               </div>
             </div>
 
+            {/* Active Selection Toolbar Banner */}
+            {selectedItemIds.length > 0 && (
+              <div className="px-4 py-2.5 bg-blue-50/90 border-b border-blue-200/80 flex flex-wrap items-center justify-between gap-3 text-xs text-[#1b426e]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-[#1b426e] inline-block" />
+                    <span>
+                      {selectedItemIds.length}{" "}
+                      {selectedItemIds.length === 1 ? "artículo seleccionado" : "artículos seleccionados"}
+                    </span>
+                  </div>
+                  {selectedItemIds.length < filteredInventory.length && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedItemIds(filteredInventory.map((i) => i.id))}
+                      className="text-xs text-[#1b426e] hover:underline cursor-pointer font-medium ml-1 bg-white/80 hover:bg-white px-2 py-0.5 rounded border border-blue-200 transition"
+                    >
+                      Seleccionar los {filteredInventory.length} artículos filtrados
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleExportInventoryCsv(true)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-blue-200 text-[#1b426e] hover:bg-blue-100/60 font-semibold text-[11px] cursor-pointer transition flex items-center gap-1.5 shadow-2xs"
+                    title="Exportar sólo los artículos seleccionados en CSV"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Exportar ({selectedItemIds.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBulkDeleteError("");
+                      setShowDeleteBulkModal(true);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 hover:border-rose-300 font-semibold text-[11px] cursor-pointer transition flex items-center gap-1.5 shadow-2xs"
+                    title="Eliminar los artículos seleccionados del inventario"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                    <span>Eliminar seleccionados ({selectedItemIds.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItemIds([])}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-800 font-semibold text-[11px] cursor-pointer transition"
+                  >
+                    Deseleccionar todo
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 border-b border-slate-200/80 font-bold text-slate-600">
                   <tr>
+                    <th className="p-3.5 w-10 text-center">
+                      <div className="flex items-center justify-center">
+                        <input
+                          ref={headerCheckboxRef}
+                          type="checkbox"
+                          checked={allPageSelected}
+                          onChange={toggleSelectAllPage}
+                          aria-label="Seleccionar todos los artículos de esta página"
+                          className="w-4 h-4 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer accent-[#1b426e]"
+                        />
+                      </div>
+                    </th>
                     <th className="p-3.5">SKU / CÓDIGO</th>
                     <th className="p-3.5">DESCRIPCIÓN DEL ARTÍCULO</th>
                     <th className="p-3.5">CATEGORÍA</th>
@@ -1126,130 +1283,151 @@ export default function InventoryModule({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <TableRowsSkeleton cols={9} rows={8} />
+                    <TableRowsSkeleton cols={10} rows={8} />
                   ) : (
                     <>
-                      {paginatedInventory.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/80 transition group">
-                          <td className="p-3.5 font-mono font-bold text-[#1b426e]">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditProduct(item)}
-                              className="hover:underline cursor-pointer flex items-center gap-1.5 group"
-                              title="Haz clic para editar producto"
-                            >
-                              <span>{item.sku}</span>
-                            </button>
-                          </td>
-                          <td className="p-3.5 font-medium text-slate-900">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditProduct(item)}
-                              className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium flex items-center gap-2.5"
-                              title="Haz clic para editar producto"
-                            >
-                              {item.imageUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={item.imageUrl}
-                                  alt=""
-                                  className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
+                      {paginatedInventory.map((item) => {
+                        const isSelected = selectedSet.has(item.id);
+                        return (
+                          <tr
+                            key={item.id}
+                            className={`transition group ${
+                              isSelected
+                                ? "bg-blue-50/40 hover:bg-blue-50/70"
+                                : "hover:bg-slate-50/80"
+                            }`}
+                          >
+                            <td className="p-3.5 w-10 text-center">
+                              <div className="flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => toggleSelectItem(item.id)}
+                                  aria-label={`Seleccionar artículo ${item.sku}`}
+                                  className="w-4 h-4 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer accent-[#1b426e]"
                                 />
+                              </div>
+                            </td>
+                            <td className="p-3.5 font-mono font-bold text-[#1b426e]">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditProduct(item)}
+                                className="hover:underline cursor-pointer flex items-center gap-1.5 group"
+                                title="Haz clic para editar producto"
+                              >
+                                <span>{item.sku}</span>
+                              </button>
+                            </td>
+                            <td className="p-3.5 font-medium text-slate-900">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditProduct(item)}
+                                className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium flex items-center gap-2.5"
+                                title="Haz clic para editar producto"
+                              >
+                                {item.imageUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={item.imageUrl}
+                                    alt=""
+                                    className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
+                                  />
+                                ) : (
+                                  <span className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                    <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
+                                  </span>
+                                )}
+                                <span>{item.description}</span>
+                              </button>
+                            </td>
+                            <td className="p-3.5 font-medium">
+                              {item.category ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                  {item.category}
+                                </span>
                               ) : (
-                                <span className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
-                                  <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
-                                </span>
+                                <span className="text-slate-400 text-[11px] italic">Sin categoría</span>
                               )}
-                              <span>{item.description}</span>
-                            </button>
-                          </td>
-                          <td className="p-3.5 font-medium">
-                            {item.category ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
-                                {item.category}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 text-[11px] italic">Sin categoría</span>
-                            )}
-                          </td>
-                          <td className="p-3.5">
-                            {item.trackingType === "LOT" ? (
-                              <button
-                                type="button"
-                                onClick={() => openLotManagementModal(item)}
-                                className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[11px] hover:bg-amber-100 transition cursor-pointer flex items-center gap-1.5 w-fit"
-                              >
-                                <Package className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                                <span>Por Lote</span>
-                                <span className="bg-amber-200 text-amber-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold">
-                                  {item.lots?.length || 0}
-                                </span>
-                              </button>
-                            ) : item.trackingType === "SERIAL" ? (
-                              <button
-                                type="button"
-                                onClick={() => openSerialManagementModal(item)}
-                                className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold text-[11px] hover:bg-purple-100 transition cursor-pointer flex items-center gap-1.5 w-fit"
-                              >
-                                <Tag className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                                <span>Por N.º Serie</span>
-                                <span className="bg-purple-200 text-purple-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold">
-                                  {item.serials?.length || 0}
-                                </span>
-                              </button>
-                            ) : (
-                              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium text-[11px]">
-                                Sin rastreo
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-3.5 text-right font-mono font-medium">
-                            <span className={item.quantity <= 0 ? "text-rose-600 font-bold" : "text-slate-800"}>
-                              {item.quantity}
-                            </span>
-                          </td>
-                          <td className="p-3.5 text-right font-mono font-medium">{formatCurrency(item.cost)}</td>
-                          <td className="p-3.5 text-right font-mono font-medium">{formatCurrency(item.price)}</td>
-                          <td className="p-3.5 text-right font-mono text-slate-900 font-bold">
-                            {formatCurrency(item.quantity * item.cost)}
-                          </td>
-                          <td className="p-3.5 text-right font-sans">
-                            <div className="flex items-center justify-end gap-1.5">
+                            </td>
+                            <td className="p-3.5">
                               {item.trackingType === "LOT" ? (
                                 <button
                                   type="button"
                                   onClick={() => openLotManagementModal(item)}
-                                  className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
-                                  title="Gestionar Lotes y Vencimientos"
+                                  className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[11px] hover:bg-amber-100 transition cursor-pointer flex items-center gap-1.5 w-fit"
                                 >
-                                  <span>Lotes</span>
+                                  <Package className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                  <span>Por Lote</span>
+                                  <span className="bg-amber-200 text-amber-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold">
+                                    {item.lots?.length || 0}
+                                  </span>
                                 </button>
                               ) : item.trackingType === "SERIAL" ? (
                                 <button
                                   type="button"
                                   onClick={() => openSerialManagementModal(item)}
-                                  className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
-                                  title="Gestionar Números de Serie"
+                                  className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold text-[11px] hover:bg-purple-100 transition cursor-pointer flex items-center gap-1.5 w-fit"
                                 >
-                                  <span>Series</span>
+                                  <Tag className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                                  <span>Por N.º Serie</span>
+                                  <span className="bg-purple-200 text-purple-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold">
+                                    {item.serials?.length || 0}
+                                  </span>
                                 </button>
-                              ) : null}
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium text-[11px]">
+                                  Sin rastreo
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3.5 text-right font-mono font-medium">
+                              <span className={item.quantity <= 0 ? "text-rose-600 font-bold" : "text-slate-800"}>
+                                {item.quantity}
+                              </span>
+                            </td>
+                            <td className="p-3.5 text-right font-mono font-medium">{formatCurrency(item.cost)}</td>
+                            <td className="p-3.5 text-right font-mono font-medium">{formatCurrency(item.price)}</td>
+                            <td className="p-3.5 text-right font-mono text-slate-900 font-bold">
+                              {formatCurrency(item.quantity * item.cost)}
+                            </td>
+                            <td className="p-3.5 text-right font-sans">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {item.trackingType === "LOT" ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openLotManagementModal(item)}
+                                    className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
+                                    title="Gestionar Lotes y Vencimientos"
+                                  >
+                                    <span>Lotes</span>
+                                  </button>
+                                ) : item.trackingType === "SERIAL" ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openSerialManagementModal(item)}
+                                    className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
+                                    title="Gestionar Números de Serie"
+                                  >
+                                    <span>Series</span>
+                                  </button>
+                                ) : null}
 
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditProduct(item)}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
-                                title="Haz clic para editar producto"
-                              >
-                                <span>Editar</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditProduct(item)}
+                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
+                                  title="Haz clic para editar producto"
+                                >
+                                  <span>Editar</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                       {paginatedInventory.length === 0 && (
                         <tr>
-                          <td colSpan={9} className="p-8 text-center text-slate-400">
+                          <td colSpan={10} className="p-8 text-center text-slate-400">
                             No se encontraron artículos en inventario
                           </td>
                         </tr>
@@ -3373,6 +3551,106 @@ export default function InventoryModule({
                   <span>Documento Confidencial para Uso Interno y Fiscal</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: ELIMINAR ARTÍCULOS SELECCIONADOS ================= */}
+      {showDeleteBulkModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-5 h-5 text-rose-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    ¿Eliminar {selectedItemIds.length}{" "}
+                    {selectedItemIds.length === 1 ? "artículo seleccionado" : "artículos seleccionados"}?
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Esta acción es irreversible y eliminará definitivamente estos registros del catálogo.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isBulkDeleting) setShowDeleteBulkModal(false);
+                }}
+                disabled={isBulkDeleting}
+                className="text-slate-400 hover:text-slate-600 transition cursor-pointer disabled:opacity-30"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {bulkDeleteError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{bulkDeleteError}</span>
+              </div>
+            )}
+
+            {/* Warning & Item Preview */}
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-slate-700 flex items-center justify-between">
+                <span>Artículos a eliminar:</span>
+                <span className="text-slate-400 font-mono text-[11px]">{selectedItemIds.length} en total</span>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 max-h-48 overflow-y-auto space-y-2 text-xs">
+                {selectedPreviewItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 last:border-0 last:pb-0">
+                    <div className="truncate flex items-center gap-2">
+                      <span className="font-mono font-bold text-[#1b426e] shrink-0">{item.sku}</span>
+                      <span className="text-slate-600 truncate">{item.description}</span>
+                    </div>
+                    <span className="font-mono text-slate-500 shrink-0 text-[11px]">{item.quantity} unids.</span>
+                  </div>
+                ))}
+                {selectedItemIds.length > selectedPreviewItems.length && (
+                  <div className="text-slate-400 italic text-[11px] pt-1 text-center">
+                    ... y {selectedItemIds.length - selectedPreviewItems.length} artículo(s) más.
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200/70 p-2.5 rounded-lg">
+                <strong>Atención:</strong> Si alguno de estos artículos tiene lotes o números de serie registrados, también serán eliminados de manera permanente.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowDeleteBulkModal(false)}
+                disabled={isBulkDeleting}
+                className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmBulkDelete}
+                disabled={isBulkDeleting}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-xs"
+              >
+                {isBulkDeleting ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Eliminando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Eliminar {selectedItemIds.length} {selectedItemIds.length === 1 ? "artículo" : "artículos"}</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

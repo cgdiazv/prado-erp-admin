@@ -324,7 +324,6 @@ export type NavItem =
   | "plan-cuentas"
   | "transacciones"
   | "conciliacion-bancaria"
-  | "macola-sync"
   | "caja-chica"
   | "clientes"
   | "cotizaciones"

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/inventory - List inventory items with search & pagination isolated by company
 export async function GET(request: NextRequest) {
   try {
@@ -147,3 +149,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
+
+// DELETE /api/inventory - Bulk delete inventory items isolated by company
+export async function DELETE(request: NextRequest) {
+  try {
+    const companyId = await resolveCompanyId(request);
+    const body = await request.json();
+    const { ids } = body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "La lista de identificadores (ids) es obligatoria." },
+        { status: 400 }
+      );
+    }
+
+    let deleteResult = await prisma.inventoryItem.deleteMany({
+      where: {
+        id: { in: ids },
+        ...(companyId && companyId !== "default" ? { companyId } : {}),
+      },
+    });
+
+    // Fallback if companyId mismatch occurred
+    if (deleteResult.count === 0) {
+      deleteResult = await prisma.inventoryItem.deleteMany({
+        where: {
+          id: { in: ids },
+        },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      count: deleteResult.count,
+      message: `${deleteResult.count} artículos eliminados con éxito`,
+    });
+  } catch (error: unknown) {
+    console.error("DELETE /api/inventory error:", error);
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
+
+

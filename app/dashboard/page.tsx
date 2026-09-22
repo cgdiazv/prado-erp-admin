@@ -214,7 +214,7 @@ type PurchaseInvoice = {
   createdAt?: string;
 };
 
-type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "macola-sync" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv";
+type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv";
 
 
 
@@ -3796,7 +3796,7 @@ ${accountRowsHtml(equity)}
           <div className="pt-2">
             <button
               onClick={() => toggleSidebarSection("contabilidad")}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "macola-sync" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
                   ? "font-semibold text-slate-900"
                   : ""
                 }`}
@@ -3850,15 +3850,6 @@ ${accountRowsHtml(equity)}
                 >
                   <span>Conciliación extractos</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">NIIF</span>
-                </button>
-                <button
-                  onClick={() => setCurrentView("macola-sync")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "macola-sync"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                    }`}
-                >
-                  Transacciones de integración
                 </button>
                 <button
                   onClick={() => setCurrentView("caja-chica")}
@@ -4302,7 +4293,6 @@ ${accountRowsHtml(equity)}
                   {currentView === "dashboard" && "Resumen Ejecutivo"}
                   {currentView === "plan-cuentas" && "Contabilidad / Plan de Cuentas"}
                   {currentView === "transacciones" && "Contabilidad / Transacciones Bancarias"}
-                  {currentView === "macola-sync" && "Contabilidad / Transacciones de Integración"}
                   {currentView === "caja-chica" && "Contabilidad / Arqueo & Control de Caja Chica"}
                   {currentView === "conciliacion-bancaria" && "Contabilidad / Conciliación de Extracto Mensual"}
                   {currentView === "clientes" && "Directorio de Clientes"}
@@ -4571,7 +4561,11 @@ ${accountRowsHtml(equity)}
                           {formatCurrency(totalInventoryValuation)}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-1">{totalInventoryUnits} unidades en stock</p>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        <span className="font-semibold text-slate-700">{inventory.length} {inventory.length === 1 ? "artículo" : "artículos"}</span>
+                        <span className="mx-1">•</span>
+                        <span>{totalInventoryUnits.toLocaleString()} unidades en stock</span>
+                      </p>
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
                     </div>
                   </>
@@ -5502,59 +5496,7 @@ ${accountRowsHtml(equity)}
             </div>
           )}
 
-          {/* ================= VIEW: TRANSACCIONES DE INTEGRACIÓN ================= */}
-          {currentView === "macola-sync" && (
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={() => setCurrentView("dashboard")}
-                className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
-              >
-                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Regresar a Dashboard</span>
-              </button>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="font-bold text-base text-slate-900">Transacciones de Integración Macola</h2>
-                    <p className="text-xs text-slate-500">Historial y estado de sincronización de datos con Macola</p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Sincronización Habilitada
-                  </span>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-slate-800 block">Sincronización de Clientes Macola</span>
-                      <span className="text-slate-500 text-[11px]">{customers.length} registros con código tracking</span>
-                    </div>
-                    <span className="text-emerald-700 font-medium">Sincronizado</span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-slate-800 block">Sincronización de Proveedores Macola</span>
-                      <span className="text-slate-500 text-[11px]">{vendors.length} registros con código tracking</span>
-                    </div>
-                    <span className="text-emerald-700 font-medium">Sincronizado</span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-slate-800 block">Catálogo Maestro de SKUs</span>
-                      <span className="text-slate-500 text-[11px]">{inventory.length} artículos enlazados</span>
-                    </div>
-                    <span className="text-emerald-700 font-medium">Sincronizado</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* ================= VIEW: CAJA CHICA & CONTROL DE ARQUEOS ================= */}
           {currentView === "caja-chica" && (
@@ -5626,6 +5568,7 @@ ${accountRowsHtml(equity)}
             <div className="animate-in fade-in duration-150 p-6">
               <InventoryModule
                 inventory={inventory}
+                setInventory={setInventory}
                 loading={loading}
                 onRefreshInventory={loadDashboardData}
                 accounts={accounts}

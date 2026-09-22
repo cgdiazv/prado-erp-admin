@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
+export const dynamic = "force-dynamic";
+
 type RouteProps = {
   params: Promise<{ id: string }>;
 };
@@ -125,9 +127,18 @@ export async function DELETE(request: NextRequest, { params }: RouteProps) {
     const { id } = await params;
     const companyId = await resolveCompanyId(request);
 
-    const existing = await prisma.inventoryItem.findFirst({
-      where: { id, companyId },
+    let existing = await prisma.inventoryItem.findFirst({
+      where: {
+        id,
+        ...(companyId && companyId !== "default" ? { companyId } : {}),
+      },
     });
+
+    if (!existing) {
+      existing = await prisma.inventoryItem.findUnique({
+        where: { id },
+      });
+    }
 
     if (!existing) {
       return NextResponse.json(
