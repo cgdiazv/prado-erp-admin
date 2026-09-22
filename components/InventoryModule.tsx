@@ -21,7 +21,11 @@ import {
   X,
   Layers,
   ImageIcon,
-  Upload
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from "lucide-react";
 
 interface InventoryModuleProps {
@@ -281,6 +285,25 @@ export default function InventoryModule({
       return true;
     });
   }, [localInventory, search, filterType, selectedCategory]);
+
+  // Pagination State for Inventory Catalog
+  const [pageSize, setPageSize] = useState<number | "all">(50);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset page when filters or page size change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterType, selectedCategory, pageSize]);
+
+  const totalCatalogItems = filteredInventory.length;
+  const totalPages = pageSize === "all" ? 1 : Math.max(1, Math.ceil(totalCatalogItems / pageSize));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const paginatedInventory = useMemo(() => {
+    if (pageSize === "all") return filteredInventory;
+    const start = (safeCurrentPage - 1) * pageSize;
+    return filteredInventory.slice(start, start + pageSize);
+  }, [filteredInventory, safeCurrentPage, pageSize]);
 
   const handleExportInventoryCsv = () => {
     if (filteredInventory.length === 0) {
@@ -800,18 +823,98 @@ export default function InventoryModule({
 
           {/* Table Card */}
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-semibold text-sm text-slate-900">
-                Control Maestro de Inventario ({filteredInventory.length})
-              </h2>
-              <span className="text-xs text-slate-500">
-                Total Valorizado:{" "}
-                <span className="font-mono font-bold text-slate-800">
-                  {formatCurrency(
-                    filteredInventory.reduce((acc, item) => acc + (item.quantity * item.cost), 0)
-                  )}
+            <div className="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white">
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold text-sm text-slate-900">
+                  Control Maestro de Inventario ({filteredInventory.length})
+                </h2>
+                {pageSize !== "all" && totalPages > 1 && (
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold font-mono">
+                    Pág. {safeCurrentPage} / {totalPages}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 self-end md:self-auto">
+                {/* Selector de registros por página superior */}
+                {totalCatalogItems > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 text-[11px] font-medium hidden sm:inline">Mostrar:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPageSize(val === "all" ? "all" : Number(val));
+                      }}
+                      className="px-2 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1b426e] cursor-pointer"
+                    >
+                      <option value={25}>25 por pág.</option>
+                      <option value={50}>50 por pág.</option>
+                      <option value={100}>100 por pág.</option>
+                      <option value={250}>250 por pág.</option>
+                      <option value="all">Todos ({totalCatalogItems})</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Controles de navegación superior */}
+                {pageSize !== "all" && totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={safeCurrentPage <= 1}
+                      title="Primera página"
+                      className="p-1 rounded-md border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                    >
+                      <ChevronsLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={safeCurrentPage <= 1}
+                      title="Página anterior"
+                      className="p-1 rounded-md border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+
+                    <span className="px-2 py-0.5 text-xs font-bold text-slate-800 bg-slate-50 rounded-md border border-slate-200 font-mono">
+                      {safeCurrentPage} / {totalPages}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={safeCurrentPage >= totalPages}
+                      title="Página siguiente"
+                      className="p-1 rounded-md border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={safeCurrentPage >= totalPages}
+                      title="Última página"
+                      className="p-1 rounded-md border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                    >
+                      <ChevronsRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+
+                <span className="text-xs text-slate-500">
+                  Total Valorizado:{" "}
+                  <span className="font-mono font-bold text-slate-800">
+                    {formatCurrency(
+                      filteredInventory.reduce((acc, item) => acc + (item.quantity * item.cost), 0)
+                    )}
+                  </span>
                 </span>
-              </span>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -834,7 +937,7 @@ export default function InventoryModule({
                     <TableRowsSkeleton cols={9} rows={8} />
                   ) : (
                     <>
-                      {filteredInventory.map((item) => (
+                      {paginatedInventory.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition group">
                           <td className="p-3.5 font-mono font-bold text-[#1b426e]">
                             <button
@@ -952,7 +1055,7 @@ export default function InventoryModule({
                           </td>
                         </tr>
                       ))}
-                      {filteredInventory.length === 0 && (
+                      {paginatedInventory.length === 0 && (
                         <tr>
                           <td colSpan={9} className="p-8 text-center text-slate-400">
                             No se encontraron artículos en inventario
@@ -964,6 +1067,103 @@ export default function InventoryModule({
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls Bar */}
+            {totalCatalogItems > 0 && (
+              <div className="px-4 py-3 border-t border-slate-200/80 bg-slate-50/60 rounded-b-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+                {/* Left: Record count info */}
+                <div className="flex items-center gap-2">
+                  <span>
+                    Mostrando{" "}
+                    <strong className="text-slate-900 font-bold">
+                      {pageSize === "all" ? 1 : (safeCurrentPage - 1) * pageSize + 1}
+                    </strong>{" "}
+                    -{" "}
+                    <strong className="text-slate-900 font-bold">
+                      {pageSize === "all" ? totalCatalogItems : Math.min(safeCurrentPage * pageSize, totalCatalogItems)}
+                    </strong>{" "}
+                    de{" "}
+                    <strong className="text-slate-900 font-bold">
+                      {totalCatalogItems.toLocaleString()}
+                    </strong>{" "}
+                    artículos
+                    {totalCatalogItems !== localInventory.length && (
+                      <span className="text-slate-400 ml-1">
+                        (filtrados de {localInventory.length.toLocaleString()})
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                {/* Right: Page Size & Navigation */}
+                <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 text-[11px] font-medium">Por página:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPageSize(val === "all" ? "all" : Number(val));
+                      }}
+                      className="px-2 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 cursor-pointer shadow-2xs"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={250}>250</option>
+                      <option value="all">Todos ({totalCatalogItems})</option>
+                    </select>
+                  </div>
+
+                  {pageSize !== "all" && totalPages > 1 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={safeCurrentPage <= 1}
+                        title="Primera página"
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                      >
+                        <ChevronsLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={safeCurrentPage <= 1}
+                        title="Página anterior"
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+
+                      <span className="px-2.5 py-0.5 text-xs font-bold text-slate-800 bg-white rounded-md border border-slate-200 shadow-2xs font-mono">
+                        {safeCurrentPage} / {totalPages}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={safeCurrentPage >= totalPages}
+                        title="Página siguiente"
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={safeCurrentPage >= totalPages}
+                        title="Última página"
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-slate-700 cursor-pointer shadow-2xs"
+                      >
+                        <ChevronsRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       )}

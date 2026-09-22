@@ -245,10 +245,11 @@ export async function importInventory(filePath: string) {
     const priceStr = getField(record, "price", "unit_price", "selling_price");
     const category = getField(record, "category", "categoria", "cat", "rubro", "grupo");
 
-    if (!sku) {
-      console.warn(`Skipping inventory record without SKU:`, record);
-      skipped++;
-      continue;
+    let itemSku = sku ? sku.trim() : "";
+    const isPlaceholder = !itemSku || ["sin numero", "sin número", "s/n", "sn", "n/a"].includes(itemSku.toLowerCase()) || itemSku.toLowerCase().startsWith("sin num");
+
+    if (isPlaceholder) {
+      itemSku = `SN-${String(upserted + 1).padStart(5, "0")}`;
     }
 
     const quantity = quantityStr ? parseFloat(quantityStr) || 0 : 0;
@@ -256,7 +257,7 @@ export async function importInventory(filePath: string) {
     const price = priceStr ? parseFloat(priceStr) || 0 : 0;
 
     await prisma.inventoryItem.upsert({
-      where: { sku },
+      where: { sku: itemSku },
       update: {
         description,
         quantity,
@@ -265,7 +266,7 @@ export async function importInventory(filePath: string) {
         ...(category !== undefined && { category }),
       },
       create: {
-        sku,
+        sku: itemSku,
         description,
         quantity,
         cost,

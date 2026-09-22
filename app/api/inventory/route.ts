@@ -10,9 +10,12 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const lowStock = searchParams.get("lowStock");
     const categoryParam = searchParams.get("category");
+    const limitParam = searchParams.get("limit");
+    // Si no se especifica limit o es 'all'/'0', retorna el catálogo completo de la empresa
+    const shouldPaginate = limitParam !== null && limitParam !== "all" && limitParam !== "0";
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
-    const skip = (page - 1) * limit;
+    const limit = shouldPaginate ? Math.max(1, Math.min(5000, parseInt(limitParam || "50", 10))) : undefined;
+    const skip = limit ? (page - 1) * limit : undefined;
 
     const where: Record<string, unknown> = {
       companyId,
@@ -63,9 +66,9 @@ export async function GET(request: NextRequest) {
       data: items,
       pagination: {
         page,
-        limit,
+        limit: limit || total,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: limit ? Math.ceil(total / limit) : 1,
       },
     });
   } catch (error: unknown) {

@@ -1443,7 +1443,7 @@ export default function AdminDashboard() {
       desc: "Catálogo de artículos, SKU, stock inicial, costo y precios",
       endpoint: "/api/inventory",
       fields: [
-        { key: "sku", label: "Código SKU / Artículo", required: true, hint: "Ej: FLEX-1001" },
+        { key: "sku", label: "Código SKU / Artículo", required: false, hint: "Ej: FLEX-1001 (o 'Sin número')" },
         { key: "description", label: "Descripción del Producto", required: true, hint: "Ej: Cajas Flexográficas 12x12" },
         { key: "category", label: "Categoría", required: false, hint: "Ej: Empaques, Tintas, Materia Prima" },
         { key: "quantity", label: "Stock Inicial", required: false, hint: "Ej: 500" },
@@ -1661,8 +1661,7 @@ export default function AdminDashboard() {
     setImportNotification("");
     setImportResultReport(null);
 
-    let successCount = 0;
-    let errorCount = 0;
+    const validPayloads: any[] = [];
     const errors: string[] = [];
 
     for (let i = 0; i < importRawRows.length; i++) {
@@ -1675,61 +1674,92 @@ export default function AdminDashboard() {
         }
       });
 
+      // Para productos, si no se colocó SKU o está vacío, se marca para autogenerar SKU único limpio
+      if (selectedImportCategory === "productos" && (!mappedRecord.sku || mappedRecord.sku.trim() === "")) {
+        mappedRecord.sku = "Sin numero";
+      }
+
       const missingRequired = schema.fields.find(
         (f: any) => f.required && (!mappedRecord[f.key] || mappedRecord[f.key].trim() === "")
       );
 
       if (missingRequired) {
-        errorCount++;
         errors.push(`Fila ${i + 1}: El campo '${missingRequired.label}' es obligatorio y está vacío.`);
         continue;
       }
 
       try {
         const payload = schema.mapRowToPayload(mappedRecord);
-        const res = await fetch(schema.endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const json = await res.json();
-        if (res.ok && (json.success || json.id || json.data)) {
-          successCount++;
-        } else {
-          errorCount++;
-          errors.push(`Fila ${i + 1}: ${json.error || "Error al registrar en la base de datos."}`);
-        }
+        validPayloads.push(payload);
       } catch (err: any) {
-        errorCount++;
-        errors.push(`Fila ${i + 1}: Error de red o conexión: ${err.message || "Error desconocido"}`);
+        errors.push(`Fila ${i + 1}: Error al mapear datos: ${err.message || "Formato no válido"}`);
       }
+    }
+
+    if (validPayloads.length === 0) {
+      setIsImporting(false);
+      setImportNotificationType("error");
+      setImportNotification("No hay registros válidos para importar. Revisa las observaciones.");
+      setImportResultReport({ successCount: 0, errorCount: errors.length, errors });
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = errors.length;
+
+    try {
+      // Envío en bloque de alta velocidad a /api/import/batch
+      const res = await fetch("/api/import/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: selectedImportCategory,
+          items: validPayloads,
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        successCount = json.successCount || validPayloads.length;
+        if (Array.isArray(json.errors) && json.errors.length > 0) {
+          errors.push(...json.errors);
+          errorCount += json.errors.length;
+        }
+
+        const durationSeconds = json.elapsedMs ? (json.elapsedMs / 1000).toFixed(1) : "1.0";
+        setImportNotificationType("success");
+        setImportNotification(
+          `¡Importación masiva completada en ${durationSeconds}s! Se procesaron exitosamente ${successCount} registros en ${schema.title}.${
+            errorCount > 0 ? ` (${errorCount} filas con observaciones)` : ""
+          }`
+        );
+
+        // Refresh relevant data in background
+        if (selectedImportCategory === "productos") {
+          fetch("/api/inventory").then((r) => r.json()).then((j) => {
+            if (j.success && Array.isArray(j.data)) setInventory(j.data);
+          });
+          loadProductCategories();
+        } else if (selectedImportCategory === "facturas_compra") {
+          fetch("/api/purchase-invoices").then((r) => r.json()).then((j) => {
+            if (j.success && Array.isArray(j.data)) setPurchaseInvoices(j.data);
+          });
+        }
+      } else {
+        errorCount += validPayloads.length;
+        errors.push(json.error || "Error al procesar el lote en el servidor.");
+        setImportNotificationType("error");
+        setImportNotification(json.error || "Error en la importación masiva.");
+      }
+    } catch (netErr: any) {
+      errorCount += validPayloads.length;
+      errors.push(`Error de red o conexión: ${netErr.message || "Error al comunicarse con el servidor"}`);
+      setImportNotificationType("error");
+      setImportNotification("Error de red durante la importación masiva.");
     }
 
     setIsImporting(false);
     setImportResultReport({ successCount, errorCount, errors });
-
-    if (successCount > 0) {
-      setImportNotificationType("success");
-      setImportNotification(
-        `¡Importación completada! Se crearon exitosamente ${successCount} registros en ${schema.title}.${errorCount > 0 ? ` (${errorCount} filas omitidas con observaciones)` : ""
-        }`
-      );
-
-      // Refresh relevant data in background
-      if (selectedImportCategory === "productos") {
-        fetch("/api/inventory").then((r) => r.json()).then((j) => {
-          if (j.success && Array.isArray(j.data)) setInventory(j.data);
-        });
-        loadProductCategories();
-      } else if (selectedImportCategory === "facturas_compra") {
-        fetch("/api/purchase-invoices").then((r) => r.json()).then((j) => {
-          if (j.success && Array.isArray(j.data)) setPurchaseInvoices(j.data);
-        });
-      }
-    } else {
-      setImportNotificationType("error");
-      setImportNotification(`No se pudo importar ningún registro. Revisa las observaciones detalladas.`);
-    }
   };
 
   const currentImportSchema = (importCategorySchemas as any)[selectedImportCategory];
@@ -9496,7 +9526,7 @@ ${accountRowsHtml(equity)}
                               <span>Importar / Exportar Datos</span>
                             </h2>
                             <p className="text-xs text-slate-500 mt-0.5">
-                              Carga masiva y descarga de tablas maestras, catálogos y transacciones de {companySettings.nombreLegal || companySettings.nombre || "Prado ERP"}.
+                              Carga masiva y descarga de tablas maestras, catálogos y transacciones de {companySettings.nombreLegal || companySettings.nombre || "su empresa"}.
                             </p>
                           </div>
 
@@ -10140,7 +10170,7 @@ ${accountRowsHtml(equity)}
                                       : "Ingresa datos en el paso 2 para comenzar la importación."}
                                   </span>
                                   <p className="text-[11px] text-slate-500 mt-0.5">
-                                    Los datos se almacenarán directamente en la base de datos PostgreSQL de {companySettings.nombreLegal || companySettings.nombre || "Prado ERP"}.
+                                    Los datos se almacenarán de forma directa y segura en la base de datos privada y exclusiva de su empresa.
                                   </p>
                                 </div>
 
