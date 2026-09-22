@@ -104,6 +104,7 @@ body {
   #printable-note-document,
   #printable-cash-audit-document,
   #printable-check-voucher,
+  #printable-inventory-report,
   .printable-document {
     display: block !important;
     visibility: visible !important;
@@ -122,12 +123,27 @@ body {
   #printable-note-document *,
   #printable-cash-audit-document *,
   #printable-check-voucher *,
+  #printable-inventory-report *,
   .printable-document * {
     visibility: visible !important;
   }
 
+  .printable-document table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .printable-document thead {
+    display: table-header-group !important;
+  }
+
+  .printable-document tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
   @page {
     margin: 1cm;
-    size: portrait;
+    size: letter portrait;
   }
 }

@@ -25,7 +25,15 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  FileText,
+  Building2,
+  ShieldCheck,
+  Filter,
+  Eye,
+  SlidersHorizontal,
+  Check,
+  FileCheck
 } from "lucide-react";
 
 interface InventoryModuleProps {
@@ -40,6 +48,16 @@ interface InventoryModuleProps {
   onAutoOpenCreateConsumed?: () => void;
   formatCurrency?: (val: number) => string;
   loading?: boolean;
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+    telefono?: string;
+    email?: string;
+    [key: string]: any;
+  };
+  companyLogo?: string | null;
 }
 
 export default function InventoryModule({
@@ -54,9 +72,49 @@ export default function InventoryModule({
   onAutoOpenCreateConsumed,
   formatCurrency = (val: number) => `$${Number(val || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
   loading = false,
+  companySettings,
+  companyLogo,
 }: InventoryModuleProps) {
   // Local active sub-view state
   const [activeTab, setActiveTab] = useState<"inventario" | "lotes" | "series">(currentSubView);
+
+  // Official Company Settings & Branding state with fallback fetch
+  const [internalCompanySettings, setInternalCompanySettings] = useState<any>(companySettings || null);
+  const [internalCompanyLogo, setInternalCompanyLogo] = useState<string | null>(companyLogo || null);
+
+  useEffect(() => {
+    if (companySettings) setInternalCompanySettings(companySettings);
+    if (companyLogo) setInternalCompanyLogo(companyLogo);
+  }, [companySettings, companyLogo]);
+
+  useEffect(() => {
+    if (!companySettings) {
+      fetch("/api/company")
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.success && res.data) {
+            setInternalCompanySettings(res.data);
+            if (res.data.logoUrl && !internalCompanyLogo) {
+              setInternalCompanyLogo(res.data.logoUrl);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [companySettings, internalCompanyLogo]);
+
+  // Printable Report State & Configuration
+  const [showPrintReportModal, setShowPrintReportModal] = useState(false);
+  const [printReportType, setPrintReportType] = useState<"inventario" | "lotes" | "series">("inventario");
+  const [printReportScope, setPrintReportScope] = useState<"filtrados" | "todos" | "con-stock" | "bajo-stock">("filtrados");
+  const [printIncludeValuation, setPrintIncludeValuation] = useState(true);
+  const [printPhysicalCountMode, setPrintPhysicalCountMode] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const openPrintReport = (type?: "inventario" | "lotes" | "series") => {
+    setPrintReportType(type || activeTab);
+    setShowPrintReportModal(true);
+  };
 
   useEffect(() => {
     if (currentSubView) {
@@ -330,6 +388,142 @@ export default function InventoryModule({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Items for the Inventory Report
+  const reportInventoryItems = useMemo(() => {
+    if (printReportScope === "todos") return localInventory;
+    if (printReportScope === "con-stock") return localInventory.filter((i) => i.quantity > 0);
+    if (printReportScope === "bajo-stock") return localInventory.filter((i) => i.quantity <= 5);
+    return filteredInventory;
+  }, [printReportScope, localInventory, filteredInventory]);
+
+  // Items for the Lotes Report
+  const reportLotsItems = useMemo(() => {
+    if (printReportScope === "todos") return allLots;
+    if (printReportScope === "con-stock") return allLots.filter((l) => l.lot.quantity > 0);
+    if (printReportScope === "bajo-stock") return allLots.filter((l) => l.status === "por-vencer" || l.status === "vencido");
+    return filteredAllLots;
+  }, [printReportScope, allLots, filteredAllLots]);
+
+  // Items for the Series Report
+  const reportSerialsItems = useMemo(() => {
+    if (printReportScope === "todos") return allSerials;
+    if (printReportScope === "con-stock") return allSerials.filter((s) => s.serial.status === "DISPONIBLE");
+    return filteredAllSerials;
+  }, [printReportScope, allSerials, filteredAllSerials]);
+
+  // Inventory Report Metrics
+  const invStats = useMemo(() => {
+    const totalItems = reportInventoryItems.length;
+    const totalUnits = reportInventoryItems.reduce((acc, i) => acc + (Number(i.quantity) || 0), 0);
+    const totalCostValue = reportInventoryItems.reduce((acc, i) => acc + ((Number(i.quantity) || 0) * (Number(i.cost) || 0)), 0);
+    const totalRetailValue = reportInventoryItems.reduce((acc, i) => acc + ((Number(i.quantity) || 0) * (Number(i.price) || 0)), 0);
+    const potentialGrossProfit = totalRetailValue - totalCostValue;
+    const grossMarginPct = totalRetailValue > 0 ? ((potentialGrossProfit / totalRetailValue) * 100).toFixed(1) : "0.0";
+    return { totalItems, totalUnits, totalCostValue, totalRetailValue, potentialGrossProfit, grossMarginPct };
+  }, [reportInventoryItems]);
+
+  // Lots Report Metrics
+  const lotsStats = useMemo(() => {
+    const totalLots = reportLotsItems.length;
+    const totalUnits = reportLotsItems.reduce((acc, l) => acc + (Number(l.lot.quantity) || 0), 0);
+    const vigentes = reportLotsItems.filter((l) => l.status === "vigente").length;
+    const porVencer = reportLotsItems.filter((l) => l.status === "por-vencer").length;
+    const vencidos = reportLotsItems.filter((l) => l.status === "vencido").length;
+    const totalCostValue = reportLotsItems.reduce((acc, l) => acc + ((Number(l.lot.quantity) || 0) * (Number(l.item.cost) || 0)), 0);
+    return { totalLots, totalUnits, vigentes, porVencer, vencidos, totalCostValue };
+  }, [reportLotsItems]);
+
+  // Serials Report Metrics
+  const serialsStats = useMemo(() => {
+    const totalSerials = reportSerialsItems.length;
+    const disponibles = reportSerialsItems.filter((s) => s.serial.status === "DISPONIBLE").length;
+    const vendidos = reportSerialsItems.filter((s) => s.serial.status === "VENDIDO").length;
+    const otros = reportSerialsItems.filter((s) => s.serial.status !== "DISPONIBLE" && s.serial.status !== "VENDIDO").length;
+    return { totalSerials, disponibles, vendidos, otros };
+  }, [reportSerialsItems]);
+
+  // PDF Download Handler
+  const handleDownloadReportPdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const printableElem = document.getElementById("printable-inventory-report-content");
+      if (!printableElem) {
+        window.print();
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "fixed";
+      wrapper.style.left = "-9999px";
+      wrapper.style.top = "0";
+      wrapper.style.width = "1100px";
+      wrapper.style.background = "#ffffff";
+      wrapper.style.color = "#000000";
+      wrapper.style.zIndex = "-9999";
+
+      const clone = printableElem.cloneNode(true) as HTMLElement;
+      clone.style.display = "block";
+      clone.style.width = "100%";
+      clone.style.background = "#ffffff";
+      clone.style.color = "#000000";
+      clone.style.padding = "32px";
+      clone.style.boxSizing = "border-box";
+
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      const html2canvasModule = await import("html2canvas");
+      const html2canvas = html2canvasModule.default || html2canvasModule;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 1100,
+      });
+
+      document.body.removeChild(wrapper);
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "letter",
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let position = 0;
+      pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
+      let heightLeft = imgHeight - pdfHeight;
+
+      while (heightLeft > 5) {
+        position -= pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const prefix =
+        printReportType === "lotes"
+          ? "Reporte_Lotes_FEFO"
+          : printReportType === "series"
+          ? "Reporte_Series_Trazabilidad"
+          : "Reporte_Inventario_Valorizado";
+      pdf.save(`${prefix}_${dateStr}.pdf`);
+    } catch (error) {
+      console.error("Error al generar PDF del reporte:", error);
+      window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   // Handlers for Products
@@ -665,7 +859,7 @@ export default function InventoryModule({
   };
 
   return (
-    <div className="space-y-5">
+    <div className={`space-y-5 ${showPrintReportModal ? "print:hidden" : ""}`}>
       {/* Tab Navigation Header (Catálogo, Lotes, Series) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3 print:hidden">
         <div className="flex items-center gap-2">
@@ -728,14 +922,12 @@ export default function InventoryModule({
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <button
             type="button"
-            onClick={() => {
-              alert("Generando reporte de inventario...");
-              window.print();
-            }}
+            onClick={() => openPrintReport(activeTab)}
             className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            title="Generar e imprimir reporte formal de inventario"
           >
             <Printer className="w-3.5 h-3.5 text-slate-500" />
-            <span>Imprimir</span>
+            <span>Imprimir Reporte</span>
           </button>
           <button
             type="button"
@@ -812,9 +1004,9 @@ export default function InventoryModule({
               </button>
               <button
                 type="button"
-                onClick={() => window.print()}
-                className="p-1.5 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition cursor-pointer"
-                title="Imprimir lista"
+                onClick={() => openPrintReport("inventario")}
+                className="p-1.5 hover:bg-slate-100 hover:text-[#1b426e] rounded-lg transition cursor-pointer"
+                title="Generar e imprimir reporte formal de inventario"
               >
                 <Printer className="w-4 h-4" />
               </button>
@@ -1190,14 +1382,20 @@ export default function InventoryModule({
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  alert("Generando reporte de lotes y vencimientos...");
-                  window.print();
-                }}
+                onClick={() => openPrintReport("lotes")}
                 className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Imprimir reporte formal de lotes y vencimientos"
               >
-                <Download className="w-4 h-4 text-emerald-600" />
-                <span>Exportar Reporte FEFO</span>
+                <Printer className="w-4 h-4 text-slate-500" />
+                <span>Imprimir Reporte FEFO</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openPrintReport("lotes")}
+                className="px-3.5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Vista de Reporte</span>
               </button>
             </div>
           </div>
@@ -1440,14 +1638,20 @@ export default function InventoryModule({
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  alert("Generando reporte de trazabilidad de números de serie...");
-                  window.print();
-                }}
+                onClick={() => openPrintReport("series")}
                 className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Imprimir reporte formal de números de serie"
               >
-                <Download className="w-4 h-4 text-emerald-600" />
-                <span>Exportar Trazabilidad</span>
+                <Printer className="w-4 h-4 text-slate-500" />
+                <span>Imprimir Reporte Series</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openPrintReport("series")}
+                className="px-3.5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Vista de Reporte</span>
               </button>
             </div>
           </div>
@@ -2585,6 +2789,590 @@ export default function InventoryModule({
               >
                 Cerrar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: REPORTE OFICIAL DE INVENTARIO / IMPRESIÓN ================= */}
+      {showPrintReportModal && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto print:static print:inset-auto print:bg-white print:overflow-visible print:block print:p-0">
+          {/* TOP CONTROL BAR (HIDDEN DURING PRINT) */}
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sticky top-0 z-30 shadow-md print:hidden flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#1b426e] text-white flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                    {printReportType === "lotes"
+                      ? "Reporte Oficial de Lotes y Vencimientos (FEFO)"
+                      : printReportType === "series"
+                      ? "Reporte de Números de Serie y Trazabilidad"
+                      : "Reporte de Inventario y Valorización de Existencias"}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Formato ejecutivo oficial listo para impresión y exportación en PDF
+                  </p>
+                </div>
+              </div>
+
+              {/* Selector de tipo de reporte */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPrintReportType("inventario")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                    printReportType === "inventario"
+                      ? "bg-white text-[#1b426e] shadow-2xs font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Inventario
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintReportType("lotes")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                    printReportType === "lotes"
+                      ? "bg-white text-amber-700 shadow-2xs font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Lotes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintReportType("series")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                    printReportType === "series"
+                      ? "bg-white text-purple-700 shadow-2xs font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Series
+                </button>
+              </div>
+
+              {/* Selector de Alcance (Filtro) */}
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-slate-500 font-medium hidden sm:inline">Alcance:</span>
+                <select
+                  value={printReportScope}
+                  onChange={(e) => setPrintReportScope(e.target.value as any)}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1b426e] cursor-pointer"
+                >
+                  <option value="filtrados">
+                    Filtro actual ({printReportType === "lotes" ? filteredAllLots.length : printReportType === "series" ? filteredAllSerials.length : filteredInventory.length} ítems)
+                  </option>
+                  <option value="todos">
+                    Todo el catálogo ({printReportType === "lotes" ? allLots.length : printReportType === "series" ? allSerials.length : localInventory.length} ítems)
+                  </option>
+                  <option value="con-stock">Solo con existencias disponibles</option>
+                  <option value="bajo-stock">Solo bajo stock / alerta</option>
+                </select>
+              </div>
+
+              {/* Opciones especiales para Inventario */}
+              {printReportType === "inventario" && (
+                <div className="flex items-center gap-3 border-l border-slate-200 pl-3">
+                  <label className="flex items-center gap-1.5 text-xs text-slate-700 font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={printIncludeValuation}
+                      onChange={(e) => setPrintIncludeValuation(e.target.checked)}
+                      className="rounded text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
+                    />
+                    <span>Ver costos y valores</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-slate-700 font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={printPhysicalCountMode}
+                      onChange={(e) => setPrintPhysicalCountMode(e.target.checked)}
+                      className="rounded text-[#1b426e] focus:ring-[#1b426e] cursor-pointer"
+                    />
+                    <span>Modo toma física (auditoría)</span>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 self-end lg:self-auto">
+              <button
+                type="button"
+                onClick={handleDownloadReportPdf}
+                disabled={isGeneratingPdf}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
+                title="Descargar archivo PDF oficial del reporte"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{isGeneratingPdf ? "Generando..." : "Descargar PDF"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20"
+                title="Imprimir documento oficial en impresora o guardar como PDF"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Imprimir Documento</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowPrintReportModal(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                title="Cerrar vista previa"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* REPORT DOCUMENT CANVAS */}
+          <div className="flex-1 p-4 sm:p-6 lg:p-8 flex justify-center print:p-0 print:m-0 print:block">
+            <div
+              id="printable-inventory-report"
+              className="printable-document bg-white w-full max-w-5xl rounded-2xl shadow-xl p-8 sm:p-12 border border-slate-200 print:border-none print:shadow-none print:rounded-none print:p-0 print:m-0 print:max-w-none text-slate-900"
+            >
+              <div id="printable-inventory-report-content" className="space-y-6">
+                {/* Header: Company Info and Official Report Title Box */}
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-6 border-b-2 border-slate-900">
+                  <div className="space-y-1 max-w-md">
+                    {internalCompanyLogo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={internalCompanyLogo}
+                        alt="Logo"
+                        className="h-12 max-w-[200px] object-contain mb-2"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-9 h-9 rounded-lg bg-[#1b426e] text-white flex items-center justify-center font-bold text-sm">
+                          {((internalCompanySettings?.nombreLegal || internalCompanySettings?.nombre || "P").charAt(0)).toUpperCase()}
+                        </div>
+                        <span className="font-extrabold text-sm tracking-tight text-[#1b426e]">
+                          PRADO ERP
+                        </span>
+                      </div>
+                    )}
+                    <h1 className="text-base font-black text-slate-900 uppercase tracking-tight leading-snug">
+                      {internalCompanySettings?.nombreLegal || internalCompanySettings?.nombre || "EMPRESA PRADO"}
+                    </h1>
+                    {internalCompanySettings?.taxId && (
+                      <p className="text-xs font-mono font-bold text-slate-700">
+                        RTN: {internalCompanySettings.taxId}
+                      </p>
+                    )}
+                    {internalCompanySettings?.direccion && (
+                      <p className="text-[11px] text-slate-600 leading-tight">
+                        {internalCompanySettings.direccion}
+                      </p>
+                    )}
+                    {(internalCompanySettings?.telefono || internalCompanySettings?.email) && (
+                      <p className="text-[11px] text-slate-500">
+                        {[
+                          internalCompanySettings?.telefono ? `Tel: ${internalCompanySettings.telefono}` : "",
+                          internalCompanySettings?.email ? `Correo: ${internalCompanySettings.email}` : "",
+                        ].filter(Boolean).join(" • ")}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Right Document Box */}
+                  <div className="text-right border border-slate-300 rounded-xl p-3.5 bg-slate-50/80 min-w-[260px] space-y-1">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                      DOCUMENTO OFICIAL DE CONTROL
+                    </span>
+                    <h2 className="text-sm font-black text-[#1b426e] uppercase tracking-tight">
+                      {printReportType === "lotes"
+                        ? "CONTROL DE LOTES & FEFO"
+                        : printReportType === "series"
+                        ? "TRAZABILIDAD DE SERIES"
+                        : "EXISTENCIAS Y VALORIZACIÓN"}
+                    </h2>
+                    <div className="text-[11px] text-slate-600 pt-1 space-y-0.5 font-medium">
+                      <p>
+                        <b>Fecha emisión:</b> {new Date().toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}
+                      </p>
+                      <p>
+                        <b>Hora:</b> {new Date().toLocaleTimeString("es-HN", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                      <p>
+                        <b>Alcance:</b> {printReportScope === "todos" ? "Catálogo Completo" : printReportScope === "con-stock" ? "Solo con Stock" : printReportScope === "bajo-stock" ? "Bajo Stock / Alerta" : "Filtro Seleccionado"}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-mono">
+                        PRADO-REP-{new Date().toISOString().slice(0, 10).replace(/-/g, "")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Executive Summary Bar */}
+                {printReportType === "inventario" && (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">Artículos</span>
+                      <span className="text-base font-black text-slate-900 font-mono">{invStats.totalItems}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">Existencias Totales</span>
+                      <span className="text-base font-black text-[#1b426e] font-mono">{invStats.totalUnits.toLocaleString("es-HN")}</span>
+                    </div>
+                    {printIncludeValuation && !printPhysicalCountMode && (
+                      <>
+                        <div>
+                          <span className="text-[10px] font-semibold text-slate-500 uppercase block">Valor al Costo</span>
+                          <span className="text-base font-black text-slate-900 font-mono">{formatCurrency(invStats.totalCostValue)}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-semibold text-slate-500 uppercase block">Valor a Precio Venta</span>
+                          <span className="text-base font-black text-emerald-700 font-mono">{formatCurrency(invStats.totalRetailValue)}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-semibold text-slate-500 uppercase block">Margen Proyectado</span>
+                          <span className="text-base font-black text-indigo-700 font-mono">{invStats.grossMarginPct}%</span>
+                        </div>
+                      </>
+                    )}
+                    {printPhysicalCountMode && (
+                      <div className="col-span-3 text-right flex items-center justify-end text-[11px] font-semibold text-amber-700">
+                        <span className="px-2.5 py-1 rounded-lg bg-amber-100/70 border border-amber-200">
+                          Modo Auditoría Física — Espacios habilitados para conteo manual
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {printReportType === "lotes" && (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-3.5 bg-amber-50/50 rounded-xl border border-amber-200/80 text-xs">
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">Total Lotes</span>
+                      <span className="text-base font-black text-slate-900 font-mono">{lotsStats.totalLots}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">Unidades en Lotes</span>
+                      <span className="text-base font-black text-[#1b426e] font-mono">{lotsStats.totalUnits.toLocaleString("es-HN")}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-emerald-700 uppercase block">Lotes Vigentes</span>
+                      <span className="text-base font-black text-emerald-700 font-mono">{lotsStats.vigentes}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-rose-700 uppercase block">Vencidos / Por Vencer</span>
+                      <span className="text-base font-black text-rose-700 font-mono">{lotsStats.porVencer + lotsStats.vencidos}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">Valor Total en Lotes</span>
+                      <span className="text-base font-black text-slate-900 font-mono">{formatCurrency(lotsStats.totalCostValue)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {printReportType === "series" && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-purple-50/50 rounded-xl border border-purple-200/80 text-xs">
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">Series Registradas</span>
+                      <span className="text-base font-black text-slate-900 font-mono">{serialsStats.totalSerials}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-emerald-700 uppercase block">Disponibles</span>
+                      <span className="text-base font-black text-emerald-700 font-mono">{serialsStats.disponibles}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-[#1b426e] uppercase block">Vendidas</span>
+                      <span className="text-base font-black text-[#1b426e] font-mono">{serialsStats.vendidos}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">En Garantía / Otros</span>
+                      <span className="text-base font-black text-slate-800 font-mono">{serialsStats.otros}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* INVENTORY REPORT TABLE */}
+                {printReportType === "inventario" && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse border border-slate-300">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-slate-300 text-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                          <th className="py-2.5 px-3 w-8 text-center border-r border-slate-200">#</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-slate-200">SKU / Código</th>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Descripción del Artículo</th>
+                          <th className="py-2.5 px-3 w-24 border-r border-slate-200">Categoría</th>
+                          <th className="py-2.5 px-3 w-20 text-center border-r border-slate-200">Control</th>
+                          <th className="py-2.5 px-3 w-20 text-right border-r border-slate-200">Existencias</th>
+                          {printIncludeValuation && !printPhysicalCountMode && (
+                            <>
+                              <th className="py-2.5 px-3 w-24 text-right border-r border-slate-200">Costo Unit.</th>
+                              <th className="py-2.5 px-3 w-24 text-right border-r border-slate-200">Precio Venta</th>
+                              <th className="py-2.5 px-3 w-28 text-right border-r border-slate-200">Valor Total</th>
+                            </>
+                          )}
+                          {printPhysicalCountMode && (
+                            <>
+                              <th className="py-2.5 px-3 w-28 text-center border-r border-slate-200 bg-amber-50/60">Conteo Real</th>
+                              <th className="py-2.5 px-3 w-24 text-center border-r border-slate-200 bg-amber-50/60">Diferencia</th>
+                              <th className="py-2.5 px-3 border-r border-slate-200">Observaciones</th>
+                            </>
+                          )}
+                          <th className="py-2.5 px-3 w-20 text-center">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-800">
+                        {reportInventoryItems.map((item, idx) => {
+                          const valorTotal = (Number(item.quantity) || 0) * (Number(item.cost) || 0);
+                          const isLowStock = item.quantity <= 5 && item.quantity > 0;
+                          const isOutOfStock = item.quantity <= 0;
+
+                          return (
+                            <tr key={item.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                              <td className="py-2 px-3 text-center text-[10px] text-slate-500 border-r border-slate-200">
+                                {idx + 1}
+                              </td>
+                              <td className="py-2 px-3 font-mono font-bold text-slate-900 border-r border-slate-200">
+                                {item.sku}
+                              </td>
+                              <td className="py-2 px-3 font-medium text-slate-900 border-r border-slate-200">
+                                {item.description}
+                              </td>
+                              <td className="py-2 px-3 text-slate-600 border-r border-slate-200">
+                                {item.category || "-"}
+                              </td>
+                              <td className="py-2 px-3 text-center border-r border-slate-200">
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                                  {item.trackingType === "LOT" ? "Lote" : item.trackingType === "SERIAL" ? "Serie" : "Estándar"}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 border-r border-slate-200">
+                                {item.quantity}
+                              </td>
+                              {printIncludeValuation && !printPhysicalCountMode && (
+                                <>
+                                  <td className="py-2 px-3 text-right font-mono text-slate-700 border-r border-slate-200">
+                                    {formatCurrency(item.cost)}
+                                  </td>
+                                  <td className="py-2 px-3 text-right font-mono text-slate-700 border-r border-slate-200">
+                                    {formatCurrency(item.price)}
+                                  </td>
+                                  <td className="py-2 px-3 text-right font-mono font-bold text-[#1b426e] border-r border-slate-200">
+                                    {formatCurrency(valorTotal)}
+                                  </td>
+                                </>
+                              )}
+                              {printPhysicalCountMode && (
+                                <>
+                                  <td className="py-2 px-3 border-r border-slate-200 text-center">
+                                    <div className="h-6 w-16 mx-auto border border-dashed border-slate-400 rounded bg-white" />
+                                  </td>
+                                  <td className="py-2 px-3 border-r border-slate-200 text-center">
+                                    <div className="h-6 w-16 mx-auto border border-dashed border-slate-400 rounded bg-white" />
+                                  </td>
+                                  <td className="py-2 px-3 border-r border-slate-200 text-slate-400 text-[10px]">
+                                    ________________________
+                                  </td>
+                                </>
+                              )}
+                              <td className="py-2 px-3 text-center">
+                                <span
+                                  className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                    isOutOfStock
+                                      ? "bg-rose-100 text-rose-800"
+                                      : isLowStock
+                                      ? "bg-amber-100 text-amber-800"
+                                      : "bg-emerald-100 text-emerald-800"
+                                  }`}
+                                >
+                                  {isOutOfStock ? "Agotado" : isLowStock ? "Bajo Stock" : "Normal"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      {/* Table Footer Totals */}
+                      <tfoot>
+                        <tr className="bg-slate-100 border-t-2 border-slate-800 font-bold text-slate-900">
+                          <td colSpan={5} className="py-3 px-3 text-right uppercase text-[11px] border-r border-slate-200">
+                            TOTALES CONSOLIDADOS:
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono font-black text-sm border-r border-slate-200">
+                            {invStats.totalUnits.toLocaleString("es-HN")}
+                          </td>
+                          {printIncludeValuation && !printPhysicalCountMode && (
+                            <>
+                              <td className="py-3 px-3 text-right font-mono text-xs border-r border-slate-200">
+                                -
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono text-xs border-r border-slate-200">
+                                -
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono font-black text-sm text-[#1b426e] border-r border-slate-200">
+                                {formatCurrency(invStats.totalCostValue)}
+                              </td>
+                            </>
+                          )}
+                          {printPhysicalCountMode && (
+                            <>
+                              <td colSpan={3} className="py-3 px-3 border-r border-slate-200 text-center text-xs text-slate-500 italic">
+                                Total Verificado en Toma Física
+                              </td>
+                            </>
+                          )}
+                          <td className="py-3 px-3 text-center text-[10px] text-slate-500">
+                            {reportInventoryItems.length} registros
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )}
+
+                {/* LOTS REPORT TABLE */}
+                {printReportType === "lotes" && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse border border-slate-300">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-slate-300 text-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                          <th className="py-2.5 px-3 w-8 text-center border-r border-slate-200">#</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-slate-200">SKU</th>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Producto</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-slate-200">Lote N.º</th>
+                          <th className="py-2.5 px-3 w-24 text-center border-r border-slate-200">Fabricación</th>
+                          <th className="py-2.5 px-3 w-24 text-center border-r border-slate-200">Vencimiento</th>
+                          <th className="py-2.5 px-3 w-20 text-center border-r border-slate-200">Días</th>
+                          <th className="py-2.5 px-3 w-24 text-center border-r border-slate-200">Estado FEFO</th>
+                          <th className="py-2.5 px-3 w-20 text-right border-r border-slate-200">Stock Lote</th>
+                          <th className="py-2.5 px-3 w-24 text-right border-r border-slate-200">Costo Unit.</th>
+                          <th className="py-2.5 px-3 w-28 text-right">Valor Lote</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-800">
+                        {reportLotsItems.map((entry, idx) => {
+                          const lotVal = (Number(entry.lot.quantity) || 0) * (Number(entry.item.cost) || 0);
+                          return (
+                            <tr key={entry.lot.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                              <td className="py-2 px-3 text-center text-[10px] text-slate-500 border-r border-slate-200">{idx + 1}</td>
+                              <td className="py-2 px-3 font-mono font-bold text-slate-900 border-r border-slate-200">{entry.item.sku}</td>
+                              <td className="py-2 px-3 font-medium text-slate-900 border-r border-slate-200">{entry.item.description}</td>
+                              <td className="py-2 px-3 font-mono font-bold text-amber-800 border-r border-slate-200">{entry.lot.lotNumber}</td>
+                              <td className="py-2 px-3 text-center text-slate-600 border-r border-slate-200">{entry.lot.manufactureDate || "-"}</td>
+                              <td className="py-2 px-3 text-center font-semibold text-slate-800 border-r border-slate-200">{entry.lot.expirationDate || "-"}</td>
+                              <td className="py-2 px-3 text-center font-mono font-bold text-slate-700 border-r border-slate-200">{entry.daysLeft !== null ? `${entry.daysLeft} d` : "-"}</td>
+                              <td className="py-2 px-3 text-center border-r border-slate-200">
+                                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                  entry.status === "vencido" ? "bg-rose-100 text-rose-800" : entry.status === "por-vencer" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                                }`}>
+                                  {entry.status === "vencido" ? "Vencido" : entry.status === "por-vencer" ? "Por Vencer" : "Vigente"}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 border-r border-slate-200">{entry.lot.quantity}</td>
+                              <td className="py-2 px-3 text-right font-mono text-slate-700 border-r border-slate-200">{formatCurrency(entry.item.cost)}</td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(lotVal)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr className="bg-slate-100 border-t-2 border-slate-800 font-bold text-slate-900">
+                          <td colSpan={8} className="py-3 px-3 text-right uppercase text-[11px] border-r border-slate-200">TOTALES LOTES:</td>
+                          <td className="py-3 px-3 text-right font-mono font-black text-sm border-r border-slate-200">{lotsStats.totalUnits.toLocaleString("es-HN")}</td>
+                          <td className="py-3 px-3 text-right font-mono text-xs border-r border-slate-200">-</td>
+                          <td className="py-3 px-3 text-right font-mono font-black text-sm text-[#1b426e]">{formatCurrency(lotsStats.totalCostValue)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )}
+
+                {/* SERIALS REPORT TABLE */}
+                {printReportType === "series" && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse border border-slate-300">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-slate-300 text-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                          <th className="py-2.5 px-3 w-8 text-center border-r border-slate-200">#</th>
+                          <th className="py-2.5 px-3 w-36 border-r border-slate-200">Número de Serie</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-slate-200">SKU</th>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Descripción del Artículo</th>
+                          <th className="py-2.5 px-3 w-24 border-r border-slate-200">Categoría</th>
+                          <th className="py-2.5 px-3 w-28 text-center border-r border-slate-200">Estado Serie</th>
+                          <th className="py-2.5 px-3 w-24 text-right border-r border-slate-200">Costo Unit.</th>
+                          <th className="py-2.5 px-3 w-24 text-right">Precio Venta</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-800">
+                        {reportSerialsItems.map((entry, idx) => (
+                          <tr key={entry.serial.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="py-2 px-3 text-center text-[10px] text-slate-500 border-r border-slate-200">{idx + 1}</td>
+                            <td className="py-2 px-3 font-mono font-bold text-purple-900 border-r border-slate-200">{entry.serial.serialNumber}</td>
+                            <td className="py-2 px-3 font-mono text-slate-900 border-r border-slate-200">{entry.item.sku}</td>
+                            <td className="py-2 px-3 font-medium text-slate-900 border-r border-slate-200">{entry.item.description}</td>
+                            <td className="py-2 px-3 text-slate-600 border-r border-slate-200">{entry.item.category || "-"}</td>
+                            <td className="py-2 px-3 text-center border-r border-slate-200">
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                entry.serial.status === "DISPONIBLE" ? "bg-emerald-100 text-emerald-800" : entry.serial.status === "VENDIDO" ? "bg-slate-200 text-slate-800" : "bg-amber-100 text-amber-800"
+                              }`}>
+                                {entry.serial.status}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono text-slate-700 border-r border-slate-200">{formatCurrency(entry.item.cost)}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(entry.item.price)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="bg-slate-100 border-t-2 border-slate-800 font-bold text-slate-900">
+                          <td colSpan={5} className="py-3 px-3 text-right uppercase text-[11px] border-r border-slate-200">TOTAL SERIES REGISTRADAS:</td>
+                          <td className="py-3 px-3 text-center font-mono font-black text-sm border-r border-slate-200">{serialsStats.totalSerials}</td>
+                          <td colSpan={2} className="py-3 px-3 text-center text-[11px] text-slate-600">
+                            {serialsStats.disponibles} disponibles • {serialsStats.vendidos} vendidas
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )}
+
+                {/* Formal Declarations & Audit Signatures */}
+                <div className="pt-6 border-t border-slate-200 space-y-8 break-inside-avoid">
+                  <p className="text-[11px] text-slate-500 italic text-justify leading-relaxed">
+                    Certificamos que el presente informe refleja fielmente las existencias físicas y valorizaciones monetarias
+                    asentadas en el sistema de gestión contable e inventarios al momento de su generación.
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-8 text-center text-xs pt-4">
+                    <div className="border-t border-slate-400 pt-2 space-y-0.5">
+                      <span className="font-bold text-slate-900 block">Responsable de Bodega / Almacén</span>
+                      <span className="text-slate-500 text-[10px] block">Control Físico y Custodia</span>
+                      <span className="text-slate-400 text-[9px]">Firma & Sello</span>
+                    </div>
+
+                    <div className="border-t border-slate-400 pt-2 space-y-0.5">
+                      <span className="font-bold text-slate-900 block">Contador General / Auditor</span>
+                      <span className="text-slate-500 text-[10px] block">Revisión y Cuadre Contable</span>
+                      <span className="text-slate-400 text-[9px]">Firma & Sello</span>
+                    </div>
+
+                    <div className="border-t border-slate-400 pt-2 space-y-0.5">
+                      <span className="font-bold text-slate-900 block">Gerencia General / Dirección</span>
+                      <span className="text-slate-500 text-[10px] block">Aprobación y Visto Bueno</span>
+                      <span className="text-slate-400 text-[9px]">Firma & Sello</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Notes */}
+                <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Prado ERP • Sistema Integrado de Planificación y Control de Recursos Empresariales</span>
+                  <span>Documento Confidencial para Uso Interno y Fiscal</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

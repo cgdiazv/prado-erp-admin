@@ -5636,6 +5636,8 @@ ${accountRowsHtml(equity)}
                 autoOpenCreate={inventoryAutoOpenCreate}
                 onAutoOpenCreateConsumed={() => setInventoryAutoOpenCreate(false)}
                 formatCurrency={formatCurrency}
+                companySettings={companySettings}
+                companyLogo={companyLogo}
               />
             </div>
           )}
