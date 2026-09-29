@@ -1984,7 +1984,6 @@ export function PurchasesModule({
                   <div className="flex justify-between items-start border-b-2 border-[#1b426e] pb-6 mb-6">
                     <div>
                       <h1 className="text-2xl font-black tracking-tight text-[#1b426e]">{companySettings.nombre}</h1>
-                      <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                       <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                       <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
                       <p className="text-slate-600 text-xs">Correo: {companySettings.email}</p>

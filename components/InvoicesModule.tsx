@@ -1032,7 +1032,6 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                 <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
                   <div>
                     <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>{companySettings.nombre}</h1>
-                    <p className="font-bold text-slate-900 text-sm mt-1">{companySettings.nombre}</p>
                     <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                     <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
                     <p className="text-slate-600 text-xs font-mono">CAI: {companySettings.cai}</p>
