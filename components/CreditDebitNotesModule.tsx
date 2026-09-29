@@ -380,7 +380,7 @@ export default function CreditDebitNotesModule({
 
   return (
     <>
-            <div className="space-y-5">
+            <div className="space-y-5 print:hidden">
               {/* ================= SCREEN HEADER ================= */}
               <div className="space-y-4 print:hidden">
                 <div className="flex items-center gap-3">
@@ -771,7 +771,9 @@ export default function CreditDebitNotesModule({
                 {/* Summary & Totals */}
                 <div className="flex justify-between items-start border-t border-slate-300 pt-4 mb-8">
                   <div className="max-w-md text-xs text-slate-600">
-                    <p><strong>Observaciones:</strong> {selectedPrintNote?.notes || "Ajuste registrado en el sistema contable Macola ERP."}</p>
+                    {selectedPrintNote?.notes ? (
+                      <p><strong>Observaciones:</strong> {selectedPrintNote.notes}</p>
+                    ) : null}
                   </div>
                   <div className="w-64 space-y-2 text-right text-xs font-sans">
                     <div className="flex justify-between text-slate-600 font-medium">
