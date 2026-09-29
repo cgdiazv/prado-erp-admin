@@ -309,6 +309,12 @@ export type CompanySettings = {
   cai?: string;
   rangoAutorizado?: string;
   fechaLimiteEmision?: string;
+  caiNotaCredito?: string;
+  rangoAutorizadoNotaCredito?: string;
+  fechaLimiteEmisionNotaCredito?: string;
+  caiNotaDebito?: string;
+  rangoAutorizadoNotaDebito?: string;
+  fechaLimiteEmisionNotaDebito?: string;
   tipoEmpresa?: string;
   domicilioLegal?: string;
   emailCliente?: string;

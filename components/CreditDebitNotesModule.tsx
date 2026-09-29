@@ -94,6 +94,39 @@ export default function CreditDebitNotesModule({
     return { symbol: effectiveCurrencySymbol, code: curr };
   };
 
+  // Función para obtener información fiscal (CAI, Rango Autorizado, Fecha Límite) según el tipo de nota
+  const getFiscalInfoForNote = (note?: CreditDebitNote | null) => {
+    if (note?.type === "CREDIT") {
+      const cai = (companySettings.caiNotaCredito && companySettings.caiNotaCredito !== "Ninguno indicado")
+        ? companySettings.caiNotaCredito
+        : companySettings.cai || "Ninguno indicado";
+      const rango = (companySettings.rangoAutorizadoNotaCredito && companySettings.rangoAutorizadoNotaCredito !== "Ninguno indicado")
+        ? companySettings.rangoAutorizadoNotaCredito
+        : companySettings.rangoAutorizado || "Ninguno indicado";
+      const fecha = (companySettings.fechaLimiteEmisionNotaCredito && companySettings.fechaLimiteEmisionNotaCredito !== "Ninguno indicado")
+        ? companySettings.fechaLimiteEmisionNotaCredito
+        : companySettings.fechaLimiteEmision || "Ninguno indicado";
+      return { cai, rangoAutorizado: rango, fechaLimiteEmision: fecha };
+    }
+    if (note?.type === "DEBIT") {
+      const cai = (companySettings.caiNotaDebito && companySettings.caiNotaDebito !== "Ninguno indicado")
+        ? companySettings.caiNotaDebito
+        : companySettings.cai || "Ninguno indicado";
+      const rango = (companySettings.rangoAutorizadoNotaDebito && companySettings.rangoAutorizadoNotaDebito !== "Ninguno indicado")
+        ? companySettings.rangoAutorizadoNotaDebito
+        : companySettings.rangoAutorizado || "Ninguno indicado";
+      const fecha = (companySettings.fechaLimiteEmisionNotaDebito && companySettings.fechaLimiteEmisionNotaDebito !== "Ninguno indicado")
+        ? companySettings.fechaLimiteEmisionNotaDebito
+        : companySettings.fechaLimiteEmision || "Ninguno indicado";
+      return { cai, rangoAutorizado: rango, fechaLimiteEmision: fecha };
+    }
+    return {
+      cai: companySettings.cai || "Ninguno indicado",
+      rangoAutorizado: companySettings.rangoAutorizado || "Ninguno indicado",
+      fechaLimiteEmision: companySettings.fechaLimiteEmision || "Ninguno indicado",
+    };
+  };
+
   // Estado interno para respuesta y actualización inmediata sin retrasos
   const [internalNotes, setInternalNotes] = useState<CreditDebitNote[]>(creditDebitNotes || []);
 
@@ -671,7 +704,7 @@ export default function CreditDebitNotesModule({
                     <h1 className="text-2xl font-black text-[#1b426e] tracking-tight">{companySettings.nombre}</h1>
                     <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                     <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
-                    <p className="text-slate-600 text-xs font-mono">CAI: {companySettings.cai}</p>
+                    <p className="text-slate-600 text-xs font-mono">CAI: {getFiscalInfoForNote(selectedPrintNote).cai}</p>
                     <p className="text-slate-600 text-xs">Correo: {companySettings.email}</p>
                   </div>
                   <div className="text-right">
@@ -766,11 +799,11 @@ export default function CreditDebitNotesModule({
                 <div className="mt-4 pt-3 border-t border-slate-300 flex justify-between items-center text-xs text-slate-700">
                   <div>
                     <span className="font-bold text-slate-900">Rango Autorizado: </span>
-                    <span className="font-mono">{companySettings.rangoAutorizado}</span>
+                    <span className="font-mono">{getFiscalInfoForNote(selectedPrintNote).rangoAutorizado}</span>
                   </div>
                   <div className="text-right">
                     <span className="font-bold text-slate-900">Fecha Límite de Emisión: </span>
-                    <span className="font-mono">{formatFechaLimite(companySettings.fechaLimiteEmision)}</span>
+                    <span className="font-mono">{formatFechaLimite(getFiscalInfoForNote(selectedPrintNote).fechaLimiteEmision)}</span>
                   </div>
                 </div>
 

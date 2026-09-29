@@ -119,6 +119,14 @@ model CompanySettings {
   cai                 String   @default("Ninguno indicado")
   rangoAutorizado     String   @default("Ninguno indicado")
   fechaLimiteEmision  String   @default("Ninguno indicado")
+  // Datos Fiscales SAR - Notas de Crédito
+  caiNotaCredito                 String   @default("Ninguno indicado")
+  rangoAutorizadoNotaCredito     String   @default("Ninguno indicado")
+  fechaLimiteEmisionNotaCredito String   @default("Ninguno indicado")
+  // Datos Fiscales SAR - Notas de Débito
+  caiNotaDebito                  String   @default("Ninguno indicado")
+  rangoAutorizadoNotaDebito      String   @default("Ninguno indicado")
+  fechaLimiteEmisionNotaDebito  String   @default("Ninguno indicado")
   tipoEmpresa         String   @default("Ninguno indicado")
   domicilioLegal      String   @default("")
   emailCliente        String   @default("")

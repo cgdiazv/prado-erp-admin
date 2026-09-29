@@ -565,6 +565,12 @@ export default function AdminDashboard() {
             cai: res.data.cai || "Ninguno indicado",
             rangoAutorizado: res.data.rangoAutorizado || "Ninguno indicado",
             fechaLimiteEmision: res.data.fechaLimiteEmision || "Ninguno indicado",
+            caiNotaCredito: res.data.caiNotaCredito || "Ninguno indicado",
+            rangoAutorizadoNotaCredito: res.data.rangoAutorizadoNotaCredito || "Ninguno indicado",
+            fechaLimiteEmisionNotaCredito: res.data.fechaLimiteEmisionNotaCredito || "Ninguno indicado",
+            caiNotaDebito: res.data.caiNotaDebito || "Ninguno indicado",
+            rangoAutorizadoNotaDebito: res.data.rangoAutorizadoNotaDebito || "Ninguno indicado",
+            fechaLimiteEmisionNotaDebito: res.data.fechaLimiteEmisionNotaDebito || "Ninguno indicado",
             tipoEmpresa: res.data.tipoEmpresa || "Ninguno indicado",
             domicilioLegal: res.data.domicilioLegal ?? "",
             emailCliente: res.data.emailCliente ?? "",
@@ -751,6 +757,12 @@ export default function AdminDashboard() {
     cai: "Ninguno indicado",
     rangoAutorizado: "Ninguno indicado",
     fechaLimiteEmision: "Ninguno indicado",
+    caiNotaCredito: "Ninguno indicado",
+    rangoAutorizadoNotaCredito: "Ninguno indicado",
+    fechaLimiteEmisionNotaCredito: "Ninguno indicado",
+    caiNotaDebito: "Ninguno indicado",
+    rangoAutorizadoNotaDebito: "Ninguno indicado",
+    fechaLimiteEmisionNotaDebito: "Ninguno indicado",
     tipoEmpresa: "Ninguno indicado",
     domicilioLegal: "",
     // Contacto del cliente
@@ -2019,8 +2031,8 @@ export default function AdminDashboard() {
     setEditingConfigLabel(label);
     setEditingConfigValue(companySettings[key] === "Ninguno indicado" ? "" : companySettings[key]);
 
-    if (key === "rangoAutorizado") {
-      const current = companySettings.rangoAutorizado || "";
+    if (key.includes("rangoAutorizado")) {
+      const current = companySettings[key] || "";
       const match = current.match(/DEL\s+([0-9]{3}-[0-9]{3}-[0-9]{2}-)\s*([0-9]{1,8})\s+AL\s+([0-9]{3}-[0-9]{3}-[0-9]{2}-)?\s*([0-9]{1,8})/i);
       if (match) {
         setRangoPrefijo(match[1]);
@@ -2028,13 +2040,13 @@ export default function AdminDashboard() {
         setRangoHasta(match[4].padStart(8, "0"));
       } else {
         setRangoPrefijo("000-001-01-");
-        setRangoDesde("00000661");
-        setRangoHasta("00000760");
+        setRangoDesde("00000001");
+        setRangoHasta("00050000");
       }
     }
 
-    if (key === "fechaLimiteEmision") {
-      const current = companySettings.fechaLimiteEmision || "";
+    if (key.includes("fechaLimiteEmision")) {
+      const current = companySettings[key] || "";
       const matchDmy = current.match(/^(\d{1,2})\s*[\/\-]\s*(\d{1,2})\s*[\/\-]\s*(\d{4})$/);
       if (matchDmy) {
         setEditingConfigValue(`${matchDmy[1].padStart(2, "0")} / ${matchDmy[2].padStart(2, "0")} / ${matchDmy[3]}`);
@@ -2069,7 +2081,7 @@ export default function AdminDashboard() {
       let updatedValue = editingConfigValue.trim() || "Ninguno indicado";
       const fieldKey = editingConfigKey;
 
-      if (fieldKey === "rangoAutorizado") {
+      if (fieldKey.includes("rangoAutorizado")) {
         const cleanDesde = (rangoDesde.replace(/\D/g, "") || "0").padStart(8, "0");
         const cleanHasta = (rangoHasta.replace(/\D/g, "") || "0").padStart(8, "0");
         const cleanPrefijo = rangoPrefijo.trim() || "000-001-01-";
@@ -2077,7 +2089,7 @@ export default function AdminDashboard() {
         updatedValue = `DEL ${prefWithDash}${cleanDesde} AL ${prefWithDash}${cleanHasta}`;
       }
 
-      if (fieldKey === "fechaLimiteEmision") {
+      if (fieldKey.includes("fechaLimiteEmision")) {
         const partsYmd = updatedValue.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
         if (partsYmd) {
           updatedValue = `${partsYmd[3].padStart(2, "0")}/${partsYmd[2].padStart(2, "0")}/${partsYmd[1]}`;
@@ -6317,43 +6329,142 @@ ${accountRowsHtml(equity)}
                               </button>
                             </div>
 
-                            <div className="py-3 flex items-start justify-between gap-4">
-                              <span className="w-40 font-semibold text-slate-800 shrink-0">CAI</span>
-                              <span className={`flex-1 font-mono font-medium ${!companySettings.cai || companySettings.cai === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
-                                {companySettings.cai || "Ninguno indicado"}
-                              </span>
-                              <button
-                                onClick={() => startEditConfig("cai", "Código de Autorización de Impresión (CAI)")}
-                                className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
-                              >
-                                Editar
-                              </button>
+                            {/* Subsección: Datos Fiscales SAR - Facturas */}
+                            <div className="pt-4 mt-2 border-t border-slate-200">
+                              <h3 className="font-bold text-xs text-[#1b426e] uppercase tracking-wider mb-2">
+                                Datos Fiscales SAR — Facturas
+                              </h3>
+                              
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">CAI</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.cai || companySettings.cai === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {companySettings.cai || "Ninguno indicado"}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("cai", "Código de Autorización de Impresión (CAI - Facturas)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">Rango Autorizado</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.rangoAutorizado || companySettings.rangoAutorizado === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {companySettings.rangoAutorizado || "Ninguno indicado"}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("rangoAutorizado", "Rango Autorizado (Facturas)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">Fecha Límite de Emisión</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.fechaLimiteEmision || companySettings.fechaLimiteEmision === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {formatFechaLimite(companySettings.fechaLimiteEmision)}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("fechaLimiteEmision", "Fecha Límite de Emisión (Facturas)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
                             </div>
 
-                            <div className="py-3 flex items-start justify-between gap-4">
-                              <span className="w-40 font-semibold text-slate-800 shrink-0">Rango Autorizado</span>
-                              <span className={`flex-1 font-mono font-medium ${!companySettings.rangoAutorizado || companySettings.rangoAutorizado === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
-                                {companySettings.rangoAutorizado || "Ninguno indicado"}
-                              </span>
-                              <button
-                                onClick={() => startEditConfig("rangoAutorizado", "Rango de Facturación Autorizado")}
-                                className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
-                              >
-                                Editar
-                              </button>
+                            {/* Subsección: Datos Fiscales SAR - Notas de Crédito */}
+                            <div className="pt-4 mt-2 border-t border-slate-200">
+                              <h3 className="font-bold text-xs text-[#1b426e] uppercase tracking-wider mb-2">
+                                Datos Fiscales SAR — Notas de Crédito
+                              </h3>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">CAI</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.caiNotaCredito || companySettings.caiNotaCredito === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {companySettings.caiNotaCredito || "Ninguno indicado"}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("caiNotaCredito", "CAI (Notas de Crédito)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">Rango Autorizado</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.rangoAutorizadoNotaCredito || companySettings.rangoAutorizadoNotaCredito === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {companySettings.rangoAutorizadoNotaCredito || "Ninguno indicado"}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("rangoAutorizadoNotaCredito", "Rango Autorizado (Notas de Crédito)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">Fecha Límite de Emisión</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.fechaLimiteEmisionNotaCredito || companySettings.fechaLimiteEmisionNotaCredito === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {formatFechaLimite(companySettings.fechaLimiteEmisionNotaCredito || "Ninguno indicado")}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("fechaLimiteEmisionNotaCredito", "Fecha Límite de Emisión (Notas de Crédito)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
                             </div>
 
-                            <div className="py-3 flex items-start justify-between gap-4">
-                              <span className="w-40 font-semibold text-slate-800 shrink-0">Fecha Límite de Emisión</span>
-                              <span className={`flex-1 font-mono font-medium ${!companySettings.fechaLimiteEmision || companySettings.fechaLimiteEmision === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
-                                {formatFechaLimite(companySettings.fechaLimiteEmision)}
-                              </span>
-                              <button
-                                onClick={() => startEditConfig("fechaLimiteEmision", "Fecha Límite de Emisión")}
-                                className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
-                              >
-                                Editar
-                              </button>
+                            {/* Subsección: Datos Fiscales SAR - Notas de Débito */}
+                            <div className="pt-4 mt-2 border-t border-slate-200">
+                              <h3 className="font-bold text-xs text-[#1b426e] uppercase tracking-wider mb-2">
+                                Datos Fiscales SAR — Notas de Débito
+                              </h3>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">CAI</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.caiNotaDebito || companySettings.caiNotaDebito === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {companySettings.caiNotaDebito || "Ninguno indicado"}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("caiNotaDebito", "CAI (Notas de Débito)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">Rango Autorizado</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.rangoAutorizadoNotaDebito || companySettings.rangoAutorizadoNotaDebito === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {companySettings.rangoAutorizadoNotaDebito || "Ninguno indicado"}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("rangoAutorizadoNotaDebito", "Rango Autorizado (Notas de Débito)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
+
+                              <div className="py-2.5 flex items-start justify-between gap-4">
+                                <span className="w-40 font-semibold text-slate-800 shrink-0">Fecha Límite de Emisión</span>
+                                <span className={`flex-1 font-mono font-medium ${!companySettings.fechaLimiteEmisionNotaDebito || companySettings.fechaLimiteEmisionNotaDebito === "Ninguno indicado" ? "text-slate-400 italic" : "text-slate-700"}`}>
+                                  {formatFechaLimite(companySettings.fechaLimiteEmisionNotaDebito || "Ninguno indicado")}
+                                </span>
+                                <button
+                                  onClick={() => startEditConfig("fechaLimiteEmisionNotaDebito", "Fecha Límite de Emisión (Notas de Débito)")}
+                                  className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer shrink-0"
+                                >
+                                  Editar
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -11053,7 +11164,7 @@ ${accountRowsHtml(equity)}
 
                       <div className="mb-5">
                         <label className="block text-xs font-semibold text-slate-700 mb-1.5">{editingConfigLabel}</label>
-                        {editingConfigKey === "rangoAutorizado" ? (
+                        {editingConfigKey?.includes("rangoAutorizado") ? (
                           <div className="space-y-4">
                             <p className="text-[11px] text-slate-500 leading-relaxed">
                               Ingresa los últimos <strong>8 dígitos</strong> de cada parte autorizada por el SAR (el prefijo fiscal se asigna automáticamente):
@@ -11116,7 +11227,7 @@ ${accountRowsHtml(equity)}
                               </span>
                             </div>
                           </div>
-                        ) : editingConfigKey === "fechaLimiteEmision" ? (
+                        ) : editingConfigKey?.includes("fechaLimiteEmision") ? (
                           <div className="space-y-3">
                             <p className="text-[11px] text-slate-500">
                               Selecciona la fecha límite de emisión autorizada por el SAR:
