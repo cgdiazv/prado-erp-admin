@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -26,12 +26,14 @@ export interface InvoicesModuleProps {
   salesSettings: any;
   companyLogo?: string | null;
   defaultCurrencySymbol?: string;
+  defaultCurrencyCode?: string;
   loading?: boolean;
   onNavigateToDashboard: () => void;
   onNavigateToSettings?: () => void;
   onOpenInvoiceEditor: (invoice?: any) => void;
   onCloseInvoiceEditor: () => void;
   onRefreshAccounts?: () => void;
+  onReceivePayment?: (invoice: Invoice) => void;
 }
 
 export const numberToWordsSpanish = (amount: number, currencySymbol = "$"): string => {
@@ -138,13 +140,58 @@ export function InvoicesModule({
   salesSettings,
   companyLogo,
   defaultCurrencySymbol = "$",
+  defaultCurrencyCode = "USD",
   loading = false,
   onNavigateToDashboard,
   onNavigateToSettings,
   onOpenInvoiceEditor,
   onCloseInvoiceEditor,
   onRefreshAccounts,
+  onReceivePayment,
 }: InvoicesModuleProps) {
+  // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
+  const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
+    if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
+      return { effectiveCurrencySymbol: defaultCurrencySymbol, effectiveCurrencyCode: defaultCurrencyCode };
+    }
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("wayne_monedas_settings") : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const main = parsed?.monedaPrincipal || "";
+        if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) {
+          return { effectiveCurrencySymbol: "L", effectiveCurrencyCode: "HNL" };
+        }
+        if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) {
+          return { effectiveCurrencySymbol: "€", effectiveCurrencyCode: "EUR" };
+        }
+        if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) {
+          return { effectiveCurrencySymbol: "$", effectiveCurrencyCode: "USD" };
+        }
+      }
+    } catch { }
+    return {
+      effectiveCurrencySymbol: defaultCurrencySymbol || "$",
+      effectiveCurrencyCode: defaultCurrencyCode || (defaultCurrencySymbol === "L" ? "HNL" : defaultCurrencySymbol === "€" ? "EUR" : "USD"),
+    };
+  }, [defaultCurrencySymbol, defaultCurrencyCode]);
+
+  const getInvoiceCurrency = (fact: Invoice) => {
+    const curr = fact?.currency;
+    if (!curr) return { symbol: effectiveCurrencySymbol, code: effectiveCurrencyCode };
+    const upper = curr.trim().toUpperCase();
+    if (upper === "HNL" || upper === "L" || upper.includes("LEMPIRA")) {
+      return { symbol: "L", code: "HNL" };
+    }
+    if (upper === "EUR" || upper === "€" || upper.includes("EURO")) {
+      return { symbol: "€", code: "EUR" };
+    }
+    if (upper === "USD" || upper === "$" || upper.includes("DÓLAR") || upper.includes("DOLAR")) {
+      return { symbol: "$", code: "USD" };
+    }
+    return { symbol: curr.length <= 3 ? curr : effectiveCurrencySymbol, code: upper };
+  };
+
   // Search query for the invoice list view
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -258,7 +305,7 @@ export function InvoicesModule({
         customerAddress: matchedCust?.address || "",
         deliveredTo: editingInvoice.customer || "",
         deliveryAddress: matchedCust?.address || "",
-        currency: editingInvoice.currency || defaultCurrencySymbol,
+        currency: editingInvoice.currency || effectiveCurrencySymbol,
         status: editingInvoice.status || "Pendiente",
         discount: 0,
         importeExonerado: 0,
@@ -290,7 +337,7 @@ export function InvoicesModule({
         customerAddress: "",
         deliveredTo: "",
         deliveryAddress: "",
-        currency: defaultCurrencySymbol,
+        currency: effectiveCurrencySymbol,
         status: "Pendiente",
         discount: 0,
         importeExonerado: 0,
@@ -372,7 +419,7 @@ export function InvoicesModule({
   };
 
   // Calculations for editor
-  const invoiceCurrencySymbol = invoiceForm.currency || defaultCurrencySymbol;
+  const invoiceCurrencySymbol = invoiceForm.currency || effectiveCurrencySymbol;
   const invoiceGrossSubtotal = invoiceForm.lines.reduce((sum, line) => sum + (line.amount || 0), 0);
   const invoiceDiscount = Number(invoiceForm.discount || 0);
   const invoiceNetBase = Math.max(0, invoiceGrossSubtotal - invoiceDiscount);
@@ -793,10 +840,10 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      ${totalFacturado.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{totalFacturado.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">USD en facturación comercial</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{effectiveCurrencyCode} en facturación comercial</p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
                 </div>
 
@@ -812,7 +859,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
-                      ${totalCobradas.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{totalCobradas.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-600 font-medium mt-1">{facturasCobradas.length} facturas pagadas</p>
@@ -831,7 +878,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-[#1b426e] tracking-tight">
-                      ${totalPendientes.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{totalPendientes.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">{facturasPendientes.length} factura pendiente</p>
@@ -898,36 +945,61 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <td className="py-3.5 px-4 font-sans text-slate-600">{fact.date}</td>
                             <td className="py-3.5 px-4 font-bold font-sans text-slate-900">{fact.customer}</td>
                             <td className="py-3.5 px-4 font-sans text-slate-500">{fact.due}</td>
-                            <td className="py-3.5 px-4 text-right font-bold text-slate-900">${fact.total.toFixed(2)} USD</td>
+                            <td className="py-3.5 px-4 text-right font-bold text-slate-900">
+                              {getInvoiceCurrency(fact).symbol}{fact.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })} {getInvoiceCurrency(fact).code}
+                            </td>
                             <td className="py-3.5 px-4 text-center font-sans">
-                              <select
-                                value={fact.status}
-                                onChange={(e) => handleUpdateInvoiceStatus(fact.num, e.target.value)}
-                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer appearance-none outline-none border transition ${
-                                  fact.status === "Cobrada"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                                    : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                                  fact.status === "Cobrada" || fact.status === "Pagada"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : fact.status === "Anulada"
+                                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                                    : "bg-amber-50 text-amber-700 border-amber-200"
                                 }`}
                               >
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="Cobrada">Cobrada</option>
-                              </select>
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    fact.status === "Cobrada" || fact.status === "Pagada"
+                                      ? "bg-emerald-500"
+                                      : fact.status === "Anulada"
+                                      ? "bg-rose-500"
+                                      : "bg-amber-500 animate-pulse"
+                                  }`}
+                                />
+                                <span>{fact.status === "Cobrada" || fact.status === "Pagada" ? "Cobrada" : fact.status === "Anulada" ? "Anulada" : "Pendiente"}</span>
+                              </span>
                             </td>
                             <td className="py-3.5 px-4 text-right font-sans">
-                              <div className="flex items-center justify-end gap-2">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {fact.status !== "Cobrada" && fact.status !== "Pagada" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onReceivePayment && onReceivePayment(fact)}
+                                    className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-900 border border-emerald-200 transition cursor-pointer shadow-2xs"
+                                    title="Recibir pago"
+                                    aria-label="Recibir pago"
+                                  >
+                                    <DollarSign className="w-4 h-4" />
+                                  </button>
+                                )}
                                 <button
                                   type="button"
                                   onClick={() => onOpenInvoiceEditor(fact)}
-                                  className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer transition text-[11px]"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
+                                  title="Editar factura"
+                                  aria-label="Editar factura"
                                 >
-                                  Editar / Ver
+                                  <Pencil className="w-4 h-4" />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => window.print()}
-                                  className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold cursor-pointer transition text-[11px]"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
+                                  title="Imprimir factura"
+                                  aria-label="Imprimir factura"
                                 >
-                                  Imprimir
+                                  <Printer className="w-4 h-4" />
                                 </button>
                               </div>
                             </td>
@@ -1234,7 +1306,31 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                 </div>
 
                 {/* Top Right Action Links */}
-                <div className="flex items-center gap-4 text-xs font-medium text-slate-600">
+                <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
+                  {editingInvoice && invoiceForm.status !== "Cobrada" && invoiceForm.status !== "Pagada" && onReceivePayment && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onCloseInvoiceEditor();
+                        onReceivePayment({
+                          num: invoiceForm.invoiceNumber,
+                          customer: invoiceForm.customerName,
+                          total: invoiceTotal,
+                          status: invoiceForm.status,
+                          date: invoiceForm.invoiceDate,
+                          due: invoiceForm.dueDate,
+                          paymentTerms: invoiceForm.paymentTerms,
+                          customerEmail: invoiceForm.customerEmail,
+                          lines: invoiceForm.lines,
+                        });
+                      }}
+                      className="flex items-center gap-1.5 cursor-pointer font-bold text-xs px-3 py-1.5 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white shadow-xs transition"
+                      title="Registrar cobro para esta factura"
+                    >
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Recibir Pago</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowInvoiceOptionsSidebar(!showInvoiceOptionsSidebar)}
@@ -1390,18 +1486,27 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
 
                           <div>
                             <label className="block font-semibold text-slate-700 mb-1">Estado de cobro</label>
-                            <select
-                              value={invoiceForm.status || "Pendiente"}
-                              onChange={(e) => setInvoiceForm({ ...invoiceForm, status: e.target.value })}
-                              className={`w-full px-3 py-1.5 rounded-xl font-bold text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer border ${
-                                invoiceForm.status === "Cobrada"
+                            <div
+                              className={`w-full px-3 py-1.5 rounded-xl font-bold text-xs border flex items-center justify-between ${
+                                invoiceForm.status === "Cobrada" || invoiceForm.status === "Pagada"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-300"
                                   : "bg-amber-50 text-amber-700 border-amber-300"
                               }`}
                             >
-                              <option value="Pendiente">● Pendiente de cobro</option>
-                              <option value="Cobrada">✓ Cobrada / Pagada</option>
-                            </select>
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  className={`w-2 h-2 rounded-full ${
+                                    invoiceForm.status === "Cobrada" || invoiceForm.status === "Pagada"
+                                      ? "bg-emerald-500"
+                                      : "bg-amber-500 animate-pulse"
+                                  }`}
+                                />
+                                <span>{invoiceForm.status === "Cobrada" || invoiceForm.status === "Pagada" ? "Cobrada" : "Pendiente"}</span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                Vía Recibir Pago
+                              </span>
+                            </div>
                           </div>
 
                           <div>
@@ -1667,13 +1772,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <div>
                               <label className="block text-[11px] font-bold text-slate-700 mb-1">Moneda</label>
                               <select
-                                value={invoiceForm.currency || defaultCurrencySymbol}
+                                value={invoiceForm.currency || effectiveCurrencySymbol}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, currency: e.target.value })}
                                 className="w-full px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-800 font-bold"
                               >
-                                <option value="L">Lempiras (L){defaultCurrencySymbol === "L" ? " — Predeterminada" : ""}</option>
-                                <option value="$">Dólares ($){defaultCurrencySymbol === "$" ? " — Predeterminada" : ""}</option>
-                                <option value="€">Euros (€){defaultCurrencySymbol === "€" ? " — Predeterminada" : ""}</option>
+                                <option value="L">Lempiras (L){effectiveCurrencySymbol === "L" ? " — Predeterminada" : ""}</option>
+                                <option value="$">Dólares ($){effectiveCurrencySymbol === "$" ? " — Predeterminada" : ""}</option>
+                                <option value="€">Euros (€){effectiveCurrencySymbol === "€" ? " — Predeterminada" : ""}</option>
                               </select>
                             </div>
                             <div>

@@ -170,6 +170,7 @@ export type Invoice = {
   due: string;
   total: number;
   status: string;
+  currency?: string;
   paymentTerms?: string;
   customerEmail?: string;
   lines?: InvoiceLine[];

@@ -29,6 +29,7 @@ import {
 export interface CashMovementsModuleProps {
   currentView: "deposito-bancario" | "agregar-gasto" | "pagar-proveedor" | "recibir-pago";
   initialRecibirPagoCustomerId?: string | null;
+  initialRecibirPagoInvoiceNumber?: string | null;
   initialPagarProveedorVendor?: string | null;
   connectedBanks: BankAccount[];
   customers: Customer[];
@@ -45,6 +46,7 @@ export interface CashMovementsModuleProps {
 export function CashMovementsModule({
   currentView,
   initialRecibirPagoCustomerId,
+  initialRecibirPagoInvoiceNumber,
   initialPagarProveedorVendor,
   connectedBanks,
   customers,
@@ -550,6 +552,7 @@ export function CashMovementsModule({
     paymentDate: new Date().toISOString().split("T")[0],
     paymentMethod: "Efectivo",
     referenceNumber: "",
+    invoiceNumber: "",
     depositAccount: "Cash and cash equivalents",
     amount: 0,
     note: "",
@@ -569,18 +572,49 @@ export function CashMovementsModule({
   const paymentFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (initialRecibirPagoInvoiceNumber) {
+      const match = invoicesList.find(
+        (i) => i.num.toLowerCase() === initialRecibirPagoInvoiceNumber.trim().toLowerCase()
+      );
+      if (match) {
+        const foundCustomer = customers.find(
+          (c) => c.name.toLowerCase().includes(match.customer.toLowerCase()) || match.customer.toLowerCase().includes(c.name.toLowerCase())
+        );
+        setRecibirPagoForm((prev) => ({
+          ...prev,
+          customerId: foundCustomer ? foundCustomer.id : "",
+          customerName: match.customer,
+          customerEmail: match.customerEmail || foundCustomer?.email || "",
+          invoiceNumber: match.num,
+          amount: match.total,
+          referenceNumber: `FAC-${match.num}`,
+          note: `Pago asignado a la Factura N.º ${match.num}`,
+        }));
+        setRecibirPagoSuccessMsg(`¡Factura N.º ${match.num} vinculada con éxito!`);
+        return;
+      }
+    }
     if (initialRecibirPagoCustomerId) {
       const selected = customers.find((c) => c.id === initialRecibirPagoCustomerId);
       if (selected) {
+        const pendingInvoice = invoicesList.find(
+          (inv) =>
+            (inv.customer.toLowerCase() === selected.name.toLowerCase() ||
+              (selected.email && inv.customerEmail?.toLowerCase() === selected.email.toLowerCase())) &&
+            (inv.status === "Pendiente" || inv.status === "Emitida")
+        );
         setRecibirPagoForm((prev) => ({
           ...prev,
           customerId: selected.id,
           customerName: selected.name,
           customerEmail: selected.email || "",
+          invoiceNumber: pendingInvoice ? pendingInvoice.num : prev.invoiceNumber,
+          amount: pendingInvoice ? pendingInvoice.total : prev.amount,
+          referenceNumber: pendingInvoice ? `FAC-${pendingInvoice.num}` : prev.referenceNumber,
         }));
       }
     }
-  }, [initialRecibirPagoCustomerId, customers]);
+  }, [initialRecibirPagoInvoiceNumber, initialRecibirPagoCustomerId, customers, invoicesList]);
 
   const handleRequestCancelRecibirPago = () => {
     if (
@@ -612,17 +646,27 @@ export function CashMovementsModule({
   const handleRecibirPagoCustomerChange = (custNameOrId: string) => {
     const selected = customers.find((c) => c.id === custNameOrId || c.name === custNameOrId);
     if (selected) {
+      const pendingInvoice = invoicesList.find(
+        (inv) =>
+          (inv.customer.toLowerCase() === selected.name.toLowerCase() ||
+            (selected.email && inv.customerEmail?.toLowerCase() === selected.email.toLowerCase())) &&
+          (inv.status === "Pendiente" || inv.status === "Emitida")
+      );
       setRecibirPagoForm((prev) => ({
         ...prev,
         customerId: selected.id,
         customerName: selected.name,
         customerEmail: selected.email || "",
+        invoiceNumber: pendingInvoice ? pendingInvoice.num : "",
+        amount: pendingInvoice ? pendingInvoice.total : prev.amount,
+        referenceNumber: pendingInvoice ? `FAC-${pendingInvoice.num}` : prev.referenceNumber,
       }));
     } else {
       setRecibirPagoForm((prev) => ({
         ...prev,
         customerId: "",
         customerName: custNameOrId,
+        invoiceNumber: "",
       }));
     }
   };
@@ -642,6 +686,7 @@ export function CashMovementsModule({
         customerId: foundCustomer ? foundCustomer.id : "",
         customerName: match.customer,
         customerEmail: match.customerEmail || foundCustomer?.email || "",
+        invoiceNumber: match.num,
         amount: match.total,
         referenceNumber: `FAC-${match.num}`,
         note: `Pago asignado a la Factura N.º ${match.num}`,
@@ -692,6 +737,7 @@ export function CashMovementsModule({
             ...prev,
             amount: 0,
             referenceNumber: "",
+            invoiceNumber: "",
             note: "",
           }));
         }, 1500);
@@ -2071,15 +2117,38 @@ export function CashMovementsModule({
                           </label>
                         </div>
 
-                        {/* Buscar por n.º de factura button (3 cols) */}
+                        {/* Buscar por n.º de factura button / Factura vinculada (3 cols) */}
                         <div className="sm:col-span-3 pt-6 sm:pt-6">
-                          <button
-                            type="button"
-                            onClick={() => setShowInvoiceSearchModal(true)}
-                            className="w-full px-3 py-2 rounded-lg border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] font-semibold text-xs transition cursor-pointer text-center whitespace-nowrap"
-                          >
-                            Buscar por n.º de factura
-                          </button>
+                          {recibirPagoForm.invoiceNumber ? (
+                            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-300 text-xs shadow-xs">
+                              <div className="truncate">
+                                <span className="text-[10px] text-emerald-600 block uppercase font-bold tracking-wider leading-none">Factura</span>
+                                <span className="font-bold text-emerald-900 leading-tight">#{recibirPagoForm.invoiceNumber}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setRecibirPagoForm((prev) => ({
+                                    ...prev,
+                                    invoiceNumber: "",
+                                    referenceNumber: "",
+                                  }))
+                                }
+                                className="text-slate-400 hover:text-rose-600 font-bold ml-1.5 cursor-pointer text-base leading-none p-1 rounded hover:bg-rose-50 transition"
+                                title="Desvincular factura"
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setShowInvoiceSearchModal(true)}
+                              className="w-full px-3 py-2 rounded-lg border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] font-semibold text-xs transition cursor-pointer text-center whitespace-nowrap"
+                            >
+                              Buscar por n.º de factura
+                            </button>
+                          )}
                         </div>
                       </div>
 

@@ -106,6 +106,37 @@ export default function InventoryModule({
     }
   }, [companySettings, internalCompanyLogo]);
 
+  // Símbolo de moneda dinámico tomado de la configuración del sistema
+  const currencySymbol = useMemo(() => {
+    try {
+      const formatted = formatCurrency(0);
+      const symbolMatch = formatted.match(/^([^\d\s-]+)/);
+      if (symbolMatch && symbolMatch[1]) {
+        return symbolMatch[1];
+      }
+    } catch {}
+    try {
+      const appSettings: any = internalCompanySettings?.appSettings;
+      const main = appSettings?.monedas?.monedaPrincipal || "";
+      if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) return "L";
+      if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) return "€";
+      if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) return "$";
+    } catch {}
+    try {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("wayne_monedas_settings");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const main = parsed?.monedaPrincipal || "";
+          if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) return "L";
+          if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) return "€";
+          if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) return "$";
+        }
+      }
+    } catch {}
+    return "$";
+  }, [formatCurrency, internalCompanySettings]);
+
   // Printable Report State & Configuration
   const [showPrintReportModal, setShowPrintReportModal] = useState(false);
   const [printReportType, setPrintReportType] = useState<"inventario" | "lotes" | "series">("inventario");
@@ -2165,7 +2196,7 @@ export default function InventoryModule({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Costo Unitario ($)</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Costo Unitario ({currencySymbol})</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2176,7 +2207,7 @@ export default function InventoryModule({
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Precio de Venta ($)</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Precio de Venta ({currencySymbol})</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2420,7 +2451,7 @@ export default function InventoryModule({
                       <div className="space-y-3 pl-6 border-l-2 border-slate-200">
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">
-                            Precio de venta ($)
+                            Precio de venta ({currencySymbol})
                           </label>
                           <input
                             type="number"
@@ -2507,7 +2538,7 @@ export default function InventoryModule({
                       <div className="space-y-3 pl-6 border-l-2 border-slate-200">
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">
-                            Costo de compra ($)
+                            Costo de compra ({currencySymbol})
                           </label>
                           <input
                             type="number"

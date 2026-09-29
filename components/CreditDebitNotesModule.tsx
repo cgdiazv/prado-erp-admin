@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { CreditDebitNote, Customer, Vendor, CompanySettings } from "@/types/dashboard";
-import { CheckCircle2, FileText, Search } from "lucide-react";
+import { CheckCircle2, FileText, Search, Printer, Pencil, Trash2 } from "lucide-react";
 
 export interface CreditDebitNotesModuleProps {
   creditDebitNotes: CreditDebitNote[];
   customers: Customer[];
   vendors: Vendor[];
   companySettings: CompanySettings;
+  defaultCurrencySymbol?: string;
+  defaultCurrencyCode?: string;
   loading?: boolean;
   onNavigateToDashboard: () => void;
   onRefreshNotes?: () => Promise<void> | void;
@@ -32,6 +34,8 @@ export default function CreditDebitNotesModule({
   customers,
   vendors,
   companySettings,
+  defaultCurrencySymbol: propCurrencySymbol,
+  defaultCurrencyCode: propCurrencyCode,
   loading = false,
   onNavigateToDashboard,
   onRefreshNotes,
@@ -41,9 +45,85 @@ export default function CreditDebitNotesModule({
   const [notasSearch, setNotasSearch] = useState("");
 
   const [showNoteModal, setShowNoteModal] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteLoading, setNoteLoading] = useState(false);
   const [noteError, setNoteError] = useState("");
   const [noteSuccess, setNoteSuccess] = useState("");
+
+  // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
+  const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
+    if (propCurrencySymbol && propCurrencyCode) {
+      return { effectiveCurrencySymbol: propCurrencySymbol, effectiveCurrencyCode: propCurrencyCode };
+    }
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("wayne_monedas_settings") : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const main = parsed?.monedaPrincipal || "";
+        if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) {
+          return { effectiveCurrencySymbol: "L", effectiveCurrencyCode: "HNL" };
+        }
+        if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) {
+          return { effectiveCurrencySymbol: "€", effectiveCurrencyCode: "EUR" };
+        }
+        if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) {
+          return { effectiveCurrencySymbol: "$", effectiveCurrencyCode: "USD" };
+        }
+      }
+    } catch { }
+    return {
+      effectiveCurrencySymbol: propCurrencySymbol || "$",
+      effectiveCurrencyCode: propCurrencyCode || "USD",
+    };
+  }, [propCurrencySymbol, propCurrencyCode]);
+
+  // Función para obtener símbolo y código de cualquier nota
+  const getNoteCurrency = (note?: CreditDebitNote | null) => {
+    const curr = note?.currency;
+    if (!curr) return { symbol: effectiveCurrencySymbol, code: effectiveCurrencyCode };
+    const upper = curr.trim().toUpperCase();
+    if (upper === "HNL" || upper === "L" || upper.includes("LEMPIRA")) {
+      return { symbol: "L", code: "HNL" };
+    }
+    if (upper === "EUR" || upper === "€" || upper.includes("EURO")) {
+      return { symbol: "€", code: "EUR" };
+    }
+    if (upper === "USD" || upper === "$" || upper.includes("DÓLAR") || upper.includes("DOLAR")) {
+      return { symbol: "$", code: "USD" };
+    }
+    return { symbol: effectiveCurrencySymbol, code: curr };
+  };
+
+  // Estado interno para respuesta y actualización inmediata sin retrasos
+  const [internalNotes, setInternalNotes] = useState<CreditDebitNote[]>(creditDebitNotes || []);
+
+  useEffect(() => {
+    if (Array.isArray(creditDebitNotes)) {
+      setInternalNotes(creditDebitNotes);
+    }
+  }, [creditDebitNotes]);
+
+  // Generador inteligente del siguiente correlativo
+  const getNextNoteNumber = (type: "CREDIT" | "DEBIT", notes: CreditDebitNote[]): string => {
+    const prefix = type === "CREDIT" ? "NC" : "ND";
+    const year = new Date().getFullYear();
+    let maxSeq = 0;
+    notes.forEach((n) => {
+      if (n.type === type && n.noteNumber) {
+        const match = n.noteNumber.match(/(\d+)(?!.*\d)/);
+        if (match && match[1]) {
+          const val = parseInt(match[1], 10);
+          if (!isNaN(val) && val > maxSeq) {
+            maxSeq = val;
+          }
+        }
+      }
+    });
+    const typeCount = notes.filter((n) => n.type === type).length;
+    const nextSeq = Math.max(maxSeq + 1, typeCount + 1);
+    return `${prefix}-${year}-${String(nextSeq).padStart(3, "0")}`;
+  };
+
   const [noteForm, setNoteForm] = useState({
     noteNumber: "",
     type: "CREDIT" as "CREDIT" | "DEBIT",
@@ -56,10 +136,33 @@ export default function CreditDebitNotesModule({
     amount: 0,
     tax: 0,
     total: 0,
-    currency: "USD",
+    currency: effectiveCurrencyCode,
     status: "APLICADA",
     notes: "",
   });
+
+  // Mantener moneda predeterminada actualizada si cambia la configuración
+  useEffect(() => {
+    if (!showNoteModal && !editingNoteId) {
+      setNoteForm((prev) => ({ ...prev, currency: effectiveCurrencyCode }));
+    }
+  }, [effectiveCurrencyCode, showNoteModal, editingNoteId]);
+
+  // Símbolo y código para el formulario modal actual
+  const formCurrencyInfo = useMemo(() => {
+    const curr = noteForm.currency || effectiveCurrencyCode;
+    const upper = curr.trim().toUpperCase();
+    if (upper === "HNL" || upper === "L" || upper.includes("LEMPIRA")) {
+      return { symbol: "L", code: "HNL" };
+    }
+    if (upper === "EUR" || upper === "€" || upper.includes("EURO")) {
+      return { symbol: "€", code: "EUR" };
+    }
+    if (upper === "USD" || upper === "$" || upper.includes("DÓLAR") || upper.includes("DOLAR")) {
+      return { symbol: "$", code: "USD" };
+    }
+    return { symbol: effectiveCurrencySymbol, code: curr };
+  }, [noteForm.currency, effectiveCurrencyCode, effectiveCurrencySymbol]);
 
   useEffect(() => {
     const handleAfterPrint = () => {
@@ -70,7 +173,7 @@ export default function CreditDebitNotesModule({
   }, []);
 
   const filteredCreditDebitNotes = useMemo(() => {
-    return creditDebitNotes.filter((note) => {
+    return internalNotes.filter((note) => {
       const q = notasSearch.toLowerCase();
       const matchesSearch =
         !q ||
@@ -88,7 +191,7 @@ export default function CreditDebitNotesModule({
 
       return matchesSearch && matchesFilter;
     });
-  }, [creditDebitNotes, notasSearch, notasFilter]);
+  }, [internalNotes, notasSearch, notasFilter]);
 
   const handlePrintNote = (note: CreditDebitNote) => {
     setSelectedPrintNote(note);
@@ -98,12 +201,13 @@ export default function CreditDebitNotesModule({
   };
 
   const openCreateNoteModal = () => {
+    setEditingNoteId(null);
     setNoteError("");
     setNoteSuccess("");
     const isCredit = noteForm.type === "CREDIT";
-    const prefix = isCredit ? "NC" : "ND";
+    const nextNum = getNextNoteNumber(isCredit ? "CREDIT" : "DEBIT", internalNotes);
     setNoteForm({
-      noteNumber: `${prefix}-2026-00${creditDebitNotes.length + 1}`,
+      noteNumber: nextNum,
       type: "CREDIT",
       entityType: "CUSTOMER",
       entityId: "",
@@ -114,11 +218,62 @@ export default function CreditDebitNotesModule({
       amount: 0,
       tax: 0,
       total: 0,
-      currency: "USD",
+      currency: effectiveCurrencyCode,
       status: "APLICADA",
       notes: "",
     });
     setShowNoteModal(true);
+  };
+
+  const openEditNoteModal = (note: CreditDebitNote) => {
+    setEditingNoteId(note.id);
+    setNoteError("");
+    setNoteSuccess("");
+    setNoteForm({
+      noteNumber: note.noteNumber,
+      type: note.type,
+      entityType: note.entityType,
+      entityId: note.entityId || "",
+      entityName: note.entityName,
+      targetDocNum: note.targetDocNum || "",
+      issueDate: note.issueDate || new Date().toISOString().split("T")[0],
+      reason: note.reason,
+      amount: note.amount,
+      tax: note.tax,
+      total: note.total,
+      currency: note.currency || effectiveCurrencyCode,
+      status: note.status,
+      notes: note.notes || "",
+    });
+    setShowNoteModal(true);
+  };
+
+  const triggerRefresh = async () => {
+    if (onRefreshNotes) {
+      try {
+        await onRefreshNotes();
+      } catch {}
+    }
+  };
+
+  const handleDeleteNote = async (id: string, num: string) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar la nota ${num}?`)) return;
+    try {
+      // Actualización optimista inmediata
+      setInternalNotes((prev) => prev.filter((n) => n.id !== id));
+      const res = await fetch(`/api/credit-debit-notes/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        triggerRefresh();
+      } else {
+        alert(data.error || "No se pudo eliminar la nota.");
+        // Si falló, refrescar para restaurar estado real
+        triggerRefresh();
+      }
+    } catch (err: any) {
+      alert(err.message || "Error al eliminar la nota.");
+      triggerRefresh();
+    }
   };
 
   const handleSaveNote = async (e: React.FormEvent) => {
@@ -134,19 +289,50 @@ export default function CreditDebitNotesModule({
     }
 
     try {
-      const res = await fetch("/api/credit-debit-notes", {
-        method: "POST",
+      const url = editingNoteId ? `/api/credit-debit-notes/${editingNoteId}` : "/api/credit-debit-notes";
+      const method = editingNoteId ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(noteForm),
       });
       const data = await res.json();
-      if (data.success) {
-        setNoteSuccess(`¡${noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"} ${noteForm.noteNumber} guardada correctamente!`);
-        if (onRefreshNotes) {
-          await onRefreshNotes();
-        }
+      if (data.success && data.data) {
+        const savedNote: CreditDebitNote = data.data;
+
+        // Actualización optimista inmediata en la tabla
+        setInternalNotes((prev) => {
+          if (editingNoteId) {
+            return prev.map((n) => (n.id === savedNote.id ? savedNote : n));
+          }
+          const exists = prev.some((n) => n.id === savedNote.id || n.noteNumber === savedNote.noteNumber);
+          if (exists) {
+            return prev.map((n) => (n.id === savedNote.id || n.noteNumber === savedNote.noteNumber ? savedNote : n));
+          }
+          return [savedNote, ...prev];
+        });
+
+        setNoteSuccess(
+          `¡${savedNote.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"} ${savedNote.noteNumber} ${
+            editingNoteId ? "actualizada" : "guardada"
+          } correctamente!`
+        );
+
+        // Consultar directamente endpoint para sincronizar
+        fetch("/api/credit-debit-notes")
+          .then((r) => r.json())
+          .then((d) => {
+            if (d?.success && Array.isArray(d.data)) {
+              setInternalNotes(d.data);
+            }
+          })
+          .catch(() => {});
+
+        triggerRefresh();
+
         setTimeout(() => {
           setShowNoteModal(false);
+          setEditingNoteId(null);
           setNoteSuccess("");
         }, 1200);
       } else {
@@ -219,7 +405,7 @@ export default function CreditDebitNotesModule({
                     </div>
                   </div>
                   <div className="mt-2">
-                    <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{creditDebitNotes.length}</span>
+                    <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{internalNotes.length}</span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">documentos registrados</p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-400" />
@@ -239,14 +425,15 @@ export default function CreditDebitNotesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
-                      ${creditDebitNotes
+                      {effectiveCurrencySymbol}
+                      {internalNotes
                         .filter((n) => n.type === "CREDIT" && n.status === "APLICADA")
                         .reduce((acc, n) => acc + n.total, 0)
-                        .toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                        .toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-600 font-medium mt-1">
-                    {creditDebitNotes.filter((n) => n.type === "CREDIT").length} créditos aplicados
+                    {internalNotes.filter((n) => n.type === "CREDIT").length} créditos aplicados
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
                 </div>
@@ -265,14 +452,15 @@ export default function CreditDebitNotesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-blue-600 tracking-tight">
-                      ${creditDebitNotes
+                      {effectiveCurrencySymbol}
+                      {internalNotes
                         .filter((n) => n.type === "DEBIT" && n.status === "APLICADA")
                         .reduce((acc, n) => acc + n.total, 0)
-                        .toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                        .toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-blue-600 font-medium mt-1">
-                    {creditDebitNotes.filter((n) => n.type === "DEBIT").length} débitos aplicados
+                    {internalNotes.filter((n) => n.type === "DEBIT").length} débitos aplicados
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
                 </div>
@@ -286,7 +474,7 @@ export default function CreditDebitNotesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      {new Set(creditDebitNotes.map((n) => n.targetDocNum).filter(Boolean)).size}
+                      {new Set(internalNotes.map((n) => n.targetDocNum).filter(Boolean)).size}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">documentos de origen</p>
@@ -304,7 +492,7 @@ export default function CreditDebitNotesModule({
                       notasFilter === "TODAS" ? "bg-white text-slate-900 font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    Todas ({creditDebitNotes.length})
+                    Todas ({internalNotes.length})
                   </button>
                   <button
                     type="button"
@@ -314,7 +502,7 @@ export default function CreditDebitNotesModule({
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Créditos ({creditDebitNotes.filter((n) => n.type === "CREDIT").length})</span>
+                    <span>Créditos ({internalNotes.filter((n) => n.type === "CREDIT").length})</span>
                   </button>
                   <button
                     type="button"
@@ -324,7 +512,7 @@ export default function CreditDebitNotesModule({
                     }`}
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    <span>Débitos ({creditDebitNotes.filter((n) => n.type === "DEBIT").length})</span>
+                    <span>Débitos ({internalNotes.filter((n) => n.type === "DEBIT").length})</span>
                   </button>
                   <button
                     type="button"
@@ -333,7 +521,7 @@ export default function CreditDebitNotesModule({
                       notasFilter === "APLICADAS" ? "bg-slate-900 text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    Aplicadas ({creditDebitNotes.filter((n) => n.status === "APLICADA").length})
+                    Aplicadas ({internalNotes.filter((n) => n.status === "APLICADA").length})
                   </button>
                 </div>
 
@@ -407,7 +595,8 @@ export default function CreditDebitNotesModule({
                             {note.issueDate}
                           </td>
                           <td className="p-3.5 text-right font-bold text-slate-900 text-sm">
-                            ${note.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })} USD
+                            {getNoteCurrency(note).symbol}{note.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                            <span className="text-[11px] font-semibold text-slate-500">{getNoteCurrency(note).code}</span>
                           </td>
                           <td className="p-3.5 text-center">
                             {note.status === "APLICADA" && (
@@ -427,14 +616,35 @@ export default function CreditDebitNotesModule({
                             )}
                           </td>
                           <td className="p-3.5 text-right">
-                            <button
-                              type="button"
-                              onClick={() => handlePrintNote(note)}
-                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
-                            >
-                              Imprimir PDF
-                            </button>
-
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handlePrintNote(note)}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] text-slate-600 hover:text-[#1b426e] border border-slate-200 transition cursor-pointer shadow-2xs"
+                                title="Imprimir comprobante PDF"
+                                aria-label="Imprimir comprobante PDF"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openEditNoteModal(note)}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
+                                title="Editar nota"
+                                aria-label="Editar nota"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteNote(note.id, note.noteNumber)}
+                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 transition cursor-pointer shadow-2xs"
+                                title="Eliminar nota"
+                                aria-label="Eliminar nota"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -488,7 +698,9 @@ export default function CreditDebitNotesModule({
                   </div>
                   <div className="text-right">
                     <span className="text-xs text-slate-500 block">Moneda oficial:</span>
-                    <span className="font-bold text-slate-900 text-sm">USD ($)</span>
+                    <span className="font-bold text-slate-900 text-sm">
+                      {getNoteCurrency(selectedPrintNote).code} ({getNoteCurrency(selectedPrintNote).symbol})
+                    </span>
                   </div>
                 </div>
 
@@ -501,7 +713,9 @@ export default function CreditDebitNotesModule({
                       <th className="py-2.5 px-3">Doc. Afectado</th>
                       <th className="py-2.5 px-3 text-right">Subtotal</th>
                       <th className="py-2.5 px-3 text-right">ISV 15%</th>
-                      <th className="py-2.5 px-3 text-right">Total ($ USD)</th>
+                      <th className="py-2.5 px-3 text-right">
+                        Total ({getNoteCurrency(selectedPrintNote).symbol} {getNoteCurrency(selectedPrintNote).code})
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -509,9 +723,15 @@ export default function CreditDebitNotesModule({
                       <td className="py-3 px-3 font-mono text-slate-500">1</td>
                       <td className="py-3 px-3 font-bold text-slate-900">{selectedPrintNote?.reason || "Ajuste Contable"}</td>
                       <td className="py-3 px-3 font-mono text-slate-600">{selectedPrintNote?.targetDocNum || "—"}</td>
-                      <td className="py-3 px-3 text-right font-bold">${(selectedPrintNote?.amount || 0).toFixed(2)}</td>
-                      <td className="py-3 px-3 text-right font-medium">${(selectedPrintNote?.tax || 0).toFixed(2)}</td>
-                      <td className="py-3 px-3 text-right font-bold text-slate-900">${(selectedPrintNote?.total || 0).toFixed(2)}</td>
+                      <td className="py-3 px-3 text-right font-bold">
+                        {getNoteCurrency(selectedPrintNote).symbol}{(selectedPrintNote?.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-3 px-3 text-right font-medium">
+                        {getNoteCurrency(selectedPrintNote).symbol}{(selectedPrintNote?.tax || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-3 px-3 text-right font-bold text-slate-900">
+                        {getNoteCurrency(selectedPrintNote).symbol}{(selectedPrintNote?.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -524,15 +744,21 @@ export default function CreditDebitNotesModule({
                   <div className="w-64 space-y-2 text-right text-xs font-sans">
                     <div className="flex justify-between text-slate-600 font-medium">
                       <span>Subtotal Ajustado:</span>
-                      <span className="font-bold text-slate-900">${(selectedPrintNote?.amount || 0).toFixed(2)}</span>
+                      <span className="font-bold text-slate-900">
+                        {getNoteCurrency(selectedPrintNote).symbol}{(selectedPrintNote?.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                     <div className="flex justify-between text-slate-600 font-medium">
                       <span>ISV (15%):</span>
-                      <span className="font-bold text-slate-900">${(selectedPrintNote?.tax || 0).toFixed(2)}</span>
+                      <span className="font-bold text-slate-900">
+                        {getNoteCurrency(selectedPrintNote).symbol}{(selectedPrintNote?.tax || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                     <div className="flex justify-between items-baseline text-[#1b426e] border-t-2 border-slate-900 pt-2">
                       <span className="text-xs font-bold uppercase tracking-wider">TOTAL AJUSTADO:</span>
-                      <span className="text-2xl font-bold">${(selectedPrintNote?.total || 0).toFixed(2)} USD</span>
+                      <span className="text-2xl font-bold">
+                        {getNoteCurrency(selectedPrintNote).symbol}{(selectedPrintNote?.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {getNoteCurrency(selectedPrintNote).code}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -576,7 +802,7 @@ export default function CreditDebitNotesModule({
                 </span>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">
-                    Emitir {noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}
+                    {editingNoteId ? "Editar" : "Emitir"} {noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}
                   </h3>
                   <p className="text-xs text-slate-500">Ajuste de saldo, devoluciones e intereses para Macola & SAR</p>
                 </div>
@@ -608,7 +834,7 @@ export default function CreditDebitNotesModule({
                 <button
                   type="button"
                   onClick={() => {
-                    const nextNum = `NC-2026-00${creditDebitNotes.length + 1}`;
+                    const nextNum = editingNoteId ? noteForm.noteNumber : getNextNoteNumber("CREDIT", internalNotes);
                     setNoteForm({ ...noteForm, type: "CREDIT", noteNumber: nextNum });
                   }}
                   className={`py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
@@ -623,7 +849,7 @@ export default function CreditDebitNotesModule({
                 <button
                   type="button"
                   onClick={() => {
-                    const nextNum = `ND-2026-00${creditDebitNotes.length + 1}`;
+                    const nextNum = editingNoteId ? noteForm.noteNumber : getNextNoteNumber("DEBIT", internalNotes);
                     setNoteForm({ ...noteForm, type: "DEBIT", noteNumber: nextNum });
                   }}
                   className={`py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
@@ -697,8 +923,8 @@ export default function CreditDebitNotesModule({
                 </div>
               </div>
 
-              {/* Reason / Motivo & Issue Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Reason / Motivo, Issue Date & Moneda */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Motivo / Concepto del Ajuste *</label>
                   <select
@@ -725,12 +951,26 @@ export default function CreditDebitNotesModule({
                     required
                   />
                 </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Moneda *</label>
+                  <select
+                    value={noteForm.currency || effectiveCurrencyCode}
+                    onChange={(e) => setNoteForm({ ...noteForm, currency: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                    required
+                  >
+                    <option value="HNL">HNL (L) Lempiras{effectiveCurrencyCode === "HNL" ? " — Predeterminada" : ""}</option>
+                    <option value="USD">USD ($) Dólares{effectiveCurrencyCode === "USD" ? " — Predeterminada" : ""}</option>
+                    <option value="EUR">EUR (€) Euros{effectiveCurrencyCode === "EUR" ? " — Predeterminada" : ""}</option>
+                  </select>
+                </div>
               </div>
 
               {/* Amounts Calculation (Subtotal, ISV 15%, Total) */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-600 mb-1">Monto Subtotal ($)</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Monto Subtotal ({formCurrencyInfo.symbol})</label>
                   <input
                     type="number"
                     step="0.01"
@@ -747,7 +987,7 @@ export default function CreditDebitNotesModule({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-600 mb-1">ISV 15% ($)</label>
+                  <label className="block font-semibold text-slate-600 mb-1">ISV 15% ({formCurrencyInfo.symbol})</label>
                   <input
                     type="number"
                     step="0.01"
@@ -761,7 +1001,7 @@ export default function CreditDebitNotesModule({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Total Final ($ USD)</label>
+                  <label className="block font-bold text-slate-700 mb-1">Total Final ({formCurrencyInfo.symbol} {formCurrencyInfo.code})</label>
                   <input
                     type="number"
                     step="0.01"
@@ -798,7 +1038,11 @@ export default function CreditDebitNotesModule({
                   disabled={noteLoading}
                   className="px-6 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
                 >
-                  {noteLoading ? "Guardando..." : `Emitir ${noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}`}
+                  {noteLoading
+                    ? "Guardando..."
+                    : editingNoteId
+                    ? `Actualizar ${noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}`
+                    : `Emitir ${noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}`}
                 </button>
               </div>
             </form>

@@ -378,8 +378,10 @@ export default function AdminDashboard() {
   const totalPOPendientes = poPendientes.reduce((acc, item) => acc + item.total, 0);
 
   const [recibirPagoCustomerId, setRecibirPagoCustomerId] = useState<string | null>(null);
-  const openRecibirPagoView = (initialCustomerId?: string) => {
+  const [recibirPagoInvoiceNumber, setRecibirPagoInvoiceNumber] = useState<string | null>(null);
+  const openRecibirPagoView = (initialCustomerId?: string, initialInvoiceNum?: string) => {
     setRecibirPagoCustomerId(initialCustomerId || null);
+    setRecibirPagoInvoiceNumber(initialInvoiceNum || null);
     setCurrentView("recibir-pago");
   };
 
@@ -1799,7 +1801,7 @@ export default function AdminDashboard() {
         case "clientes":
           endpoint = "/api/customers";
           filename = "Clientes";
-          columnHeaders = ["Código Macola", "Nombre", "RTN", "Correo", "Teléfono", "Dirección", "Moneda"];
+          columnHeaders = ["Código", "Nombre", "RTN", "Correo", "Teléfono", "Dirección", "Moneda"];
           extractRow = (c) => [c.macolaCode || "", c.name || "", c.rtn || "", c.email || "", c.phone || "", c.address || "", c.currency || "USD"];
           break;
         case "proveedores":
@@ -2486,13 +2488,13 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [accRes, cusRes, venRes, invRes, bankRes, txRes, ruleRes, noteRes, invcRes, poRes] = await Promise.all([
-        fetch("/api/accounts").then((r) => r.json()),
-        fetch("/api/customers").then((r) => r.json()),
-        fetch("/api/vendors").then((r) => r.json()),
-        fetch("/api/inventory").then((r) => r.json()),
-        fetch("/api/bank-accounts").then((r) => r.json()),
-        fetch("/api/bank-transactions").then((r) => r.json()),
-        fetch("/api/bank-rules").then((r) => r.json()),
+        fetch("/api/accounts").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/customers").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/vendors").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/inventory").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/bank-accounts").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/bank-transactions").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/bank-rules").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/credit-debit-notes").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/invoices").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/purchase-orders").then((r) => r.json()).catch(() => ({ success: false })),
@@ -2520,6 +2522,7 @@ export default function AdminDashboard() {
             due: inv.dueDate || "",
             total: inv.total,
             status: inv.status,
+            currency: inv.currency || "USD",
             paymentTerms: inv.paymentTerms,
             customerEmail: inv.customerEmail || "",
             lines: inv.lines || [],
@@ -2621,7 +2624,7 @@ export default function AdminDashboard() {
   };
 
   const [currentAdminUser, setCurrentAdminUser] = useState<{ id: string; email: string; name: string; role: string } | null>(null);
-  const isAdminUser = ["super_admin", "admin"].includes((currentAdminUser?.role || "").toLowerCase());
+  const isAdminUser = !currentAdminUser || (currentAdminUser?.role || "").toLowerCase() !== "user";
 
   const loadCurrentUser = async () => {
     try {
@@ -5615,9 +5618,20 @@ ${accountRowsHtml(equity)}
               customers={customers}
               vendors={vendors}
               companySettings={companySettings}
+              defaultCurrencySymbol={defaultCurrencySymbol}
+              defaultCurrencyCode={defaultCurrencyCode}
               loading={loading}
               onNavigateToDashboard={() => setCurrentView("dashboard")}
-              onRefreshNotes={loadDashboardData}
+              onRefreshNotes={async () => {
+                try {
+                  const res = await fetch("/api/credit-debit-notes").then((r) => r.json());
+                  if (res.success && Array.isArray(res.data)) {
+                    setCreditDebitNotes(res.data);
+                  }
+                } catch (e) {
+                  console.error("Error refreshing credit debit notes:", e);
+                }
+              }}
             />
           )}
 
@@ -11283,6 +11297,7 @@ ${accountRowsHtml(equity)}
               salesSettings={salesSettings}
               companyLogo={companyLogo}
               defaultCurrencySymbol={defaultCurrencySymbol}
+              defaultCurrencyCode={defaultCurrencyCode}
               loading={loading}
               onNavigateToDashboard={() => setCurrentView("dashboard")}
               onNavigateToSettings={() => setCurrentView("configuracion")}
@@ -11294,6 +11309,12 @@ ${accountRowsHtml(equity)}
                   .then((accRes) => {
                     if (accRes.success) setAccounts(accRes.data || []);
                   });
+              }}
+              onReceivePayment={(inv) => {
+                const customer = customers.find(
+                  (c) => c.name.toLowerCase() === inv.customer.toLowerCase()
+                );
+                openRecibirPagoView(customer?.id, inv.num);
               }}
             />
           )}
@@ -11342,6 +11363,7 @@ ${accountRowsHtml(equity)}
               <CashMovementsModule
                 currentView={currentView}
                 initialRecibirPagoCustomerId={recibirPagoCustomerId}
+                initialRecibirPagoInvoiceNumber={recibirPagoInvoiceNumber}
                 initialPagarProveedorVendor={pagarProveedorVendorFilter}
                 connectedBanks={connectedBanks}
                 customers={customers}
@@ -11379,7 +11401,7 @@ ${accountRowsHtml(equity)}
                 <div className="mb-4">
                   <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">Acción Rápida</span>
                   <h3 className="text-lg font-bold text-slate-900">Agregar Nuevo Cliente</h3>
-                  <p className="text-xs text-slate-500">Registrar cliente con código Macola opcional en la base de datos.</p>
+                  <p className="text-xs text-slate-500">Registrar cliente con código opcional en la base de datos.</p>
                 </div>
 
                 {modalError && (
@@ -11408,7 +11430,7 @@ ${accountRowsHtml(equity)}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-1">Código Macola</label>
+                      <label className="block font-semibold text-slate-700 mb-1">Código</label>
                       <input
                         type="text"
                         placeholder="Ej. CUS-009"
@@ -12136,7 +12158,7 @@ ${accountRowsHtml(equity)}
                     <div className="space-y-2 pl-5">
                       {(currentView === "clientes"
                         ? [
-                          { id: "macolaCode", label: "Código Macola" },
+                          { id: "macolaCode", label: "Código" },
                           { id: "name", label: "Nombre de Empresa / Cliente" },
                           { id: "email", label: "Correo Electrónico" },
                           { id: "phone", label: "Teléfono" },

@@ -75,6 +75,45 @@ export async function POST(request: NextRequest) {
       console.error("Error creating accounting entry for payment:", accountingErr);
     }
 
+    // Automatically update sales invoice status to "Cobrada"
+    try {
+      let targetInvoiceNumber = (body.invoiceNumber || "").trim();
+      if (!targetInvoiceNumber && referenceNumber) {
+        targetInvoiceNumber = referenceNumber.replace(/^FAC-/, "").trim();
+      }
+
+      if (targetInvoiceNumber) {
+        await prisma.salesInvoice.updateMany({
+          where: {
+            companyId,
+            invoiceNumber: targetInvoiceNumber,
+          },
+          data: {
+            status: "Cobrada",
+          },
+        });
+      } else if (customerId || customerName) {
+        const matchingInvoice = await prisma.salesInvoice.findFirst({
+          where: {
+            companyId,
+            ...(customerId ? { customerId } : { customerName }),
+            status: { in: ["Pendiente", "Emitida"] },
+            total: parseFloat(amount),
+          },
+          orderBy: { invoiceDate: "asc" },
+        });
+
+        if (matchingInvoice) {
+          await prisma.salesInvoice.update({
+            where: { id: matchingInvoice.id },
+            data: { status: "Cobrada" },
+          });
+        }
+      }
+    } catch (invErr) {
+      console.error("Error updating invoice status after payment:", invErr);
+    }
+
     return NextResponse.json({ success: true, data: newPayment, journalEntry });
   } catch (error: unknown) {
     console.error("POST /api/payments error:", error);
