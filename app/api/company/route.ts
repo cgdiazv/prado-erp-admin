@@ -71,41 +71,16 @@ export async function GET(request: NextRequest) {
     });
 
     if (!settings) {
-      // Look up Company entity name if available
-      const companyRecord = await prisma.company.findUnique({
-        where: { id: companyId },
+      const defaultCreate = companyId === "default" ? DEFAULT_COMPANY_DATA : {
+        ...BLANK_COMPANY_DATA,
+        id: companyId,
+        nombre: "Mi Empresa",
+        nombreLegal: "Mi Empresa",
+      };
+
+      settings = await prisma.companySettings.create({
+        data: defaultCreate,
       });
-
-      if (companyId === "default") {
-        settings = await prisma.companySettings.create({
-          data: {
-            ...DEFAULT_COMPANY_DATA,
-            id: companyId,
-            nombre: companyRecord?.name && companyRecord.name !== "Ninguno indicado" ? companyRecord.name : DEFAULT_COMPANY_DATA.nombre,
-            nombreLegal: companyRecord?.legalName && companyRecord.legalName !== "Ninguno indicado" ? companyRecord.legalName : DEFAULT_COMPANY_DATA.nombreLegal,
-            email: companyRecord?.email && companyRecord.email !== "Ninguno indicado" ? companyRecord.email : DEFAULT_COMPANY_DATA.email,
-            telefono: companyRecord?.phone && companyRecord.phone !== "Ninguno indicado" ? companyRecord.phone : DEFAULT_COMPANY_DATA.telefono,
-            direccion: companyRecord?.address && companyRecord.address !== "Ninguno indicado" ? companyRecord.address : DEFAULT_COMPANY_DATA.direccion,
-          },
-        });
-      } else {
-        const initialName = companyRecord?.name || "Mi Empresa";
-        const initialLegal = companyRecord?.legalName || initialName;
-
-        settings = await prisma.companySettings.create({
-          data: {
-            ...BLANK_COMPANY_DATA,
-            id: companyId,
-            nombre: initialName,
-            nombreLegal: initialLegal,
-            email: companyRecord?.email || "",
-            telefono: companyRecord?.phone || "",
-            direccion: companyRecord?.address || "",
-            taxId: companyRecord?.taxId || "",
-            cai: companyRecord?.cai || "Ninguno indicado",
-          },
-        });
-      }
     }
 
     return NextResponse.json({ success: true, data: settings });
@@ -186,21 +161,6 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    // Also sync basic details into Company record
-    await prisma.company.updateMany({
-      where: { id: companyId },
-      data: {
-        ...(updateData.nombre !== undefined ? { name: updateData.nombre || "Mi Empresa" } : {}),
-        ...(updateData.nombreLegal !== undefined ? { legalName: updateData.nombreLegal || "" } : {}),
-        ...(updateData.taxId !== undefined ? { taxId: updateData.taxId || "" } : {}),
-        ...(updateData.cai !== undefined ? { cai: updateData.cai || null } : {}),
-        ...(updateData.email !== undefined ? { email: updateData.email || "" } : {}),
-        ...(updateData.telefono !== undefined ? { phone: updateData.telefono || "" } : {}),
-        ...(updateData.direccion !== undefined ? { address: updateData.direccion || "" } : {}),
-        ...(updateData.logoUrl !== undefined ? { logoUrl: updateData.logoUrl } : {}),
-      },
-    });
-
     return NextResponse.json({ success: true, data: settings });
   } catch (error: unknown) {
     console.error("Error updating company settings:", error);
@@ -210,3 +170,4 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+

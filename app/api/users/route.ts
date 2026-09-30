@@ -12,17 +12,15 @@ export async function GET(request: NextRequest) {
     const session = await getTenantSession(request);
     if (!session) return unauthorizedResponse();
 
-    const [users, company] = await Promise.all([
-      prisma.user.findMany({
-        where: { companyId: session.companyId },
-        select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
-        orderBy: { createdAt: "asc" },
-      }),
-      prisma.company.findUnique({
-        where: { id: session.companyId },
-        select: { plan: true, subscriptionStatus: true },
-      }),
-    ]);
+    const users = await prisma.user.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+    const company = await (prisma as any).company?.findUnique({
+      where: { id: session.companyId },
+      select: { plan: true, subscriptionStatus: true },
+    }).catch(() => null);
 
     const maxUsers = getUserLimit(company?.plan, company?.subscriptionStatus);
 
@@ -79,10 +77,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar límite de usuarios según el plan
-    const company = await prisma.company.findUnique({
+    const company = await (prisma as any).company?.findUnique({
       where: { id: session.companyId },
       select: { plan: true, subscriptionStatus: true },
-    });
+    }).catch(() => null);
     const maxUsers = getUserLimit(company?.plan, company?.subscriptionStatus);
     const currentCount = await prisma.user.count({ where: { companyId: session.companyId } });
 

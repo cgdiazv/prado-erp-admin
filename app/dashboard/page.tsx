@@ -5070,7 +5070,7 @@ ${accountRowsHtml(equity)}
                   <div>
                     <h3 className="font-bold text-sm mb-1 text-slate-900">Todas las Cuentas</h3>
                     <div className="text-xl font-extrabold mb-1 text-slate-900">
-                      {formatCurrency(connectedBanks.reduce((sum, b) => sum + (b.bankBalance || b.bookBalance || 0), 0))}
+                      {formatCurrency(connectedBanks.reduce((sum, b) => sum + (b.bookBalance || b.bankBalance || 0), 0))}
                     </div>
                     <p className="text-[11px] text-slate-500">
                       {bankTransactions.filter((t) => t.status === "porRevisar").length} transacciones por revisar
