@@ -4354,10 +4354,6 @@ ${accountRowsHtml(equity)}
                   {currentView === "retenciones-isv" && "Compras / Comprobantes de Retención SAR"}
                   {currentView === "configuracion" && "Configuración del Sistema"}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Conectado
-                </span>
               </div>
             </div>
           </div>
@@ -6330,7 +6326,7 @@ ${accountRowsHtml(equity)}
                             </div>
 
                             {/* Subsección: Datos Fiscales SAR - Facturas */}
-                            <div className="pt-4 mt-2 border-t border-slate-200">
+                            <div className="pt-4">
                               <h3 className="font-bold text-xs text-[#1b426e] uppercase tracking-wider mb-2">
                                 Datos Fiscales SAR — Facturas
                               </h3>
@@ -6376,7 +6372,7 @@ ${accountRowsHtml(equity)}
                             </div>
 
                             {/* Subsección: Datos Fiscales SAR - Notas de Crédito */}
-                            <div className="pt-4 mt-2 border-t border-slate-200">
+                            <div className="pt-4">
                               <h3 className="font-bold text-xs text-[#1b426e] uppercase tracking-wider mb-2">
                                 Datos Fiscales SAR — Notas de Crédito
                               </h3>
@@ -6422,7 +6418,7 @@ ${accountRowsHtml(equity)}
                             </div>
 
                             {/* Subsección: Datos Fiscales SAR - Notas de Débito */}
-                            <div className="pt-4 mt-2 border-t border-slate-200">
+                            <div className="pt-4">
                               <h3 className="font-bold text-xs text-[#1b426e] uppercase tracking-wider mb-2">
                                 Datos Fiscales SAR — Notas de Débito
                               </h3>
