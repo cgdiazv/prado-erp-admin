@@ -71,7 +71,7 @@ export function CashMovementsModule({
     account: "",
     accountBalance: 0,
     date: new Date().toISOString().split("T")[0],
-    currency: "USD",
+    currency: defaultCurrencyCode || "HNL",
     memo: "",
     cashbackAccount: "",
     cashbackMemo: "",
@@ -267,6 +267,7 @@ export function CashMovementsModule({
     paymentDate: new Date().toISOString().split("T")[0],
     paymentMethod: "Efectivo",
     refNumber: "",
+    currency: defaultCurrencyCode || "HNL",
     notes: "",
     lines: [
       { id: "1", category: "", description: "", amount: 0 },
@@ -277,6 +278,21 @@ export function CashMovementsModule({
   const gastoTotal = useMemo(() => {
     return gastoForm.lines.reduce((sum, line) => sum + (Number(line.amount) || 0), 0);
   }, [gastoForm.lines]);
+
+  const gastoCurrencyCode = useMemo(() => {
+    const c = (gastoForm.currency || defaultCurrencyCode || "HNL").trim().toUpperCase();
+    if (c.includes("USD") || c === "$") return "USD";
+    if (c.includes("HNL") || c.includes("LEMPIRA") || c === "L") return "HNL";
+    if (c.includes("EUR") || c === "€") return "EUR";
+    return defaultCurrencyCode || "HNL";
+  }, [gastoForm.currency, defaultCurrencyCode]);
+
+  const gastoCurrencySymbol = useMemo(() => {
+    if (gastoCurrencyCode === "HNL") return "L";
+    if (gastoCurrencyCode === "USD") return "$";
+    if (gastoCurrencyCode === "EUR") return "€";
+    return defaultCurrencySymbol || "L";
+  }, [gastoCurrencyCode, defaultCurrencySymbol]);
 
   const handleGastoLineChange = (id: string, field: string, value: any) => {
     setGastoForm((prev) => ({
@@ -422,7 +438,7 @@ export function CashMovementsModule({
           concept: `Gasto Operativo: ${gastoForm.payeeName || "General"}${gastoForm.refNumber ? ` (Ref #${gastoForm.refNumber})` : ""}`,
           referenceType: "MANUAL",
           referenceId: gastoForm.refNumber || undefined,
-          currency: "USD",
+          currency: gastoCurrencyCode,
           lines: journalLines,
         }),
       });
@@ -433,7 +449,7 @@ export function CashMovementsModule({
       }
 
       const entryNum = data.data?.entryNumber ? ` [Asiento: ${data.data.entryNumber}]` : "";
-      setGastoSuccessMsg(`¡Gasto por $${gastoTotal.toFixed(2)} USD vinculado al Plan de Cuentas con éxito!${entryNum}`);
+      setGastoSuccessMsg(`¡Gasto por ${gastoCurrencySymbol}${gastoTotal.toFixed(2)} ${gastoCurrencyCode} vinculado al Plan de Cuentas con éxito!${entryNum}`);
 
       if (onRefreshAccounts) onRefreshAccounts();
 
@@ -447,6 +463,7 @@ export function CashMovementsModule({
             paymentDate: new Date().toISOString().split("T")[0],
             paymentMethod: "Efectivo",
             refNumber: "",
+            currency: defaultCurrencyCode || "HNL",
             notes: "",
             lines: [
               { id: "1", category: "", description: "", amount: 0 },
@@ -1322,21 +1339,52 @@ export function CashMovementsModule({
                           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Cuenta de pago</label>
                           <select
                             value={gastoForm.paymentAccount}
-                            onChange={(e) => setGastoForm({ ...gastoForm, paymentAccount: e.target.value })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const selectedBank = connectedBanks.find(
+                                (b) => `${b.name} (${b.currency})` === val || b.name === val || b.id === val
+                              );
+                              setGastoForm((prev) => ({
+                                ...prev,
+                                paymentAccount: val,
+                                currency: selectedBank ? selectedBank.currency : prev.currency,
+                              }));
+                            }}
                             className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer"
                           >
                             <option value="Accrued Liabilities">Accrued Liabilities</option>
-                            <option value="1000 - Cash and Cash Equivalents">1000 - Cash and Cash Equivalents</option>
-                            <option value="1005 - Caja Chica">1005 - Caja Chica</option>
-                            <option value="1010 - Banco FICOHSA HNL">1010 - Banco FICOHSA HNL</option>
-                            <option value="1020 - Banco BAC USD">1020 - Banco BAC USD</option>
+                            <option value={`Cash and Cash Equivalents (${gastoCurrencyCode})`}>1000 - Cash and Cash Equivalents ({gastoCurrencyCode})</option>
+                            <option value={`Caja General (${gastoCurrencyCode})`}>1005 - Caja General ({gastoCurrencyCode})</option>
+                            {connectedBanks.map((b) => (
+                              <option key={b.id} value={`${b.name} (${b.currency})`}>
+                                {b.name} - {b.accountNumber} ({b.currency})
+                              </option>
+                            ))}
                           </select>
-                          <span className="text-[10px] text-slate-500 mt-1 block">Saldo $0.00</span>
+                          {(() => {
+                            const selectedBank = connectedBanks.find(
+                              (b) => `${b.name} (${b.currency})` === gastoForm.paymentAccount || b.name === gastoForm.paymentAccount || b.id === gastoForm.paymentAccount
+                            );
+                            if (selectedBank) {
+                              const sym = selectedBank.currency === "USD" ? "$" : gastoCurrencySymbol;
+                              const bal = selectedBank.bookBalance ?? selectedBank.bankBalance ?? 0;
+                              return (
+                                <span className="text-[10px] font-semibold text-slate-500 mt-1 block">
+                                  Saldo en libros: {sym}{bal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="text-[10px] text-slate-500 mt-1 block">
+                                Cuenta de origen de pago
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
 
-                      {/* SECOND ROW: Fecha de pago, Método de pago, N.º de referencia */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                      {/* SECOND ROW: Fecha de pago, Método de pago, Moneda, N.º de referencia */}
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
                         {/* Fecha de pago */}
                         <div>
                           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de pago</label>
@@ -1363,6 +1411,20 @@ export function CashMovementsModule({
                           </select>
                         </div>
 
+                        {/* Moneda */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Moneda</label>
+                          <select
+                            value={gastoCurrencyCode}
+                            onChange={(e) => setGastoForm({ ...gastoForm, currency: e.target.value })}
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 font-semibold focus:outline-none focus:border-[#1b426e] cursor-pointer"
+                          >
+                            <option value="HNL">HNL (Lps)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                          </select>
+                        </div>
+
                         {/* N.º de referencia */}
                         <div>
                           <label className="block text-xs font-semibold text-slate-600 mb-1.5">N.º de referencia</label>
@@ -1384,11 +1446,11 @@ export function CashMovementsModule({
                         IMPORTE DEL GASTO
                       </span>
                       <div className="text-4xl font-bold text-slate-900 font-sans tracking-tight">
-                        ${gastoTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {gastoCurrencySymbol}{gastoTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       <div className="text-xs text-slate-500 pt-1">
                         <span>Moneda oficial </span>
-                        <span className="font-semibold text-slate-700">USD ($)</span>
+                        <span className="font-semibold text-slate-700">{gastoCurrencyCode} ({gastoCurrencySymbol})</span>
                       </div>
                     </div>
                   </div>
@@ -1403,7 +1465,7 @@ export function CashMovementsModule({
                             <th className="p-3 w-10 text-center">#</th>
                             <th className="p-3 min-w-[220px]">CATEGORÍA</th>
                             <th className="p-3 min-w-[320px]">DESCRIPCIÓN</th>
-                            <th className="p-3 w-36 text-right">IMPORTE (USD)</th>
+                            <th className="p-3 w-36 text-right">IMPORTE ({gastoCurrencyCode})</th>
                             <th className="p-3 w-16 text-center"></th>
                           </tr>
                         </thead>
@@ -1498,7 +1560,7 @@ export function CashMovementsModule({
 
                       <div className="text-right">
                         <span className="text-xs font-bold text-slate-600 mr-4">Total</span>
-                        <span className="text-base font-bold text-slate-900">${gastoTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                        <span className="text-base font-bold text-slate-900">{gastoCurrencySymbol}{gastoTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
                   </div>
