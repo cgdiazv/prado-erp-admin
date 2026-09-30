@@ -2248,7 +2248,17 @@ export function CashMovementsModule({
                           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Depositar en</label>
                           <select
                             value={recibirPagoForm.depositAccount}
-                            onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, depositAccount: e.target.value })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const matchedBank = connectedBanks.find(
+                                (b) => `${b.name} (${b.currency})` === val || b.id === val || b.name === val
+                              );
+                              setRecibirPagoForm((prev) => ({
+                                ...prev,
+                                depositAccount: val,
+                                bankAccountId: matchedBank ? matchedBank.id : undefined,
+                              }));
+                            }}
                             className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           >
                             <option value="Cash and cash equivalents">Cash and cash equivalents</option>

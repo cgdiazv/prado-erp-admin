@@ -1610,7 +1610,7 @@ export default function InventoryModule({
           </div>
 
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div
               onClick={() => setLotesFilter("todos")}
               className={`bg-white p-5 rounded-2xl border transition-all cursor-pointer shadow-xs hover:shadow-md relative overflow-hidden ${
@@ -1866,7 +1866,7 @@ export default function InventoryModule({
           </div>
 
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div
               onClick={() => setSeriesFilterView("TODOS")}
               className={`bg-white p-5 rounded-2xl border transition-all cursor-pointer shadow-xs hover:shadow-md relative overflow-hidden ${

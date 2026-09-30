@@ -116,7 +116,70 @@ export async function POST(request: NextRequest) {
       console.error("Error updating invoice status after payment:", invErr);
     }
 
-    return NextResponse.json({ success: true, data: newPayment, journalEntry });
+    // Update BankAccount bookBalance and create BankTransaction if assigned to a bank account
+    let bankTransaction = null;
+    try {
+      let targetBank: any = null;
+      if (body.bankAccountId) {
+        targetBank = await prisma.bankAccount.findFirst({
+          where: { id: body.bankAccountId, companyId },
+        });
+      }
+
+      if (!targetBank && depositAccount) {
+        const companyBanks = await prisma.bankAccount.findMany({
+          where: { companyId },
+        });
+
+        targetBank =
+          companyBanks.find((b) => b.id === depositAccount) ||
+          companyBanks.find(
+            (b) =>
+              depositAccount.toLowerCase().includes(b.name.toLowerCase()) ||
+              b.name.toLowerCase().includes(depositAccount.toLowerCase())
+          );
+
+        if (
+          !targetBank &&
+          companyBanks.length === 1 &&
+          depositAccount !== "Cash and cash equivalents" &&
+          !depositAccount.includes("Caja General")
+        ) {
+          targetBank = companyBanks[0];
+        }
+      }
+
+      if (targetBank) {
+        await prisma.bankAccount.update({
+          where: { id: targetBank.id },
+          data: {
+            bookBalance: {
+              increment: newPayment.amount,
+            },
+            bankBalance: {
+              increment: newPayment.amount,
+            },
+          },
+        });
+
+        bankTransaction = await prisma.bankTransaction.create({
+          data: {
+            bankAccountId: targetBank.id,
+            date: newPayment.paymentDate || new Date().toLocaleDateString("es-HN"),
+            description: `Pago recibido de cliente: ${newPayment.customerName}${newPayment.referenceNumber ? ` - Ref: ${newPayment.referenceNumber}` : ""}`,
+            payee: newPayment.customerName,
+            type: "deposit",
+            amount: newPayment.amount,
+            suggestedAccount: newPayment.depositAccount || "1100 - Bancos Nacionales",
+            status: "porRevisar",
+          },
+        });
+      }
+    } catch (bankErr) {
+      console.error("Error updating bank account/creating transaction for payment:", bankErr);
+    }
+
+    return NextResponse.json({ success: true, data: newPayment, journalEntry, bankTransaction });
   } catch (error: unknown) {
     console.error("POST /api/payments error:", error);
     const message = error instanceof Error ? error.message : "Internal Server Error";

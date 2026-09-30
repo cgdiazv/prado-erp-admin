@@ -4538,7 +4538,7 @@ ${accountRowsHtml(equity)}
             <>
 
               {/* Metric Cards Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
                 {loading ? (
                   <>
                     <CardSkeleton />
@@ -5052,7 +5052,7 @@ ${accountRowsHtml(equity)}
               </div>
 
               {/* Connected Bank Accounts Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Card: Todas las cuentas */}
                 <div
                   onClick={() => setSelectedBankId("all")}
@@ -5070,7 +5070,7 @@ ${accountRowsHtml(equity)}
                   <div>
                     <h3 className="font-bold text-sm mb-1 text-slate-900">Todas las Cuentas</h3>
                     <div className="text-xl font-extrabold mb-1 text-slate-900">
-                      {formatCurrency(connectedBanks.reduce((sum, b) => sum + (b.bankBalance || 0), 0))}
+                      {formatCurrency(connectedBanks.reduce((sum, b) => sum + (b.bankBalance || b.bookBalance || 0), 0))}
                     </div>
                     <p className="text-[11px] text-slate-500">
                       {bankTransactions.filter((t) => t.status === "porRevisar").length} transacciones por revisar

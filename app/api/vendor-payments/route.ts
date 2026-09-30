@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 6. Deduct from BankAccount book balance if linked
+    // 6. Deduct from BankAccount book balance & create BankTransaction if linked
     if (bankAccountId && bankAccountInfo) {
       await db.bankAccount.update({
         where: { id: bankAccountId },
@@ -238,6 +238,23 @@ export async function POST(request: NextRequest) {
           },
         },
       });
+
+      try {
+        await db.bankTransaction.create({
+          data: {
+            bankAccountId,
+            date: paymentDate || new Date().toLocaleDateString("es-HN"),
+            description: `Pago a proveedor: ${vendorName.trim()} (${paymentNumber})`,
+            payee: vendorName.trim(),
+            type: "expense",
+            amount: totalAmount,
+            suggestedAccount: paidAccount || "2100 - Cuentas por Pagar",
+            status: "porRevisar",
+          },
+        });
+      } catch (btErr) {
+        console.error("Error creating bank transaction for vendor payment:", btErr);
+      }
     }
 
     // 7. Automatic Accounting Entry

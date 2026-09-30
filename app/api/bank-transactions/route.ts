@@ -11,6 +11,84 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
+    // Auto-sync customer payments to BankTransactions if missing
+    try {
+      const companyBanks = await prisma.bankAccount.findMany({
+        where: { companyId },
+      });
+
+      if (companyBanks.length > 0) {
+        const payments = await prisma.payment.findMany({
+          where: { companyId },
+        });
+
+        for (const pay of payments) {
+          const matchedBank =
+            companyBanks.find((b) => b.id === pay.depositAccount) ||
+            companyBanks.find(
+              (b) =>
+                pay.depositAccount.toLowerCase().includes(b.name.toLowerCase()) ||
+                b.name.toLowerCase().includes(pay.depositAccount.toLowerCase())
+            ) ||
+            (companyBanks.length === 1 &&
+            pay.depositAccount !== "Cash and cash equivalents" &&
+            !pay.depositAccount.includes("Caja General")
+              ? companyBanks[0]
+              : null);
+
+          if (matchedBank) {
+            const existingTx = await prisma.bankTransaction.findFirst({
+              where: {
+                bankAccountId: matchedBank.id,
+                payee: pay.customerName,
+                amount: pay.amount,
+              },
+            });
+
+            if (!existingTx) {
+              await prisma.bankTransaction.create({
+                data: {
+                  bankAccountId: matchedBank.id,
+                  date: pay.paymentDate || new Date().toLocaleDateString("es-HN"),
+                  description: `Pago recibido de cliente: ${pay.customerName}${pay.referenceNumber ? ` - Ref: ${pay.referenceNumber}` : ""}`,
+                  payee: pay.customerName,
+                  type: "deposit",
+                  amount: pay.amount,
+                  suggestedAccount: pay.depositAccount || "1100 - Bancos Nacionales",
+                  status: "porRevisar",
+                },
+              });
+
+              const targetBankBalance = matchedBank.bankBalance === 0 ? matchedBank.bookBalance + pay.amount : matchedBank.bankBalance + pay.amount;
+              await prisma.bankAccount.update({
+                where: { id: matchedBank.id },
+                data: {
+                  bookBalance: {
+                    increment: pay.amount,
+                  },
+                  bankBalance: targetBankBalance,
+                },
+              });
+            }
+          }
+        }
+
+        // Auto-fix any bank account where bankBalance is 0 but bookBalance > 0
+        for (const bank of companyBanks) {
+          if (bank.bankBalance === 0 && bank.bookBalance > 0) {
+            await prisma.bankAccount.update({
+              where: { id: bank.id },
+              data: {
+                bankBalance: bank.bookBalance,
+              },
+            });
+          }
+        }
+      }
+    } catch (syncErr) {
+      console.error("Auto-syncing payments to bank transactions error:", syncErr);
+    }
+
     const where: Record<string, unknown> = {
       bankAccount: { companyId },
     };

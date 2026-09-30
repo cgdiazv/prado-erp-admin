@@ -663,7 +663,7 @@ export default function CajaChicaModule({
           <Skeleton className="h-6 w-48 rounded-lg" />
           <Skeleton className="h-8 w-36 rounded-xl" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
@@ -779,7 +779,7 @@ export default function CajaChicaModule({
       </div>
 
       {/* ================= EXECUTIVE KPI CARDS ================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
         {/* Card 1: Fondo Fijo */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">

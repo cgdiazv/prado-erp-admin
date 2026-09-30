@@ -926,7 +926,7 @@ export function PurchasesModule({
               </div>
 
               {/* Stats Grid (Matching Dashboard Metric Cards) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Monto Total en Órdenes */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
@@ -1197,7 +1197,7 @@ export function PurchasesModule({
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-slate-500">Total Facturado</span>
@@ -1454,7 +1454,7 @@ export function PurchasesModule({
               </div>
 
               {/* Summary Metric Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-slate-500">Monto Total Devoluciones</span>

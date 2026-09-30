@@ -937,7 +937,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
               </div>
 
               {/* Stats Grid (Matching Dashboard Metric Cards) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Total Facturado */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
                   <div className="flex items-center justify-between">
