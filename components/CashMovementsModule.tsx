@@ -25,6 +25,7 @@ import {
   CompanySettings,
   NavItem,
 } from "@/types/dashboard";
+import { numberToWordsSpanish } from "@/components/InvoicesModule";
 
 export interface CashMovementsModuleProps {
   currentView: "deposito-bancario" | "agregar-gasto" | "pagar-proveedor" | "recibir-pago";
@@ -36,6 +37,8 @@ export interface CashMovementsModuleProps {
   vendors: Vendor[];
   invoicesList: Invoice[];
   companySettings: CompanySettings;
+  defaultCurrencySymbol?: string;
+  defaultCurrencyCode?: string;
   loading?: boolean;
   onNavigateToDashboard: () => void;
   onNavigateToView: (view: NavItem) => void;
@@ -53,6 +56,8 @@ export function CashMovementsModule({
   vendors,
   invoicesList,
   companySettings,
+  defaultCurrencySymbol = "L",
+  defaultCurrencyCode = "HNL",
   loading = false,
   onNavigateToDashboard,
   onNavigateToView,
@@ -555,6 +560,7 @@ export function CashMovementsModule({
     invoiceNumber: "",
     depositAccount: "Cash and cash equivalents",
     amount: 0,
+    currency: defaultCurrencyCode || "HNL",
     note: "",
     attachmentName: "",
   };
@@ -569,6 +575,38 @@ export function CashMovementsModule({
   const [showCancelPaymentConfirmModal, setShowCancelPaymentConfirmModal] = useState(false);
   const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
 
+  const activeCurrencyCode = useMemo(() => {
+    const c = (recibirPagoForm.currency || defaultCurrencyCode || "HNL").trim().toUpperCase();
+    if (c.includes("USD") || c === "$") return "USD";
+    if (c.includes("HNL") || c.includes("LEMPIRA") || c === "L") return "HNL";
+    if (c.includes("EUR") || c === "€") return "EUR";
+    return defaultCurrencyCode || "HNL";
+  }, [recibirPagoForm.currency, defaultCurrencyCode]);
+
+  const activeCurrencySymbol = useMemo(() => {
+    if (activeCurrencyCode === "HNL") return "L";
+    if (activeCurrencyCode === "USD") return "$";
+    if (activeCurrencyCode === "EUR") return "€";
+    return defaultCurrencySymbol || "L";
+  }, [activeCurrencyCode, defaultCurrencySymbol]);
+
+  const customerBalance = useMemo(() => {
+    if (!recibirPagoForm.customerId && !recibirPagoForm.customerName) return 0;
+    const targetName = (recibirPagoForm.customerName || "").trim().toLowerCase();
+    const customerObj = customers.find((c) => c.id === recibirPagoForm.customerId || (c.name && c.name.trim().toLowerCase() === targetName));
+    const emailToMatch = (customerObj?.email || recibirPagoForm.customerEmail || "").trim().toLowerCase();
+
+    return invoicesList
+      .filter((inv) => {
+        const invCustomer = (inv.customer || "").trim().toLowerCase();
+        const matchesName = targetName && (invCustomer === targetName || (customerObj && invCustomer === customerObj.name.trim().toLowerCase()));
+        const matchesEmail = emailToMatch && inv.customerEmail && inv.customerEmail.trim().toLowerCase() === emailToMatch;
+        const isPending = inv.status === "Pendiente" || inv.status === "Emitida";
+        return (matchesName || matchesEmail) && isPending;
+      })
+      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+  }, [invoicesList, recibirPagoForm.customerId, recibirPagoForm.customerName, recibirPagoForm.customerEmail, customers]);
+
   const paymentFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -580,11 +618,13 @@ export function CashMovementsModule({
         const foundCustomer = customers.find(
           (c) => c.name.toLowerCase().includes(match.customer.toLowerCase()) || match.customer.toLowerCase().includes(c.name.toLowerCase())
         );
+        const resolvedCurrency = match.currency || foundCustomer?.currency || defaultCurrencyCode || "HNL";
         setRecibirPagoForm((prev) => ({
           ...prev,
           customerId: foundCustomer ? foundCustomer.id : "",
           customerName: match.customer,
           customerEmail: match.customerEmail || foundCustomer?.email || "",
+          currency: resolvedCurrency,
           invoiceNumber: match.num,
           amount: match.total,
           referenceNumber: `FAC-${match.num}`,
@@ -603,18 +643,20 @@ export function CashMovementsModule({
               (selected.email && inv.customerEmail?.toLowerCase() === selected.email.toLowerCase())) &&
             (inv.status === "Pendiente" || inv.status === "Emitida")
         );
+        const resolvedCurrency = pendingInvoice?.currency || selected.currency || defaultCurrencyCode || "HNL";
         setRecibirPagoForm((prev) => ({
           ...prev,
           customerId: selected.id,
           customerName: selected.name,
           customerEmail: selected.email || "",
+          currency: resolvedCurrency,
           invoiceNumber: pendingInvoice ? pendingInvoice.num : prev.invoiceNumber,
           amount: pendingInvoice ? pendingInvoice.total : prev.amount,
           referenceNumber: pendingInvoice ? `FAC-${pendingInvoice.num}` : prev.referenceNumber,
         }));
       }
     }
-  }, [initialRecibirPagoInvoiceNumber, initialRecibirPagoCustomerId, customers, invoicesList]);
+  }, [initialRecibirPagoInvoiceNumber, initialRecibirPagoCustomerId, customers, invoicesList, defaultCurrencyCode]);
 
   const handleRequestCancelRecibirPago = () => {
     if (
@@ -652,11 +694,13 @@ export function CashMovementsModule({
             (selected.email && inv.customerEmail?.toLowerCase() === selected.email.toLowerCase())) &&
           (inv.status === "Pendiente" || inv.status === "Emitida")
       );
+      const resolvedCurrency = pendingInvoice?.currency || selected.currency || defaultCurrencyCode || "HNL";
       setRecibirPagoForm((prev) => ({
         ...prev,
         customerId: selected.id,
         customerName: selected.name,
         customerEmail: selected.email || "",
+        currency: resolvedCurrency,
         invoiceNumber: pendingInvoice ? pendingInvoice.num : "",
         amount: pendingInvoice ? pendingInvoice.total : prev.amount,
         referenceNumber: pendingInvoice ? `FAC-${pendingInvoice.num}` : prev.referenceNumber,
@@ -681,18 +725,21 @@ export function CashMovementsModule({
       const foundCustomer = customers.find(
         (c) => c.name.toLowerCase().includes(match.customer.toLowerCase()) || match.customer.toLowerCase().includes(c.name.toLowerCase())
       );
+      const resolvedCurrency = match.currency || foundCustomer?.currency || defaultCurrencyCode || "HNL";
+      const sym = resolvedCurrency.toUpperCase().includes("USD") ? "$" : (resolvedCurrency.toUpperCase().includes("HNL") ? "L" : activeCurrencySymbol);
       setRecibirPagoForm((prev) => ({
         ...prev,
         customerId: foundCustomer ? foundCustomer.id : "",
         customerName: match.customer,
         customerEmail: match.customerEmail || foundCustomer?.email || "",
+        currency: resolvedCurrency,
         invoiceNumber: match.num,
         amount: match.total,
         referenceNumber: `FAC-${match.num}`,
         note: `Pago asignado a la Factura N.º ${match.num}`,
       }));
       setRecibirPagoErrorMsg("");
-      setRecibirPagoSuccessMsg(`¡Factura N.º ${match.num} vinculada con éxito! Se importaron los datos de ${match.customer} e importe de $${match.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })}.`);
+      setRecibirPagoSuccessMsg(`¡Factura N.º ${match.num} vinculada con éxito! Se importaron los datos de ${match.customer} e importe de ${sym}${match.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })}.`);
       setShowInvoiceSearchModal(false);
       setSearchInvoiceNumber("");
     } else {
@@ -723,7 +770,7 @@ export function CashMovementsModule({
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Error al registrar el pago");
       }
-      setRecibirPagoSuccessMsg(`¡Pago por $${recibirPagoForm.amount.toFixed(2)} registrado correctamente!`);
+      setRecibirPagoSuccessMsg(`¡Pago por ${activeCurrencySymbol}${recibirPagoForm.amount.toFixed(2)} registrado correctamente!`);
       if (onRefreshAccounts) onRefreshAccounts();
       if (andClose) {
         setTimeout(() => {
@@ -1966,7 +2013,8 @@ export function CashMovementsModule({
 
           {/* ================= VIEW: RECIBIR PAGO ================= */}
           {currentView === "recibir-pago" && (
-            <div className="fixed inset-0 z-40 flex flex-col bg-[#f3f6f5] text-slate-800 animate-in fade-in duration-150 overflow-hidden">
+            <>
+            <div className="fixed inset-0 z-40 flex flex-col bg-[#f3f6f5] text-slate-800 animate-in fade-in duration-150 overflow-hidden print:hidden no-print">
               
               {/* TOP HEADER BAR */}
               <header className="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
@@ -2152,8 +2200,8 @@ export function CashMovementsModule({
                         </div>
                       </div>
 
-                      {/* SECOND ROW: Fecha de pago, Método de pago, N.º de referencia, Depositar en, Importe recibido */}
-                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
+                      {/* SECOND ROW: Fecha de pago, Método de pago, N.º de referencia, Depositar en, Moneda, Importe recibido */}
+                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 pt-2">
                         {/* Fecha de pago */}
                         <div>
                           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de pago</label>
@@ -2204,7 +2252,7 @@ export function CashMovementsModule({
                             className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
                           >
                             <option value="Cash and cash equivalents">Cash and cash equivalents</option>
-                            <option value="Caja General USD">Caja General (USD)</option>
+                            <option value={`Caja General (${activeCurrencyCode})`}>Caja General ({activeCurrencyCode})</option>
                             {connectedBanks.map((b) => (
                               <option key={b.id} value={`${b.name} (${b.currency})`}>
                                 {b.name} - {b.accountNumber} ({b.currency})
@@ -2213,10 +2261,29 @@ export function CashMovementsModule({
                           </select>
                         </div>
 
+                        {/* Moneda */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Moneda</label>
+                          <select
+                            value={activeCurrencyCode}
+                            onChange={(e) => setRecibirPagoForm((prev) => ({ ...prev, currency: e.target.value }))}
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 font-semibold focus:outline-none focus:border-[#1b426e] cursor-pointer"
+                          >
+                            <option value="HNL">HNL (Lempiras - L)</option>
+                            <option value="USD">USD (Dólares - $)</option>
+                            {defaultCurrencyCode && defaultCurrencyCode !== "HNL" && defaultCurrencyCode !== "USD" && (
+                              <option value={defaultCurrencyCode}>{defaultCurrencyCode}</option>
+                            )}
+                          </select>
+                        </div>
+
                         {/* Importe recibido */}
                         <div>
                           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Importe recibido</label>
                           <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                              {activeCurrencySymbol}
+                            </span>
                             <input
                               type="number"
                               step="0.01"
@@ -2224,7 +2291,7 @@ export function CashMovementsModule({
                               placeholder="0,00"
                               value={recibirPagoForm.amount || ""}
                               onChange={(e) => setRecibirPagoForm({ ...recibirPagoForm, amount: parseFloat(e.target.value) || 0 })}
-                              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 font-mono text-right focus:outline-none focus:border-[#1b426e]"
+                              className="w-full pl-7 pr-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 font-mono text-right focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
                         </div>
@@ -2235,14 +2302,16 @@ export function CashMovementsModule({
                     {/* Right Column: IMPORTE RECIBIDO big stat box (4 cols) */}
                     <div className="lg:col-span-4 text-right space-y-1">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                        IMPORTE RECIBIDO
+                        IMPORTE RECIBIDO ({activeCurrencyCode})
                       </span>
                       <div className="text-4xl font-light text-slate-900 font-sans tracking-tight">
-                        ${(recibirPagoForm.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {activeCurrencySymbol}{(recibirPagoForm.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       <div className="text-xs text-slate-500 pt-1">
                         <span>Cliente saldo </span>
-                        <span className="font-semibold text-slate-700">$0,00</span>
+                        <span className="font-semibold text-slate-700">
+                          {activeCurrencySymbol}{customerBalance.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -2300,11 +2369,11 @@ export function CashMovementsModule({
                       <div className="space-y-1 font-mono text-[11px] bg-white p-2.5 rounded-xl border border-blue-100">
                         <div className="flex justify-between text-slate-700">
                           <span>[Débito] 1100 - Bancos</span>
-                          <span className="font-semibold text-emerald-700">+${(recibirPagoForm.amount || 0).toFixed(2)}</span>
+                          <span className="font-semibold text-emerald-700">+{activeCurrencySymbol}{(recibirPagoForm.amount || 0).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-slate-700">
                           <span>[Crédito] 1200 - CxC Clientes</span>
-                          <span className="font-semibold text-slate-900">-${(recibirPagoForm.amount || 0).toFixed(2)}</span>
+                          <span className="font-semibold text-slate-900">-{activeCurrencySymbol}{(recibirPagoForm.amount || 0).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -2474,7 +2543,10 @@ export function CashMovementsModule({
                                 <p className="text-xs text-slate-600 mt-0.5">{inv.customer}</p>
                               </div>
                               <div className="text-right">
-                                <span className="font-bold text-xs text-slate-900 block">${inv.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                                <span className="font-bold text-xs text-slate-900 block">
+                                  {(inv.currency?.toUpperCase().includes("USD") ? "$" : (inv.currency?.toUpperCase().includes("HNL") ? "L" : activeCurrencySymbol))}
+                                  {inv.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
                                 <span className="text-[10px] text-[#1b426e] font-semibold group-hover:underline">Seleccionar →</span>
                               </div>
                             </div>
@@ -2533,6 +2605,155 @@ export function CashMovementsModule({
               )}
 
             </div>
+
+            {/* ================= COMPROBANTE OFICIAL DE PAGO / RECIBO DE CAJA (DOCUMENTO DE MEDIA PÁGINA) ================= */}
+            <div id="printable-payment-receipt" className="hidden print:block printable-document">
+              <div className="p-6 max-w-3xl mx-auto bg-white text-slate-900 border-2 border-slate-900 rounded-xl space-y-4 shadow-none text-xs">
+                
+                {/* 1. Header: Empresa & Título del Documento */}
+                <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3">
+                  <div className="space-y-0.5">
+                    <h1 className="text-base font-black text-[#1b426e] uppercase tracking-tight">
+                      {companySettings.nombreLegal || companySettings.nombre || "EMPRESA S.A."}
+                    </h1>
+                    <p className="text-[11px] text-slate-600 leading-tight">
+                      {[
+                        companySettings.taxId ? `RTN: ${companySettings.taxId}` : "",
+                        companySettings.telefono ? `Tel: ${companySettings.telefono}` : "",
+                        companySettings.email ? `Email: ${companySettings.email}` : ""
+                      ].filter(Boolean).join(" | ")}
+                    </p>
+                    {companySettings.direccion && (
+                      <p className="text-[10px] text-slate-500 leading-tight">
+                        {companySettings.direccion}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="inline-block bg-[#1b426e] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded tracking-wider">
+                      RECIBO DE CAJA / COBRO
+                    </span>
+                    <div className="font-mono font-bold text-sm text-slate-900 mt-1">
+                      N.º {recibirPagoForm.referenceNumber
+                        ? (recibirPagoForm.referenceNumber.startsWith("REC-") ? recibirPagoForm.referenceNumber : `REC-${recibirPagoForm.referenceNumber}`)
+                        : (recibirPagoForm.invoiceNumber ? `REC-FAC-${recibirPagoForm.invoiceNumber}` : `REC-${recibirPagoForm.paymentDate.replace(/-/g, "")}`)}
+                    </div>
+                    <div className="text-[10px] text-slate-600">
+                      <strong>Fecha:</strong> {recibirPagoForm.paymentDate}
+                    </div>
+                    <div className="text-[10px] text-slate-600">
+                      <strong>Moneda:</strong> {activeCurrencyCode} ({activeCurrencySymbol})
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Bloque Principal: Cliente & Total Destacado */}
+                <div className="grid grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="col-span-7 space-y-1">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Recibimos de (Cliente):
+                    </div>
+                    <div className="text-sm font-black text-slate-900 leading-tight">
+                      {recibirPagoForm.customerName || "Consumidor Final"}
+                    </div>
+                    {recibirPagoForm.customerEmail && (
+                      <div className="text-[10px] text-slate-600">
+                        {recibirPagoForm.customerEmail}
+                      </div>
+                    )}
+                    {recibirPagoForm.invoiceNumber && (
+                      <div className="text-[10px] font-medium text-slate-700">
+                        <strong>Documento Vinculado:</strong> Factura N.º {recibirPagoForm.invoiceNumber}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="col-span-5 bg-white p-2.5 rounded-lg border border-slate-300 text-right">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                      IMPORTE TOTAL RECIBIDO
+                    </span>
+                    <span className="text-xl font-mono font-black text-slate-900 block leading-tight">
+                      {activeCurrencySymbol}{(recibirPagoForm.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {activeCurrencyCode}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. Valor en Letras */}
+                <div className="px-3 py-2 bg-slate-100 rounded-lg border border-slate-200 text-[11px] leading-relaxed">
+                  <span className="font-bold text-slate-700">La suma de: </span>
+                  <span className="font-bold text-slate-900 uppercase">
+                    "{numberToWordsSpanish(recibirPagoForm.amount || 0, activeCurrencySymbol)}"
+                  </span>
+                </div>
+
+                {/* 4. Tabla de Detalle del Pago */}
+                <table className="w-full text-[11px] border border-slate-300 border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 border-b border-slate-300 text-slate-700 font-bold">
+                      <th className="p-2 text-left">Concepto / Motivo</th>
+                      <th className="p-2 text-left">Método de Pago</th>
+                      <th className="p-2 text-left">N.º Referencia</th>
+                      <th className="p-2 text-left">Depositado en</th>
+                      <th className="p-2 text-right">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-slate-200">
+                      <td className="p-2 font-medium text-slate-800">
+                        {recibirPagoForm.invoiceNumber
+                          ? `Abono / Cancelación Factura #${recibirPagoForm.invoiceNumber}`
+                          : (recibirPagoForm.note || "Abono a Cuenta por Cobrar")}
+                      </td>
+                      <td className="p-2 text-slate-700">{recibirPagoForm.paymentMethod}</td>
+                      <td className="p-2 font-mono text-slate-700">{recibirPagoForm.referenceNumber || "—"}</td>
+                      <td className="p-2 text-slate-700">{recibirPagoForm.depositAccount}</td>
+                      <td className="p-2 text-right font-mono font-bold text-slate-900">
+                        {activeCurrencySymbol}{(recibirPagoForm.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* 5. Notas & Saldo de Cliente */}
+                <div className="flex justify-between items-center text-[10px] text-slate-600 px-1">
+                  <div>
+                    {recibirPagoForm.note ? (
+                      <span><strong>Observaciones:</strong> {recibirPagoForm.note}</span>
+                    ) : (
+                      <span>Comprobante emitido a conformidad del cliente.</span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span>Saldo pendiente cliente: </span>
+                    <strong className="font-mono text-slate-800">
+                      {activeCurrencySymbol}{customerBalance.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* 6. Bloque de Firmas (Media Página) */}
+                <div className="pt-6 grid grid-cols-2 gap-10 text-center text-[10px] text-slate-600">
+                  <div>
+                    <div className="border-b border-slate-400 w-44 mx-auto mb-1.5" />
+                    <p className="font-semibold text-slate-800">Entregado Conforme</p>
+                    <p className="text-[9px] text-slate-400">Firma del Cliente / Pagador</p>
+                  </div>
+                  <div>
+                    <div className="border-b border-slate-400 w-44 mx-auto mb-1.5" />
+                    <p className="font-semibold text-slate-800">Recibido Conforme / Sello</p>
+                    <p className="text-[9px] text-slate-400">{companySettings.nombreLegal || companySettings.nombre || "Departamento de Caja"}</p>
+                  </div>
+                </div>
+
+                {/* 7. Pie informativo */}
+                <div className="pt-2 border-t border-dashed border-slate-300 text-center text-[9px] text-slate-400 flex items-center justify-between">
+                  <span>Original: Cliente | Copia: Contabilidad</span>
+                  <span>Documento no negociable emitido por Prado ERP</span>
+                </div>
+
+              </div>
+            </div>
+            </>
           )}
 
     </>

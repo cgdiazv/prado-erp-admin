@@ -119,6 +119,8 @@ interface SalesOrdersModuleProps {
     name: string;
     code: string;
   }>;
+  defaultCurrencySymbol?: string;
+  defaultCurrencyCode?: string;
   companySettings?: any;
 }
 
@@ -130,8 +132,45 @@ export default function SalesOrdersModule({
   customers = [],
   inventory = [],
   salesReps = [],
+  defaultCurrencySymbol = "$",
+  defaultCurrencyCode = "USD",
   companySettings,
 }: SalesOrdersModuleProps) {
+  // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
+  const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
+    if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
+      return { effectiveCurrencySymbol: defaultCurrencySymbol, effectiveCurrencyCode: defaultCurrencyCode };
+    }
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("wayne_monedas_settings") : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const main = parsed?.monedaPrincipal || "";
+        if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) {
+          return { effectiveCurrencySymbol: "L", effectiveCurrencyCode: "HNL" };
+        }
+        if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) {
+          return { effectiveCurrencySymbol: "€", effectiveCurrencyCode: "EUR" };
+        }
+        if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) {
+          return { effectiveCurrencySymbol: "$", effectiveCurrencyCode: "USD" };
+        }
+      }
+    } catch { }
+    return {
+      effectiveCurrencySymbol: defaultCurrencySymbol || "$",
+      effectiveCurrencyCode: defaultCurrencyCode || (defaultCurrencySymbol === "L" ? "HNL" : defaultCurrencySymbol === "€" ? "EUR" : "USD"),
+    };
+  }, [defaultCurrencySymbol, defaultCurrencyCode]);
+
+  const getCurrencySymbol = (currencyCode?: string | null) => {
+    if (!currencyCode) return effectiveCurrencySymbol;
+    if (currencyCode === "HNL" || currencyCode.includes("Lempira")) return "L";
+    if (currencyCode === "EUR" || currencyCode.includes("Euro")) return "€";
+    if (currencyCode === "USD" || currencyCode.includes("Dólar")) return "$";
+    return effectiveCurrencySymbol;
+  };
+
   const [orders, setOrders] = useState<SalesOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -166,7 +205,7 @@ export default function SalesOrdersModule({
     orderDate: new Date().toISOString().split("T")[0],
     expectedDeliveryDate: new Date(Date.now() + 10 * 86400000).toISOString().split("T")[0],
     paymentTerms: "Neto 30 días",
-    currency: "USD",
+    currency: effectiveCurrencyCode || "USD",
     salesRepId: "",
     salesRepName: "",
     warehouse: "Bodega Principal Zip Búfalo",
@@ -285,6 +324,7 @@ export default function SalesOrdersModule({
   const handleOpenCreate = () => {
     setFormData({
       ...initialFormState,
+      currency: effectiveCurrencyCode || "USD",
       orderNumber: nextOrderNumber,
     });
     setShowEditorModal(true);
@@ -423,6 +463,7 @@ export default function SalesOrdersModule({
       customerEmail: customer.email || "",
       customerPhone: customer.phone || "",
       customerAddress: customer.address || "",
+      currency: customer.currency || prev.currency || effectiveCurrencyCode,
     }));
   };
 
@@ -687,7 +728,7 @@ export default function SalesOrdersModule({
                   Total Pedidos Activos
                 </span>
                 <h3 className="text-xl font-black text-slate-900 mt-1">
-                  ${metrics.montoTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {effectiveCurrencySymbol}{metrics.montoTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h3>
                 <span className="text-xs text-slate-500 mt-0.5 block">
                   {metrics.totalCount} pedidos registrados
@@ -723,7 +764,7 @@ export default function SalesOrdersModule({
                   Despachados sin Facturar
                 </span>
                 <h3 className="text-xl font-black text-indigo-600 mt-1">
-                  ${metrics.montoDespachadoSinFacturar.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {effectiveCurrencySymbol}{metrics.montoDespachadoSinFacturar.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h3>
                 <span className="text-xs text-slate-500 mt-0.5 block">
                   {metrics.despachados} con remisión entregada
@@ -918,8 +959,8 @@ export default function SalesOrdersModule({
 
                     {/* Total */}
                     <td className="py-3.5 px-4 text-right font-black text-slate-900 font-mono">
-                      ${order.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
-                      <span className="text-[10px] font-normal text-slate-500">{order.currency}</span>
+                      {getCurrencySymbol(order.currency)}{order.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                      <span className="text-[10px] font-normal text-slate-500">{order.currency || effectiveCurrencyCode}</span>
                     </td>
 
                     {/* Estado */}
@@ -1181,7 +1222,7 @@ export default function SalesOrdersModule({
                                 <option value="">Copiar desde inventario...</option>
                                 {inventory.map((inv) => (
                                   <option key={inv.id} value={inv.id}>
-                                    {inv.sku} - {inv.description} (${inv.price})
+                                    {inv.sku} - {inv.description} ({getCurrencySymbol(formData.currency)}{inv.price})
                                   </option>
                                 ))}
                               </select>
@@ -1217,7 +1258,7 @@ export default function SalesOrdersModule({
                             />
                           </td>
                           <td className="py-2 px-3 text-right font-black text-slate-900 font-mono">
-                            ${Number(it.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {getCurrencySymbol(formData.currency)}{Number(it.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td className="py-2 px-2 text-center">
                             {formData.items.length > 1 && (
@@ -1268,12 +1309,12 @@ export default function SalesOrdersModule({
                   <div className="flex justify-between text-slate-600">
                     <span>Subtotal:</span>
                     <span className="font-bold font-mono">
-                      ${formData.items.reduce((acc, it) => acc + (Number(it.amount) || 0), 0).toFixed(2)}
+                      {getCurrencySymbol(formData.currency)}{formData.items.reduce((acc, it) => acc + (Number(it.amount) || 0), 0).toFixed(2)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-slate-600">
-                    <span>Descuento ($):</span>
+                    <span>Descuento ({getCurrencySymbol(formData.currency)}):</span>
                     <input
                       type="number"
                       min="0"
@@ -1308,8 +1349,8 @@ export default function SalesOrdersModule({
                   <div className="pt-2 border-t border-slate-200 flex justify-between font-black text-sm text-slate-900">
                     <span>Total del Pedido:</span>
                     <span className="text-emerald-700 font-mono">
-                      ${calculateFormTotals(formData.items, formData.discount, formData.taxRate).total.toFixed(2)}{" "}
-                      {formData.currency}
+                      {getCurrencySymbol(formData.currency)}{calculateFormTotals(formData.items, formData.discount, formData.taxRate).total.toFixed(2)}{" "}
+                      {formData.currency || effectiveCurrencyCode}
                     </span>
                   </div>
                 </div>
@@ -1485,8 +1526,8 @@ export default function SalesOrdersModule({
                         <td className="py-2 px-3 text-center font-bold text-indigo-600">
                           {it.quantityShipped || it.quantityOrdered}
                         </td>
-                        <td className="py-2 px-3 text-right font-mono">${it.rate.toFixed(2)}</td>
-                        <td className="py-2 px-3 text-right font-mono font-bold">${it.amount.toFixed(2)}</td>
+                        <td className="py-2 px-3 text-right font-mono">{getCurrencySymbol(selectedOrder?.currency)}{it.rate.toFixed(2)}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold">{getCurrencySymbol(selectedOrder?.currency)}{it.amount.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1496,7 +1537,7 @@ export default function SalesOrdersModule({
                         Total Pedido:
                       </td>
                       <td className="py-2.5 px-3 text-right font-black font-mono text-slate-900">
-                        ${selectedOrder.total.toFixed(2)} {selectedOrder.currency}
+                        {getCurrencySymbol(selectedOrder.currency)}{selectedOrder.total.toFixed(2)} {selectedOrder.currency || effectiveCurrencyCode}
                       </td>
                     </tr>
                   </tfoot>
@@ -1611,7 +1652,7 @@ export default function SalesOrdersModule({
               <div className="flex justify-between">
                 <span className="text-slate-500">Total a Facturar:</span>
                 <span className="font-black text-slate-900 font-mono">
-                  ${selectedOrder.total.toFixed(2)} {selectedOrder.currency}
+                  {getCurrencySymbol(selectedOrder.currency)}{selectedOrder.total.toFixed(2)} {selectedOrder.currency || effectiveCurrencyCode}
                 </span>
               </div>
               <div className="flex justify-between">

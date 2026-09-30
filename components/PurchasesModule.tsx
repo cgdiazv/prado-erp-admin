@@ -46,6 +46,7 @@ export interface PurchasesModuleProps {
   companySettings: CompanySettings;
   companyLogo?: string | null;
   defaultCurrencySymbol?: string;
+  defaultCurrencyCode?: string;
   loading?: boolean;
   onNavigateToDashboard: () => void;
   onNavigateToView: (view: NavItem) => void;
@@ -68,12 +69,40 @@ export function PurchasesModule({
   companySettings,
   companyLogo,
   defaultCurrencySymbol = "$",
+  defaultCurrencyCode = "USD",
   loading = false,
   onNavigateToDashboard,
   onNavigateToView,
   onPayVendor,
   onRefreshAccounts,
 }: PurchasesModuleProps) {
+  // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
+  const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
+    if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
+      return { effectiveCurrencySymbol: defaultCurrencySymbol, effectiveCurrencyCode: defaultCurrencyCode };
+    }
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("wayne_monedas_settings") : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const main = parsed?.monedaPrincipal || "";
+        if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) {
+          return { effectiveCurrencySymbol: "L", effectiveCurrencyCode: "HNL" };
+        }
+        if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) {
+          return { effectiveCurrencySymbol: "€", effectiveCurrencyCode: "EUR" };
+        }
+        if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) {
+          return { effectiveCurrencySymbol: "$", effectiveCurrencyCode: "USD" };
+        }
+      }
+    } catch { }
+    return {
+      effectiveCurrencySymbol: defaultCurrencySymbol || "$",
+      effectiveCurrencyCode: defaultCurrencyCode || (defaultCurrencySymbol === "L" ? "HNL" : defaultCurrencySymbol === "€" ? "EUR" : "USD"),
+    };
+  }, [defaultCurrencySymbol, defaultCurrencyCode]);
+
   // Dynamic Purchase Orders Statistics
   const totalPO = useMemo(() => purchaseOrders.reduce((acc, item) => acc + item.total, 0), [purchaseOrders]);
   const poRecibidas = useMemo(() => purchaseOrders.filter((item) => item.status === "Recibida"), [purchaseOrders]);
@@ -599,7 +628,7 @@ export function PurchasesModule({
     returnDate: new Date().toISOString().split("T")[0],
     reason: "DEFECTO",
     status: "BORRADOR",
-    currency: "USD",
+    currency: effectiveCurrencyCode || "USD",
     notes: "",
     items: [] as VendorReturnItem[],
   };
@@ -882,10 +911,10 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      ${totalPO.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{totalPO.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">USD contratados</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{effectiveCurrencyCode} contratados</p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
                 </div>
 
@@ -901,7 +930,7 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
-                      ${totalPORecibidas.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{totalPORecibidas.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-600 font-medium mt-1">{poRecibidas.length} orden en almacén</p>
@@ -920,7 +949,7 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-[#1b426e] tracking-tight">
-                      ${totalPOPendientes.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{totalPOPendientes.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">{poPendientes.length} órdenes en tránsito</p>
@@ -1150,10 +1179,10 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      ${purchaseInvoices.reduce((acc, inv) => acc + (inv.total || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{purchaseInvoices.reduce((acc, inv) => acc + (inv.total || 0), 0).toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Monto bruto acumulado USD</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Monto bruto acumulado ({effectiveCurrencyCode})</p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
                 </div>
 
@@ -1166,7 +1195,7 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-amber-600 tracking-tight">
-                      ${purchaseInvoices.filter((inv) => inv.paymentStatus === "PENDIENTE").reduce((acc, inv) => acc + (inv.total || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{purchaseInvoices.filter((inv) => inv.paymentStatus === "PENDIENTE").reduce((acc, inv) => acc + (inv.total || 0), 0).toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-amber-600 font-medium mt-1">Pendiente de pago a proveedores</p>
@@ -1182,7 +1211,7 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
-                      ${purchaseInvoices.filter((inv) => inv.paymentStatus === "PAGADA").reduce((acc, inv) => acc + (inv.total || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {effectiveCurrencySymbol}{purchaseInvoices.filter((inv) => inv.paymentStatus === "PAGADA").reduce((acc, inv) => acc + (inv.total || 0), 0).toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-600 font-medium mt-1">Total abonado / liquidado</p>
@@ -1409,13 +1438,14 @@ export function PurchasesModule({
                   </div>
                   <div className="mt-2">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      ${vendorReturns
+                      {effectiveCurrencySymbol}
+                      {vendorReturns
                         .filter((r) => r.status !== "ANULADA")
                         .reduce((acc, r) => acc + (r.total || 0), 0)
-                        .toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        .toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">USD en crédito/reembolso</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{effectiveCurrencyCode} en crédito/reembolso</p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1b426e]" />
                 </div>
 
@@ -1525,7 +1555,7 @@ export function PurchasesModule({
                         <th className="py-3.5 px-4">Fecha</th>
                         <th className="py-3.5 px-4">Motivo</th>
                         <th className="py-3.5 px-4 text-center">Ítems</th>
-                        <th className="py-3.5 px-4 text-right">Total ($ USD)</th>
+                        <th className="py-3.5 px-4 text-right">Total ({effectiveCurrencySymbol} {effectiveCurrencyCode})</th>
                         <th className="py-3.5 px-4 text-center">Estado</th>
                         <th className="py-3.5 px-4 text-right">Acciones</th>
                       </tr>
@@ -1569,7 +1599,7 @@ export function PurchasesModule({
                               {vr.items?.length || 0}
                             </td>
                             <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900">
-                              ${(vr.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              {effectiveCurrencySymbol} {(vr.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td className="py-3.5 px-4 text-center">
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-block ${statusColors[vr.status] || "bg-slate-100 text-slate-700 border-slate-200"}`}>
@@ -3461,7 +3491,7 @@ export function PurchasesModule({
                             />
                           </td>
                           <td className="p-2.5 text-right font-mono font-bold text-slate-900">
-                            ${((it.quantity ?? 0) * (it.unitCost ?? 0)).toFixed(2)}
+                            {effectiveCurrencySymbol} {((it.quantity ?? 0) * (it.unitCost ?? 0)).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td className="p-2.5 text-center">
                             <button
@@ -3489,7 +3519,7 @@ export function PurchasesModule({
                 <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
                   <span className="font-bold text-slate-700">Total a Reclamar / Devolver:</span>
                   <span className="text-base font-bold font-mono text-[#1b426e]">
-                    ${vendorReturnSubtotal.toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
+                    {effectiveCurrencySymbol} {vendorReturnSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {effectiveCurrencyCode}
                   </span>
                 </div>
               </div>
@@ -3597,7 +3627,7 @@ export function PurchasesModule({
                         <th className="p-2.5 text-center">Cant.</th>
                         <th className="p-2.5 text-right">Costo Unit.</th>
                         <th className="p-2.5 text-center">Lote</th>
-                        <th className="p-2.5 text-right">Total ($)</th>
+                        <th className="p-2.5 text-right">Total ({effectiveCurrencySymbol})</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -3606,9 +3636,9 @@ export function PurchasesModule({
                           <td className="p-2.5 font-mono font-bold text-slate-800">{it.sku}</td>
                           <td className="p-2.5 text-slate-700">{it.description}</td>
                           <td className="p-2.5 text-center font-bold text-rose-600">-{it.quantity}</td>
-                          <td className="p-2.5 text-right font-mono">${(it.unitCost || 0).toFixed(2)}</td>
+                          <td className="p-2.5 text-right font-mono">{effectiveCurrencySymbol} {(it.unitCost || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           <td className="p-2.5 text-center font-mono text-amber-800">{it.lotNumber || "—"}</td>
-                          <td className="p-2.5 text-right font-bold text-slate-900">${(it.totalCost || 0).toFixed(2)}</td>
+                          <td className="p-2.5 text-right font-bold text-slate-900">{effectiveCurrencySymbol} {(it.totalCost || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -3618,7 +3648,7 @@ export function PurchasesModule({
 
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-slate-900">
                 <span>Total Reclamado:</span>
-                <span className="text-base text-[#1b426e] font-mono">${(vendorReturnDetailModal.total || 0).toFixed(2)} USD</span>
+                <span className="text-base text-[#1b426e] font-mono">{effectiveCurrencySymbol} {(vendorReturnDetailModal.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {effectiveCurrencyCode}</span>
               </div>
 
               {vendorReturnDetailModal.notes && (

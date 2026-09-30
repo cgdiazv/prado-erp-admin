@@ -11353,6 +11353,8 @@ ${accountRowsHtml(equity)}
                 customers={customers}
                 inventory={inventory}
                 salesReps={salesReps}
+                defaultCurrencySymbol={defaultCurrencySymbol}
+                defaultCurrencyCode={defaultCurrencyCode}
                 autoOpenCreate={quotesAutoOpenCreate}
                 onAutoOpenCreateConsumed={() => setQuotesAutoOpenCreate(false)}
                 onBack={() => setCurrentView("dashboard")}
@@ -11381,6 +11383,8 @@ ${accountRowsHtml(equity)}
                 inventory={inventory}
                 salesReps={salesReps}
                 companySettings={companySettings}
+                defaultCurrencySymbol={defaultCurrencySymbol}
+                defaultCurrencyCode={defaultCurrencyCode}
                 onBack={() => setCurrentView("dashboard")}
                 onOpenInvoiceEditor={(prefilled) => openInvoiceEditor(prefilled)}
                 onNavigateToInvoices={() => setCurrentView("lista-facturas")}
@@ -11448,6 +11452,7 @@ ${accountRowsHtml(equity)}
                 companySettings={companySettings}
                 companyLogo={companyLogo}
                 defaultCurrencySymbol={defaultCurrencySymbol}
+                defaultCurrencyCode={defaultCurrencyCode}
                 loading={loading}
                 onNavigateToDashboard={() => setCurrentView("dashboard")}
                 onNavigateToView={(view) => setCurrentView(view)}
@@ -11477,6 +11482,8 @@ ${accountRowsHtml(equity)}
                 vendors={vendors}
                 invoicesList={invoicesList}
                 companySettings={companySettings}
+                defaultCurrencySymbol={defaultCurrencySymbol}
+                defaultCurrencyCode={defaultCurrencyCode}
                 loading={loading}
                 onNavigateToDashboard={() => setCurrentView("dashboard")}
                 onNavigateToView={(view) => setCurrentView(view)}

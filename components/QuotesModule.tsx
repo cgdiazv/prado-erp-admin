@@ -106,6 +106,8 @@ interface QuotesModuleProps {
     name: string;
     code: string;
   }>;
+  defaultCurrencySymbol?: string;
+  defaultCurrencyCode?: string;
   companySettings?: {
     nombre?: string;
     nombreLegal?: string;
@@ -127,8 +129,37 @@ export default function QuotesModule({
   customers = [],
   inventory = [],
   salesReps = [],
+  defaultCurrencySymbol = "$",
+  defaultCurrencyCode = "USD",
   companySettings,
 }: QuotesModuleProps) {
+  // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
+  const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
+    if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
+      return { effectiveCurrencySymbol: defaultCurrencySymbol, effectiveCurrencyCode: defaultCurrencyCode };
+    }
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("wayne_monedas_settings") : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const main = parsed?.monedaPrincipal || "";
+        if (main.includes("HNL") || main.includes("(L)") || main.includes("Lempira")) {
+          return { effectiveCurrencySymbol: "L", effectiveCurrencyCode: "HNL" };
+        }
+        if (main.includes("EUR") || main.includes("(€)") || main.includes("Euro")) {
+          return { effectiveCurrencySymbol: "€", effectiveCurrencyCode: "EUR" };
+        }
+        if (main.includes("USD") || main.includes("($)") || main.includes("Dólar")) {
+          return { effectiveCurrencySymbol: "$", effectiveCurrencyCode: "USD" };
+        }
+      }
+    } catch { }
+    return {
+      effectiveCurrencySymbol: defaultCurrencySymbol || "$",
+      effectiveCurrencyCode: defaultCurrencyCode || (defaultCurrencySymbol === "L" ? "HNL" : defaultCurrencySymbol === "€" ? "EUR" : "USD"),
+    };
+  }, [defaultCurrencySymbol, defaultCurrencyCode]);
+
   const compName = companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA";
   const compRtn = companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "";
   const compAddress = companySettings?.direccion || "";
@@ -166,7 +197,7 @@ export default function QuotesModule({
     quoteDate: new Date().toISOString().split("T")[0],
     validUntil: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
     paymentTerms: "Neto 30 días",
-    currency: "USD",
+    currency: effectiveCurrencyCode || "USD",
     salesRepId: "",
     salesRepName: "",
     notes: "Precios sujetos a confirmación de volumen y especificaciones de arte flexográfico.",
@@ -1023,13 +1054,13 @@ export default function QuotesModule({
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">Total Cotizado</span>
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center">
-                  <DollarSign className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center font-bold text-xs">
+                  {effectiveCurrencySymbol === "$" ? <DollarSign className="w-4 h-4" /> : effectiveCurrencySymbol}
                 </div>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  ${metrics.totalQuoted.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {effectiveCurrencySymbol}{metrics.totalQuoted.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">
@@ -1048,7 +1079,7 @@ export default function QuotesModule({
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  ${metrics.totalApproved.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {effectiveCurrencySymbol}{metrics.totalApproved.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">
@@ -1218,8 +1249,9 @@ export default function QuotesModule({
 
                       {/* Total */}
                       <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                        ${quote.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
-                        <span className="text-[10px] text-slate-400 font-normal">{quote.currency}</span>
+                        {quote.currency === "HNL" || quote.currency === "L" ? "L" : quote.currency === "EUR" ? "€" : (quote.currency ? "$" : effectiveCurrencySymbol)}{" "}
+                        {quote.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                        <span className="text-[10px] text-slate-400 font-normal">{quote.currency || effectiveCurrencyCode}</span>
                       </td>
 
                       {/* Estado Comercial */}

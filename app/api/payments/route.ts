@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       depositAccount,
       amount,
       note,
+      currency,
     } = body;
 
     if (!customerName || !amount || !paymentDate || !paymentMethod) {
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
         paymentMethod: newPayment.paymentMethod,
         referenceNumber: newPayment.referenceNumber || undefined,
         depositAccount: newPayment.depositAccount,
+        currency: currency || undefined,
       });
     } catch (accountingErr) {
       console.error("Error creating accounting entry for payment:", accountingErr);

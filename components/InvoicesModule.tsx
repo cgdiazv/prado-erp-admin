@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -194,6 +194,7 @@ export function InvoicesModule({
 
   // Search query for the invoice list view
   const [searchQuery, setSearchQuery] = useState("");
+  const [previewInvoicePdf, setPreviewInvoicePdf] = useState<Invoice | null>(null);
 
   // Factura Full-Screen Editor State
   const [activeInvoiceTab, setActiveInvoiceTab] = useState<"Editar" | "Vista de correo electrónico" | "Vista de PDF">("Editar");
@@ -478,13 +479,73 @@ export function InvoicesModule({
     }
   };
 
+  const previewInvoiceData = useMemo(() => {
+    if (!previewInvoicePdf) return null;
+    const matchedCust = customers.find(
+      (c) => c.name.toLowerCase() === (previewInvoicePdf.customer || "").toLowerCase()
+    );
+    const invoiceLines = previewInvoicePdf.lines && previewInvoicePdf.lines.length > 0
+      ? previewInvoicePdf.lines.map((l: any, i: number) => ({
+          id: l.id || `line-${i + 1}`,
+          serviceDate: l.serviceDate || previewInvoicePdf.date || new Date().toISOString().split("T")[0],
+          productId: l.productId || "",
+          productName: l.productName || "Artículo o Servicio Flexográfico",
+          sku: l.sku || `SKU-${previewInvoicePdf.num}`,
+          description: l.description || "Impresión y empaque industrial",
+          quantity: Number(l.quantity) || 1,
+          rate: Number(l.rate) || (previewInvoicePdf.lines?.length ? 0 : Number(previewInvoicePdf.total)) || 0,
+          amount: Number(l.amount) || (previewInvoicePdf.lines?.length ? 0 : Number(previewInvoicePdf.total)) || 0,
+        }))
+      : [
+          {
+            id: `line-${previewInvoicePdf.num}-1`,
+            serviceDate: previewInvoicePdf.date || new Date().toISOString().split("T")[0],
+            productId: "",
+            productName: `Servicios de Impresión Flexográfica para ${previewInvoicePdf.customer || "Cliente"}`,
+            sku: `SKU-${previewInvoicePdf.num}`,
+            description: `Facturación comercial correspondiente a Factura N.º ${previewInvoicePdf.num}`,
+            quantity: 1,
+            rate: Number(previewInvoicePdf.total) || 0,
+            amount: Number(previewInvoicePdf.total) || 0,
+          },
+        ];
+
+    const { symbol: currSymbol } = getInvoiceCurrency(previewInvoicePdf);
+    const totalAmount = Number(previewInvoicePdf.total) || 0;
+    const grossSubtotal = invoiceLines.reduce((sum, line) => sum + (Number(line.amount) || 0), 0) || totalAmount;
+    const isvRate = (salesSettings?.tasaIsvGeneral ?? 15) / 100;
+    let subtotal = grossSubtotal;
+    let isv15 = 0;
+    if (Math.abs(grossSubtotal - totalAmount) > 0.01) {
+      subtotal = Number((totalAmount / (1 + isvRate)).toFixed(2));
+      isv15 = Number((totalAmount - subtotal).toFixed(2));
+    }
+
+    return {
+      num: previewInvoicePdf.num,
+      customer: previewInvoicePdf.customer,
+      date: previewInvoicePdf.date,
+      due: previewInvoicePdf.due,
+      total: totalAmount,
+      status: previewInvoicePdf.status,
+      paymentTerms: previewInvoicePdf.paymentTerms || "Neto 30",
+      customerEmail: previewInvoicePdf.customerEmail || matchedCust?.email || "",
+      customerAddress: matchedCust?.address || "",
+      lines: invoiceLines,
+      currencySymbol: currSymbol,
+      subtotal,
+      isv15,
+      matchedCust,
+    };
+  }, [previewInvoicePdf, customers, salesSettings, effectiveCurrencySymbol]);
+
   const activeInvoiceColor = invoiceDesign.printerFriendly ? "#111827" : (invoiceDesign.color || "#1b426e");
 
-  const downloadInvoicePDF = async () => {
+  const downloadInvoicePDF = async (customNum?: string | React.MouseEvent, elementId = "printable-invoice-document") => {
     setShowPrintDownloadDropdown(false);
     setIsGeneratingPDF(true);
     try {
-      const printableElem = document.getElementById("printable-invoice-document");
+      const printableElem = document.getElementById(elementId);
       if (!printableElem) {
         window.print();
         return;
@@ -553,7 +614,9 @@ export function InvoicesModule({
         heightLeft -= pdfHeight;
       }
 
-      const cleanNum = (invoiceForm.invoiceNumber || "factura").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const actualCustomNum = typeof customNum === "string" ? customNum : undefined;
+      const invoiceNumToUse = actualCustomNum || invoiceForm.invoiceNumber || "factura";
+      const cleanNum = invoiceNumToUse.replace(/[^a-zA-Z0-9_-]/g, "_");
       pdf.save(`Factura_${cleanNum}.pdf`);
     } catch (error) {
       console.error("Error al generar PDF de factura:", error);
@@ -561,6 +624,53 @@ export function InvoicesModule({
     } finally {
       setIsGeneratingPDF(false);
     }
+  };
+
+  const openInvoicePdfInNewTab = (elementId = "printable-invoice-document", title = "Factura") => {
+    const printableElem = document.getElementById(elementId);
+    if (!printableElem) {
+      window.print();
+      return;
+    }
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title}</title>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            @media print {
+              body { margin: 0; padding: 0; background: #ffffff !important; }
+              .no-print { display: none !important; }
+            }
+          </style>
+        </head>
+        <body class="bg-slate-100 flex flex-col items-center py-6 min-h-screen">
+          <div class="no-print mb-4 flex gap-2">
+            <button onclick="window.print()" class="px-4 py-2 bg-[#1b426e] text-white font-bold text-xs rounded-lg shadow-sm hover:bg-[#143355] cursor-pointer">Imprimir Documento</button>
+            <button onclick="window.close()" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold text-xs rounded-lg shadow-sm hover:bg-slate-50 cursor-pointer">Cerrar</button>
+          </div>
+          <div class="bg-white shadow-xl max-w-[816px] w-full p-8 border border-slate-200">
+            ${printableElem.innerHTML}
+          </div>
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+              }, 400);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleSaveInvoiceRecord = async (closeAfter = false) => {
@@ -994,10 +1104,10 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => window.print()}
+                                  onClick={() => setPreviewInvoicePdf(fact)}
                                   className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
-                                  title="Imprimir factura"
-                                  aria-label="Imprimir factura"
+                                  title="Abrir documento PDF e imprimir"
+                                  aria-label="Abrir documento PDF e imprimir"
                                 >
                                   <Printer className="w-4 h-4" />
                                 </button>
@@ -1010,6 +1120,287 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   </table>
                 </div>
               </div>
+
+              {/* MODAL DE VISTA PREVIA Y DOCUMENTO PDF DE FACTURA */}
+              {previewInvoicePdf && previewInvoiceData && (
+                <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col items-center overflow-y-auto p-4 md:p-6 print:static print:inset-auto print:bg-white print:p-0 print:overflow-visible">
+                  {/* Barra Superior Flotante de Acciones */}
+                  <div className="sticky top-0 z-20 w-full max-w-4xl bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xl flex items-center justify-between gap-4 mb-4 print:hidden animate-in fade-in slide-in-from-top-4 duration-200">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-[#fff7ed] text-[#1b426e] border border-[#1b426e]/20">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-sm font-bold text-slate-900">
+                            Factura {formatFiscalInvoiceNumber(previewInvoiceData.num)}
+                          </h2>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              previewInvoiceData.status === "Cobrada" || previewInvoiceData.status === "Pagada"
+                                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                : "bg-amber-100 text-amber-800 border border-amber-200"
+                            }`}
+                          >
+                            {previewInvoiceData.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          {previewInvoiceData.customer} • {previewInvoiceData.currencySymbol} {previewInvoiceData.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 border border-slate-200 shadow-2xs"
+                        title="Imprimir documento oficial SAR"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Imprimir</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => downloadInvoicePDF(previewInvoiceData.num, "printable-invoice-document")}
+                        disabled={isGeneratingPDF}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                        title="Descargar archivo PDF"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{isGeneratingPDF ? "Generando..." : "Descargar PDF"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openInvoicePdfInNewTab("printable-invoice-document", `Factura_${previewInvoiceData.num}`)}
+                        className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
+                        title="Abrir en nueva pestaña"
+                        aria-label="Abrir en nueva pestaña"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const target = previewInvoicePdf;
+                          setPreviewInvoicePdf(null);
+                          onOpenInvoiceEditor(target);
+                        }}
+                        className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
+                        title="Editar factura"
+                        aria-label="Editar factura"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPreviewInvoicePdf(null)}
+                        className="p-1.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 transition cursor-pointer ml-1"
+                        title="Cerrar vista de factura"
+                        aria-label="Cerrar vista de factura"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* DOCUMENTO OFICIAL DE FACTURA SAR (HOJA PDF / IMPRESIÓN) */}
+                  <div
+                    id="printable-invoice-document"
+                    className="w-full max-w-[850px] min-h-[1056px] bg-white text-slate-900 shadow-2xl rounded-xs p-8 md:p-12 border border-slate-200 flex flex-col justify-between print:border-none print:shadow-none print:p-6 print:min-h-0 print:m-0 animate-in fade-in zoom-in-98 duration-150 text-xs"
+                    style={{ fontFamily: getInvoiceFontFamily(invoiceDesign.font) }}
+                  >
+                    <div>
+                      {/* Header de la Factura */}
+                      <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
+                        <div className="space-y-1">
+                          <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>
+                            {companySettings.nombre}
+                          </h1>
+                          <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
+                          <p className="text-slate-600 text-xs">
+                            RTN: {companySettings.taxId} | Tel: {companySettings.telefono}
+                          </p>
+                          <p className="text-slate-600 text-xs font-mono">CAI: {companySettings.cai}</p>
+                          <p className="text-slate-600 text-xs">Correo: {companySettings.email}</p>
+                        </div>
+                        <div className="text-right">
+                          <h2 className="text-2xl font-black text-slate-900">FACTURA</h2>
+                          <p className="font-mono font-bold text-slate-800 text-base">
+                            N.º {formatFiscalInvoiceNumber(previewInvoiceData.num)}
+                          </p>
+                          <p className="text-slate-600 text-xs mt-1">
+                            <strong>Fecha de emisión:</strong> {previewInvoiceData.date}
+                          </p>
+                          <p className="text-slate-600 text-xs">
+                            <strong>Vencimiento:</strong> {previewInvoiceData.due || "A la vista"}
+                          </p>
+                          <p className="text-slate-600 text-xs">
+                            <strong>Términos:</strong> {previewInvoiceData.paymentTerms}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Facturado a / Entregado a */}
+                      <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
+                        {/* Facturado a */}
+                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 space-y-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Facturado a:
+                          </span>
+                          <p className="font-bold text-slate-900 text-sm">
+                            {previewInvoiceData.customer || "Cliente Contado"}
+                          </p>
+                          {((previewInvoiceData.matchedCust as any)?.taxId || (previewInvoiceData.matchedCust as any)?.rtn || previewInvoiceData.matchedCust?.macolaCode) && (
+                            <p className="text-slate-600 text-xs font-mono">
+                              RTN: {(previewInvoiceData.matchedCust as any)?.taxId || (previewInvoiceData.matchedCust as any)?.rtn || previewInvoiceData.matchedCust?.macolaCode}
+                            </p>
+                          )}
+                          {previewInvoiceData.customerAddress && (
+                            <p className="text-slate-600 text-xs">{previewInvoiceData.customerAddress}</p>
+                          )}
+                          {previewInvoiceData.customerEmail && (
+                            <p className="text-slate-600 text-xs">{previewInvoiceData.customerEmail}</p>
+                          )}
+                        </div>
+
+                        {/* Entregado a */}
+                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 space-y-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Entregado a:
+                          </span>
+                          <p className="font-bold text-slate-900 text-sm">
+                            {previewInvoiceData.customer || "Cliente Contado"}
+                          </p>
+                          <p className="text-slate-600 text-xs">
+                            {previewInvoiceData.customerAddress || "Misma dirección del cliente"}
+                          </p>
+                          {previewInvoiceData.customerEmail && (
+                            <p className="text-slate-600 text-xs">{previewInvoiceData.customerEmail}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Tabla de Artículos */}
+                      <table className="w-full text-left border-collapse mb-6">
+                        <thead>
+                          <tr className="border-b-2 text-slate-500 font-semibold text-[11px] uppercase tracking-wider" style={{ borderBottomColor: activeInvoiceColor }}>
+                            <th className="py-2.5 px-3">#</th>
+                            <th className="py-2.5 px-3">Producto / Servicio</th>
+                            <th className="py-2.5 px-3">SKU</th>
+                            <th className="py-2.5 px-3">Descripción</th>
+                            <th className="py-2.5 px-3 text-right">Cant.</th>
+                            <th className="py-2.5 px-3 text-right">Precio Unit.</th>
+                            <th className="py-2.5 px-3 text-right">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {previewInvoiceData.lines.map((l: any, idx: number) => (
+                            <tr key={l.id || idx}>
+                              <td className="py-3 px-3 font-mono text-slate-400 text-xs">{idx + 1}</td>
+                              <td className="py-3 px-3 font-bold text-slate-900">{l.productName || "Artículo"}</td>
+                              <td className="py-3 px-3 font-mono text-slate-500 text-xs">{l.sku || "—"}</td>
+                              <td className="py-3 px-3 text-slate-600 text-xs">{l.description || "—"}</td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-700">{l.quantity}</td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-700">
+                                {previewInvoiceData.currencySymbol} {Number(l.rate).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
+                                {previewInvoiceData.currencySymbol} {Number(l.amount).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Totales Fiscales SAR y Valor en Letras */}
+                    <div className="mt-auto pt-6 space-y-4">
+                      <div className="grid grid-cols-12 gap-6 items-start">
+                        {/* Izquierda: VALOR EN LETRAS */}
+                        <div className="col-span-7 bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/80 flex flex-col justify-between">
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">
+                              Valor en Letras
+                            </span>
+                            <p className="font-bold text-slate-800 text-xs uppercase leading-relaxed tracking-wide">
+                              {numberToWordsSpanish(previewInvoiceData.total, previewInvoiceData.currencySymbol)}
+                            </p>
+                          </div>
+                          <div className="pt-3 border-t border-slate-200/60 mt-3 flex items-center justify-between text-[11px] text-slate-400">
+                            <span className="font-medium">Documento Fiscal Autorizado por SAR</span>
+                            <span className="font-mono font-semibold">{companySettings.cai ? "CAI Válido" : ""}</span>
+                          </div>
+                        </div>
+
+                        {/* Derecha: Desglose de Totales */}
+                        <div className="col-span-5 bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-sm space-y-1 text-xs">
+                          <div className="flex justify-between items-center py-[2px] text-slate-600">
+                            <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Subtotal</span>
+                            <span className="font-mono font-bold text-slate-900">
+                              {previewInvoiceData.currencySymbol}  {previewInvoiceData.subtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center py-[2px] text-slate-600">
+                            <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">
+                              Total I.S.V. {salesSettings?.tasaIsvGeneral ?? 15}%
+                            </span>
+                            <span className="font-mono font-medium text-slate-700">
+                              {previewInvoiceData.isv15 > 0 ? `${previewInvoiceData.currencySymbol}  ${previewInvoiceData.isv15.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+                            </span>
+                          </div>
+
+                          <div className="pt-1.5">
+                            <div
+                              className="flex justify-between items-center py-2.5 px-3.5 rounded-xl text-white shadow-xs"
+                              style={{ backgroundColor: activeInvoiceColor }}
+                            >
+                              <span className="font-black text-xs uppercase tracking-wider">Total a Pagar</span>
+                              <span className="font-mono font-black text-base">
+                                {previewInvoiceData.currencySymbol}  {previewInvoiceData.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Instrucciones de Depósito si hay bancos */}
+                      {connectedBanks.length > 0 && (
+                        <div className="p-3 text-xs mt-3 border rounded-xl border-slate-200/80 bg-slate-50/80">
+                          <span className="font-bold text-slate-800 flex items-center gap-1.5 text-[11px] uppercase tracking-wider mb-1">
+                            <CreditCard className="w-3.5 h-3.5 text-slate-600" />
+                            Instrucciones de Pago / Cuentas Bancarias
+                          </span>
+                          <p className="text-slate-600 text-[11px]">
+                            {connectedBanks.map((b) => `${b.name} (${b.currency}): ${b.accountNumber}`).join(" • ")}
+                          </p>
+                          <p className="text-slate-500 text-[10px] mt-0.5">
+                            Beneficiario: {companySettings.nombreLegal || companySettings.nombre || "Empresa"} {companySettings.taxId ? `• RTN: ${companySettings.taxId}` : ""}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Pie Fiscal SAR */}
+                      <div className="pt-3 border-t border-slate-300 flex justify-between items-center text-xs text-slate-700">
+                        <div>
+                          <span className="font-bold text-slate-900">Rango Autorizado: </span>
+                          <span className="font-mono">{companySettings.rangoAutorizado}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-slate-900">Fecha Límite de Emisión: </span>
+                          <span className="font-mono">{formatFechaLimite(companySettings.fechaLimiteEmision)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
     );
