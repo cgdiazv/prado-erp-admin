@@ -121,6 +121,15 @@ interface SalesOrdersModuleProps {
   }>;
   defaultCurrencySymbol?: string;
   defaultCurrencyCode?: string;
+  warehouses?: Array<{
+    id: string;
+    code: string;
+    name: string;
+    address?: string;
+    manager?: string;
+    isDefault?: boolean;
+  }>;
+  onOpenWarehousesConfig?: () => void;
   companySettings?: any;
 }
 
@@ -132,10 +141,50 @@ export default function SalesOrdersModule({
   customers = [],
   inventory = [],
   salesReps = [],
+  warehouses,
+  onOpenWarehousesConfig,
   defaultCurrencySymbol = "$",
   defaultCurrencyCode = "USD",
   companySettings,
 }: SalesOrdersModuleProps) {
+  // Lista dinámica de almacenes (prop o sincronizada de localStorage)
+  const [internalWarehouses, setInternalWarehouses] = useState<
+    Array<{ id: string; code: string; name: string; address?: string; manager?: string; isDefault?: boolean }>
+  >(warehouses && warehouses.length > 0 ? warehouses : []);
+
+  useEffect(() => {
+    if (warehouses && warehouses.length > 0) {
+      setInternalWarehouses(warehouses);
+      return;
+    }
+    const loadWarehouses = () => {
+      try {
+        const saved = typeof window !== "undefined" ? localStorage.getItem("prado_warehouses_settings") : null;
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setInternalWarehouses(parsed);
+            return;
+          }
+        }
+      } catch {}
+      setInternalWarehouses([
+        { id: "wh-1", code: "BOD-01", name: "Bodega Principal Zip Búfalo", isDefault: true },
+        { id: "wh-2", code: "BOD-02", name: "Bodega de Producto Terminado Planta 1", isDefault: false },
+        { id: "wh-3", code: "BOD-03", name: "Bodega Flexografía Villanueva", isDefault: false },
+      ]);
+    };
+    loadWarehouses();
+
+    const handleUpdate = () => loadWarehouses();
+    window.addEventListener("warehouses-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("warehouses-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, [warehouses]);
+
   // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
   const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
     if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
@@ -322,8 +371,10 @@ export default function SalesOrdersModule({
 
   // Manejo del formulario de creación / edición
   const handleOpenCreate = () => {
+    const defaultWh = internalWarehouses.find((w) => w.isDefault)?.name || internalWarehouses[0]?.name || "Bodega Principal Zip Búfalo";
     setFormData({
       ...initialFormState,
+      warehouse: defaultWh,
       currency: effectiveCurrencyCode || "USD",
       orderNumber: nextOrderNumber,
     });
@@ -1158,15 +1209,29 @@ export default function SalesOrdersModule({
 
                 {/* Almacén */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Almacén de Despacho</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">Almacén de Despacho</label>
+                    {onOpenWarehousesConfig && (
+                      <button
+                        type="button"
+                        onClick={onOpenWarehousesConfig}
+                        className="text-[11px] font-semibold text-[#1b426e] hover:underline cursor-pointer flex items-center gap-1"
+                        title="Administrar almacenes en Configuración"
+                      >
+                        ⚙️ Configurar
+                      </button>
+                    )}
+                  </div>
                   <select
                     value={formData.warehouse}
                     onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
                   >
-                    <option value="Bodega Principal Zip Búfalo">Bodega Principal Zip Búfalo</option>
-                    <option value="Bodega de Producto Terminado Planta 1">Bodega de Producto Terminado Planta 1</option>
-                    <option value="Bodega Flexografía Villanueva">Bodega Flexografía Villanueva</option>
+                    {internalWarehouses.map((wh) => (
+                      <option key={wh.id} value={wh.name}>
+                        {wh.name} {wh.code ? `(${wh.code})` : ""}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

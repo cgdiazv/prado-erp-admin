@@ -2001,6 +2001,38 @@ export default function AdminDashboard() {
 
   const [physicalLocationsList, setPhysicalLocationsList] = useState<{ id: string; name: string; address: string }[]>([]);
 
+  // Configuración de Almacenes y Bodegas
+  const DEFAULT_WAREHOUSES = [
+    { id: "wh-1", code: "BOD-01", name: "Bodega Principal Zip Búfalo", address: "Parque Industrial Zip Búfalo, Villanueva, Cortés", manager: "Encargado de Despacho", isDefault: true },
+    { id: "wh-2", code: "BOD-02", name: "Bodega de Producto Terminado Planta 1", address: "Planta Central 1, San Pedro Sula", manager: "Supervisor de PT", isDefault: false },
+    { id: "wh-3", code: "BOD-03", name: "Bodega Flexografía Villanueva", address: "Km 18 Carretera a Villanueva, Cortés", manager: "Bodeguero Flexo", isDefault: false },
+  ];
+
+  const [warehousesList, setWarehousesList] = useState<{ id: string; code: string; name: string; address: string; manager: string; isDefault?: boolean }[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("prado_warehouses_settings");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return DEFAULT_WAREHOUSES;
+  });
+
+  const [editingWarehouse, setEditingWarehouse] = useState<{ id: string; code: string; name: string; address: string; manager: string; isDefault?: boolean } | null>(null);
+
+  const saveWarehouses = (newList: typeof warehousesList) => {
+    setWarehousesList(newList);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("prado_warehouses_settings", JSON.stringify(newList));
+        window.dispatchEvent(new Event("warehouses-updated"));
+      } catch {}
+    }
+  };
+
   const [paymentMethodsList, setPaymentMethodsList] = useState<{ id: string; name: string; type: string }[]>([
     { id: "1", name: "Efectivo Disponible", type: "Efectivo" },
     { id: "2", name: "Cheque Bancario", type: "Cheque" },
@@ -9015,20 +9047,6 @@ ${accountRowsHtml(equity)}
                               </p>
                             </div>
 
-                            {/* Item: Ubicaciones (Locales Físicos) */}
-                            <div>
-                              <button
-                                type="button"
-                                onClick={() => setActiveListModal("ubicaciones")}
-                                className="font-bold text-sm text-[#0066cc] hover:underline cursor-pointer text-left block mb-1"
-                              >
-                                Ubicaciones (Locales Físicos)
-                              </button>
-                              <p className="text-xs text-slate-600 leading-relaxed">
-                                Puedes usar las ubicaciones físicas para clasificar y organizar las diferentes plantas, sucursales o locales de la empresa.
-                              </p>
-                            </div>
-
                             {/* Item: Monedas */}
                             <div>
                               <button
@@ -9046,6 +9064,34 @@ ${accountRowsHtml(equity)}
 
                           {/* Columna 2 */}
                           <div className="space-y-7">
+                            {/* Item: Almacenes y Bodegas */}
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => setActiveListModal("almacenes")}
+                                className="font-bold text-sm text-[#0066cc] hover:underline cursor-pointer text-left block mb-1"
+                              >
+                                Almacenes y Bodegas
+                              </button>
+                              <p className="text-xs text-slate-600 leading-relaxed">
+                                Administra los almacenes centrales, bodegas de materias primas y centros de despacho para pedidos de venta, inventario y órdenes de compra.
+                              </p>
+                            </div>
+
+                            {/* Item: Ubicaciones (Locales Físicos) */}
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => setActiveListModal("ubicaciones")}
+                                className="font-bold text-sm text-[#0066cc] hover:underline cursor-pointer text-left block mb-1"
+                              >
+                                Ubicaciones (Locales Físicos)
+                              </button>
+                              <p className="text-xs text-slate-600 leading-relaxed">
+                                Puedes usar las ubicaciones físicas para clasificar y organizar las diferentes plantas, sucursales o locales de la empresa.
+                              </p>
+                            </div>
+
                             {/* Item: Métodos de pago */}
                             <div>
                               <button
@@ -10668,22 +10714,30 @@ ${accountRowsHtml(equity)}
                 {/* Inline Edit Modal for Other Company Settings */}
                 {activeListModal && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-                    <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                    <div className={`bg-white border border-slate-200 rounded-2xl w-full ${activeListModal === "almacenes" ? "max-w-xl" : "max-w-lg"} p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150`}>
                       <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                         <div>
                           <h3 className="text-base font-bold text-slate-900">
                             {activeListModal === "categorias" && "Categorías de Productos"}
+                            {activeListModal === "almacenes" && "Almacenes y Bodegas"}
                             {activeListModal === "ubicaciones" && "Ubicaciones (Locales Físicos)"}
                             {activeListModal === "metodosPago" && "Métodos de Pago"}
                             {activeListModal === "condiciones" && "Condiciones de Pago"}
                             {activeListModal === "recurrentes" && "Transacciones Recurrentes"}
                             {activeListModal === "clases" && "Clases Contables"}
                           </h3>
-                          <p className="text-xs text-slate-500">Administra los elementos registrados en esta lista.</p>
+                          <p className="text-xs text-slate-500">
+                            {activeListModal === "almacenes"
+                              ? "Administra los almacenes centrales, bodegas de materias primas y centros de despacho."
+                              : "Administra los elementos registrados en esta lista."}
+                          </p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setActiveListModal(null)}
+                          onClick={() => {
+                            setActiveListModal(null);
+                            setEditingWarehouse(null);
+                          }}
                           className="text-slate-400 hover:text-slate-700 text-base font-bold cursor-pointer"
                         >
                           ✕
@@ -10795,6 +10849,223 @@ ${accountRowsHtml(equity)}
                                 No hay categorías registradas. Agrega la primera arriba.
                               </div>
                             )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* MODAL: ALMACENES Y BODEGAS */}
+                      {activeListModal === "almacenes" && (
+                        <div className="space-y-4">
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              const form = e.target as HTMLFormElement;
+                              const nameIn = (form.elements.namedItem("whName") as HTMLInputElement)?.value.trim();
+                              const codeIn = (form.elements.namedItem("whCode") as HTMLInputElement)?.value.trim();
+                              const addrIn = (form.elements.namedItem("whAddr") as HTMLInputElement)?.value.trim();
+                              const mgrIn = (form.elements.namedItem("whMgr") as HTMLInputElement)?.value.trim();
+
+                              if (!nameIn) return;
+
+                              if (editingWarehouse) {
+                                const updated = warehousesList.map((wh) =>
+                                  wh.id === editingWarehouse.id
+                                    ? { ...wh, name: nameIn, code: codeIn || wh.code, address: addrIn, manager: mgrIn }
+                                    : wh
+                                );
+                                saveWarehouses(updated);
+                                setEditingWarehouse(null);
+                              } else {
+                                const newWh = {
+                                  id: `wh-${Date.now()}`,
+                                  code: codeIn || `BOD-0${warehousesList.length + 1}`,
+                                  name: nameIn,
+                                  address: addrIn || "San Pedro Sula, Cortés",
+                                  manager: mgrIn || "Responsable de Almacén",
+                                  isDefault: warehousesList.length === 0,
+                                };
+                                saveWarehouses([...warehousesList, newWh]);
+                              }
+                              form.reset();
+                            }}
+                            className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800">
+                                {editingWarehouse ? `Editar: ${editingWarehouse.name}` : "Registrar Nuevo Almacén o Bodega"}
+                              </span>
+                              {editingWarehouse && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingWarehouse(null)}
+                                  className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                                >
+                                  Cancelar edición
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <div className="sm:col-span-2">
+                                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                                  Nombre del Almacén / Bodega *
+                                </label>
+                                <input
+                                  name="whName"
+                                  type="text"
+                                  required
+                                  defaultValue={editingWarehouse?.name || ""}
+                                  key={editingWarehouse ? `edit-name-${editingWarehouse.id}` : "new-name"}
+                                  placeholder="Ej. Bodega Central San Pedro Sula..."
+                                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                                  Código o Sigla
+                                </label>
+                                <input
+                                  name="whCode"
+                                  type="text"
+                                  defaultValue={editingWarehouse?.code || ""}
+                                  key={editingWarehouse ? `edit-code-${editingWarehouse.id}` : "new-code"}
+                                  placeholder="Ej. BOD-01, ALM-CENTRAL"
+                                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-mono"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                                  Responsable / Encargado
+                                </label>
+                                <input
+                                  name="whMgr"
+                                  type="text"
+                                  defaultValue={editingWarehouse?.manager || ""}
+                                  key={editingWarehouse ? `edit-mgr-${editingWarehouse.id}` : "new-mgr"}
+                                  placeholder="Ej. Juan Pérez (Jefe de Bodega)"
+                                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                                />
+                              </div>
+
+                              <div className="sm:col-span-2">
+                                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                                  Dirección o Ubicación Física
+                                </label>
+                                <input
+                                  name="whAddr"
+                                  type="text"
+                                  defaultValue={editingWarehouse?.address || ""}
+                                  key={editingWarehouse ? `edit-addr-${editingWarehouse.id}` : "new-addr"}
+                                  placeholder="Ej. Km 12 Carretera del Norte, Villanueva, Cortés"
+                                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end pt-1">
+                              <button
+                                type="submit"
+                                className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-semibold cursor-pointer shadow-xs transition"
+                              >
+                                {editingWarehouse ? "Guardar Cambios" : "+ Agregar Almacén"}
+                              </button>
+                            </div>
+                          </form>
+
+                          {/* Lista de Almacenes Registrados */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold px-1">
+                              <span>Almacenes Registrados ({warehousesList.length})</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm("¿Desea restablecer la lista de almacenes a los valores por defecto?")) {
+                                    saveWarehouses(DEFAULT_WAREHOUSES);
+                                    setEditingWarehouse(null);
+                                  }
+                                }}
+                                className="text-[11px] text-slate-400 hover:text-slate-600 underline cursor-pointer"
+                              >
+                                Restablecer iniciales
+                              </button>
+                            </div>
+
+                            <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-2xl bg-white">
+                              {warehousesList.map((wh) => (
+                                <div
+                                  key={wh.id}
+                                  className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-50 transition"
+                                >
+                                  <div className="space-y-0.5 pr-3">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-slate-900">{wh.name}</span>
+                                      {wh.code && (
+                                        <span className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-[10px] text-slate-600 font-semibold">
+                                          {wh.code}
+                                        </span>
+                                      )}
+                                      {wh.isDefault && (
+                                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                                          Predeterminado
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 flex flex-wrap gap-x-3">
+                                      {wh.address && <span>📍 {wh.address}</span>}
+                                      {wh.manager && <span>👤 {wh.manager}</span>}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {!wh.isDefault && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const updated = warehousesList.map((w) => ({
+                                            ...w,
+                                            isDefault: w.id === wh.id,
+                                          }));
+                                          saveWarehouses(updated);
+                                        }}
+                                        className="px-2 py-1 rounded-lg text-[11px] text-slate-600 hover:text-[#1b426e] hover:bg-slate-100 cursor-pointer transition font-medium"
+                                        title="Establecer como almacén predeterminado para nuevos pedidos"
+                                      >
+                                        Hacer default
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingWarehouse(wh)}
+                                      className="p-1.5 text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 rounded-lg cursor-pointer transition"
+                                      title="Editar almacén"
+                                    >
+                                      ✏️
+                                    </button>
+                                    {warehousesList.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (confirm(`¿Eliminar el almacén "${wh.name}"?`)) {
+                                            const updated = warehousesList.filter((w) => w.id !== wh.id);
+                                            if (wh.isDefault && updated.length > 0) {
+                                              updated[0].isDefault = true;
+                                            }
+                                            saveWarehouses(updated);
+                                            if (editingWarehouse?.id === wh.id) setEditingWarehouse(null);
+                                          }
+                                        }}
+                                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition"
+                                        title="Eliminar almacén"
+                                      >
+                                        🗑️
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -11382,9 +11653,15 @@ ${accountRowsHtml(equity)}
                 customers={customers}
                 inventory={inventory}
                 salesReps={salesReps}
+                warehouses={warehousesList}
                 companySettings={companySettings}
                 defaultCurrencySymbol={defaultCurrencySymbol}
                 defaultCurrencyCode={defaultCurrencyCode}
+                onOpenWarehousesConfig={() => {
+                  setCurrentView("configuracion");
+                  setConfigSubTab("listas");
+                  setActiveListModal("almacenes");
+                }}
                 onBack={() => setCurrentView("dashboard")}
                 onOpenInvoiceEditor={(prefilled) => openInvoiceEditor(prefilled)}
                 onNavigateToInvoices={() => setCurrentView("lista-facturas")}

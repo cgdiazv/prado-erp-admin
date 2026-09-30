@@ -127,6 +127,34 @@ export function PurchasesModule({
   const [poSuccessMsg, setPOSuccessMsg] = useState("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
+  // Almacenes dinámicos
+  const [purchasesWarehouses, setPurchasesWarehouses] = useState<Array<{ id: string; name: string; code?: string }>>([
+    { id: "wh-1", name: "Bodega Principal Zip Búfalo", code: "BOD-01" },
+    { id: "wh-2", name: "Bodega de Producto Terminado Planta 1", code: "BOD-02" },
+    { id: "wh-3", name: "Bodega Flexografía Villanueva", code: "BOD-03" },
+  ]);
+
+  useEffect(() => {
+    const loadWh = () => {
+      try {
+        const saved = typeof window !== "undefined" ? localStorage.getItem("prado_warehouses_settings") : null;
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPurchasesWarehouses(parsed);
+          }
+        }
+      } catch {}
+    };
+    loadWh();
+    window.addEventListener("warehouses-updated", loadWh);
+    window.addEventListener("storage", loadWh);
+    return () => {
+      window.removeEventListener("warehouses-updated", loadWh);
+      window.removeEventListener("storage", loadWh);
+    };
+  }, []);
+
   const [poForm, setPOForm] = useState({
     num: "OC-2026-085",
     vendorName: "Insumos Flexográficos S.A.",
@@ -2853,9 +2881,11 @@ export function PurchasesModule({
                             <label className="block">
                               <span className="font-semibold block mb-1">Almacén de destino</span>
                               <select className="w-full px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900">
-                                <option>Almacén Central - San Pedro Sula</option>
-                                <option>Almacén Insumos UV - Tegucigalpa</option>
-                                <option>Bodega Materia Prima Flexo</option>
+                                {purchasesWarehouses.map((wh) => (
+                                  <option key={wh.id} value={wh.name}>
+                                    {wh.name} {wh.code ? `(${wh.code})` : ""}
+                                  </option>
+                                ))}
                               </select>
                             </label>
 
