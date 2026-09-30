@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Customer } from "@/types/dashboard";
 import { TableRowsSkeleton } from "@/components/Skeleton";
-import { FileText, Download, Printer, Settings, Plus, Search, ArrowLeft, ChevronDown } from "lucide-react";
+import { FileText, Download, Printer, Settings, Plus, Search, ArrowLeft, ChevronDown, X, Building2, Users, CheckCircle2 } from "lucide-react";
 
 interface CustomersModuleProps {
   customers: Customer[];
@@ -13,6 +13,15 @@ interface CustomersModuleProps {
   loading?: boolean;
   autoOpenCreate?: boolean;
   onAutoOpenCreateConsumed?: () => void;
+  companySettings?: {
+    nombre?: string;
+    nombreLegal?: string;
+    taxId?: string;
+    direccion?: string;
+    telefono?: string;
+    email?: string;
+    logoUrl?: string;
+  };
 }
 
 export default function CustomersModule({
@@ -23,7 +32,31 @@ export default function CustomersModule({
   loading = false,
   autoOpenCreate = false,
   onAutoOpenCreateConsumed,
+  companySettings,
 }: CustomersModuleProps) {
+  // Company settings fallback
+  const [internalCompanySettings, setInternalCompanySettings] = useState(companySettings);
+
+  React.useEffect(() => {
+    if (companySettings) {
+      setInternalCompanySettings(companySettings);
+    } else {
+      fetch("/api/company")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.company) {
+            setInternalCompanySettings(data.company);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [companySettings]);
+
+  // Report Modal State
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportScope, setReportScope] = useState<"filtrados" | "todos" | "macola" | "usd" | "hnl">("filtrados");
+  const [reportSortBy, setReportSortBy] = useState<"name" | "code">("name");
+
   // Filters & Search
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"todos" | "activos" | "macola">("todos");
@@ -93,6 +126,92 @@ export default function CustomersModule({
       return true;
     });
   }, [customers, search, filterType]);
+
+  // Filtered customers for official report
+  const reportCustomers = useMemo(() => {
+    let list: Customer[] = [];
+    if (reportScope === "todos") {
+      list = [...customers];
+    } else if (reportScope === "macola") {
+      list = customers.filter((c) => Boolean(c.macolaCode && c.macolaCode.trim() !== ""));
+    } else if (reportScope === "usd") {
+      list = customers.filter((c) => c.currency === "USD");
+    } else if (reportScope === "hnl") {
+      list = customers.filter((c) => c.currency === "HNL");
+    } else {
+      // "filtrados"
+      list = [...filteredCustomers];
+    }
+
+    return list.sort((a, b) => {
+      if (reportSortBy === "code") {
+        const codeA = a.macolaCode || a.id;
+        const codeB = b.macolaCode || b.id;
+        return codeA.localeCompare(codeB);
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [customers, filteredCustomers, reportScope, reportSortBy]);
+
+  const reportStats = useMemo(() => {
+    const total = reportCustomers.length;
+    const withMacola = reportCustomers.filter((c) => Boolean(c.macolaCode && c.macolaCode.trim() !== "")).length;
+    const withEmail = reportCustomers.filter((c) => Boolean(c.email && c.email.trim() !== "")).length;
+    const withPhone = reportCustomers.filter((c) => Boolean(c.phone && c.phone.trim() !== "")).length;
+    const usdCount = reportCustomers.filter((c) => c.currency === "USD").length;
+    const hnlCount = reportCustomers.filter((c) => c.currency === "HNL").length;
+    return { total, withMacola, withEmail, withPhone, usdCount, hnlCount };
+  }, [reportCustomers]);
+
+  const handleExportCSV = (customersToExport: Customer[] = filteredCustomers) => {
+    if (customersToExport.length === 0) {
+      alert("No hay clientes disponibles para exportar.");
+      return;
+    }
+
+    const headers = [
+      "No.",
+      "Código",
+      "Nombre de Cliente",
+      "Teléfono",
+      "Correo Electrónico",
+      "Dirección",
+      "Moneda",
+    ];
+
+    const rows = customersToExport.map((c, idx) => [
+      idx + 1,
+      `"${(c.macolaCode || `#${c.id.slice(0, 6)}`).replace(/"/g, '""')}"`,
+      `"${c.name.replace(/"/g, '""')}"`,
+      `"${(c.phone || "").replace(/"/g, '""')}"`,
+      `"${(c.email || "").replace(/"/g, '""')}"`,
+      `"${(c.address || "").replace(/"/g, '""')}"`,
+      `"${c.currency || "USD"}"`,
+    ]);
+
+    const companyName = internalCompanySettings?.nombreLegal || internalCompanySettings?.nombre || "PRADO ERP";
+    const csvContent =
+      "data:text/csv;charset=utf-8,\uFEFF" +
+      [
+        `"DIRECTORIO OFICIAL DE CLIENTES - ${companyName}"`,
+        `"Fecha de emisión: ${new Date().toLocaleDateString("es-HN")}"`,
+        `"Total registros: ${customersToExport.length}"`,
+        "",
+        headers.join(","),
+        ...rows.map((r) => r.join(",")),
+      ].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `Directorio_Clientes_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Drawer handlers
   const handleOpenNewDrawer = () => {
@@ -208,9 +327,10 @@ export default function CustomersModule({
   };
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className={`space-y-4 ${showReportModal ? "print:hidden" : ""}`}>
       {/* Header Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
         <button
           type="button"
           onClick={onBack}
@@ -223,13 +343,12 @@ export default function CustomersModule({
         <div className="flex items-center gap-3 self-end sm:self-auto">
           <button
             type="button"
-            onClick={() => {
-              alert("Generando reporte de clientes...");
-              window.print();
-            }}
-            className="px-4 py-2 rounded-full border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs"
+            onClick={() => setShowReportModal(true)}
+            className="px-4 py-2 rounded-full border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
+            title="Generar e imprimir reporte formal de clientes"
           >
-            Generar reporte
+            <FileText className="w-3.5 h-3.5" />
+            <span>Generar reporte</span>
           </button>
 
           <button
@@ -244,7 +363,7 @@ export default function CustomersModule({
       </div>
 
       {/* Toolbar Card (Search, filter type, print, export) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 print:hidden">
         <div className="flex flex-wrap items-center gap-3">
           {/* Search Input */}
           <div className="relative min-w-[240px]">
@@ -277,18 +396,18 @@ export default function CustomersModule({
         <div className="flex items-center gap-1.5 self-end md:self-auto text-slate-400">
           <button
             type="button"
-            onClick={() => alert("Exportando catálogo de clientes...")}
+            onClick={() => handleExportCSV(filteredCustomers)}
             className="p-1.5 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition cursor-pointer"
-            title="Exportar catálogo"
+            title="Exportar catálogo en CSV"
           >
             <Download className="w-4 h-4" />
           </button>
 
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => setShowReportModal(true)}
             className="p-1.5 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition cursor-pointer"
-            title="Imprimir lista"
+            title="Vista previa e imprimir reporte"
           >
             <Printer className="w-4 h-4" />
           </button>
@@ -312,7 +431,7 @@ export default function CustomersModule({
                 <th className="p-3.5">Teléfono</th>
                 <th className="p-3.5">Dirección</th>
                 <th className="p-3.5">Moneda</th>
-                <th className="p-3.5 text-right">Acciones</th>
+                <th className="p-3.5 text-right print:hidden">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -346,7 +465,7 @@ export default function CustomersModule({
                       <td className="p-3.5 text-slate-500">{c.phone || "—"}</td>
                       <td className="p-3.5 text-slate-500 truncate max-w-xs">{c.address || "—"}</td>
                       <td className="p-3.5 font-medium">{c.currency}</td>
-                      <td className="p-3.5 text-right">
+                      <td className="p-3.5 text-right print:hidden">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
@@ -778,6 +897,269 @@ export default function CustomersModule({
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* ================= OFFICIAL CUSTOMER REPORT MODAL / CANVAS ================= */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/60 backdrop-blur-xs overflow-y-auto print:static print:inset-auto print:bg-white print:overflow-visible print:block print:p-0">
+          {/* Top Control Bar (Hidden on print) */}
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 sticky top-0 z-30 shadow-md print:hidden flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#1b426e] text-white flex items-center justify-center shadow-xs">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                    Reporte Oficial de Clientes
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Directorio comercial formal listo para impresión y exportación en PDF
+                  </p>
+                </div>
+              </div>
+
+              {/* Alcance / Filtro */}
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-slate-500 font-medium hidden sm:inline">Alcance:</span>
+                <select
+                  value={reportScope}
+                  onChange={(e) => setReportScope(e.target.value as any)}
+                  className="px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1b426e] cursor-pointer"
+                >
+                  <option value="filtrados">
+                    Filtro actual ({filteredCustomers.length} clientes)
+                  </option>
+                  <option value="todos">
+                    Todos los clientes ({customers.length})
+                  </option>
+                  <option value="macola">
+                    Solo sincronizados Macola
+                  </option>
+                  <option value="usd">Solo moneda USD</option>
+                  <option value="hnl">Solo moneda HNL</option>
+                </select>
+              </div>
+
+              {/* Orden */}
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-slate-500 font-medium hidden sm:inline">Ordenar:</span>
+                <select
+                  value={reportSortBy}
+                  onChange={(e) => setReportSortBy(e.target.value as any)}
+                  className="px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1b426e] cursor-pointer"
+                >
+                  <option value="name">Por Nombre (A - Z)</option>
+                  <option value="code">Por Código</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Buttons: Export CSV, Print, Close */}
+            <div className="flex items-center gap-2 self-end lg:self-auto">
+              <button
+                type="button"
+                onClick={() => handleExportCSV(reportCustomers)}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Descargar archivo CSV compatible con Excel"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Exportar CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20"
+                title="Imprimir documento oficial o guardar en PDF"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Imprimir / PDF</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowReportModal(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                title="Cerrar reporte"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Document Canvas */}
+          <div className="flex-1 p-4 sm:p-6 lg:p-8 flex justify-center print:p-0 print:m-0 print:block">
+            <div
+              id="printable-customer-report"
+              className="printable-document bg-white w-full max-w-5xl rounded-2xl shadow-xl p-8 sm:p-12 border border-slate-200 print:border-none print:shadow-none print:rounded-none print:p-0 print:m-0 print:max-w-none text-slate-900"
+            >
+              {/* Letterhead */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-6 border-b-2 border-slate-900">
+                <div className="space-y-1 max-w-md">
+                  {internalCompanySettings?.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={internalCompanySettings.logoUrl}
+                      alt="Logo"
+                      className="h-12 max-w-[200px] object-contain mb-2"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-9 h-9 rounded-lg bg-[#1b426e] text-white flex items-center justify-center font-bold text-sm">
+                        {((internalCompanySettings?.nombreLegal || internalCompanySettings?.nombre || "P").charAt(0)).toUpperCase()}
+                      </div>
+                      <span className="font-extrabold text-sm tracking-tight text-[#1b426e]">
+                        PRADO ERP
+                      </span>
+                    </div>
+                  )}
+                  <h1 className="text-base font-black text-slate-900 uppercase tracking-tight leading-snug">
+                    {internalCompanySettings?.nombreLegal || internalCompanySettings?.nombre || "EMPRESA PRADO"}
+                  </h1>
+                  {internalCompanySettings?.taxId && (
+                    <p className="text-xs font-mono font-bold text-slate-700">
+                      RTN: {internalCompanySettings.taxId}
+                    </p>
+                  )}
+                  {internalCompanySettings?.direccion && (
+                    <p className="text-[11px] text-slate-600 leading-tight">
+                      {internalCompanySettings.direccion}
+                    </p>
+                  )}
+                  {(internalCompanySettings?.telefono || internalCompanySettings?.email) && (
+                    <p className="text-[11px] text-slate-500">
+                      {[
+                        internalCompanySettings?.telefono ? `Tel: ${internalCompanySettings.telefono}` : "",
+                        internalCompanySettings?.email ? `Correo: ${internalCompanySettings.email}` : "",
+                      ].filter(Boolean).join(" • ")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Right Info Box */}
+                <div className="text-right border border-slate-300 rounded-xl p-3.5 bg-slate-50/80 min-w-[260px] space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    DOCUMENTO ADMINISTRATIVO OFICIAL
+                  </span>
+                  <h2 className="text-sm font-black text-[#1b426e] uppercase tracking-tight">
+                    Directorio Oficial de Clientes
+                  </h2>
+                  <div className="pt-2 border-t border-slate-200 text-[11px] space-y-0.5 text-slate-600">
+                    <p>
+                      <span className="font-semibold text-slate-800">Fecha de emisión:</span>{" "}
+                      {new Date().toLocaleDateString("es-HN", { year: "numeric", month: "long", day: "numeric" })}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">Alcance:</span>{" "}
+                      <span className="font-medium capitalize">
+                        {reportScope === "todos"
+                          ? "Catálogo Completo"
+                          : reportScope === "macola"
+                          ? "Sincronizados Macola"
+                          : reportScope === "usd"
+                          ? "Solo USD"
+                          : reportScope === "hnl"
+                          ? "Solo HNL"
+                          : "Filtro Aplicado"}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">Registros:</span>{" "}
+                      <span className="font-mono font-bold text-slate-900">{reportCustomers.length} clientes</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resumen Estadístico (KPIs) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Total Clientes</span>
+                  <span className="text-xl font-black text-slate-900 font-mono mt-0.5 block">{reportStats.total}</span>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Con Cód. Macola</span>
+                  <span className="text-xl font-black text-blue-700 font-mono mt-0.5 block">{reportStats.withMacola}</span>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Con Teléfono</span>
+                  <span className="text-xl font-black text-emerald-700 font-mono mt-0.5 block">{reportStats.withPhone}</span>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Con Correo</span>
+                  <span className="text-xl font-black text-purple-700 font-mono mt-0.5 block">{reportStats.withEmail}</span>
+                </div>
+              </div>
+
+              {/* Tabla Oficial */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-800 font-bold text-[10px] uppercase tracking-wider border-b border-slate-300">
+                      <th className="py-2.5 px-3 text-center w-10">#</th>
+                      <th className="py-2.5 px-3 w-28">Código</th>
+                      <th className="py-2.5 px-3">Cliente / Razón Social</th>
+                      <th className="py-2.5 px-3">Teléfono</th>
+                      <th className="py-2.5 px-3">Correo Electrónico</th>
+                      <th className="py-2.5 px-3">Dirección</th>
+                      <th className="py-2.5 px-3 text-center w-16">Moneda</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 text-slate-700">
+                    {reportCustomers.map((c, index) => (
+                      <tr key={c.id} className="hover:bg-slate-50/50">
+                        <td className="py-2 px-3 text-center font-mono text-slate-400 text-[11px]">{index + 1}</td>
+                        <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap text-[11px]">
+                          {c.macolaCode || `#${c.id.slice(0, 6)}`}
+                        </td>
+                        <td className="py-2 px-3 font-semibold text-slate-900">{c.name}</td>
+                        <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{c.phone || "—"}</td>
+                        <td className="py-2 px-3 text-slate-600">{c.email || "—"}</td>
+                        <td className="py-2 px-3 text-slate-600 truncate max-w-xs">{c.address || "—"}</td>
+                        <td className="py-2 px-3 text-center font-mono font-bold text-[11px]">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] ${
+                              c.currency === "USD"
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                : "bg-blue-50 text-blue-700 border border-blue-200"
+                            }`}
+                          >
+                            {c.currency}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {reportCustomers.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                          No hay clientes que coincidan con el alcance seleccionado.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pie de Página */}
+              <div className="border-t border-slate-200 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] text-slate-500">
+                <div>
+                  <p className="font-bold text-slate-700">
+                    {internalCompanySettings?.nombre || "Prado ERP"} — Control Administrativo
+                  </p>
+                  <p className="text-[10px] text-slate-400">
+                    Este reporte contiene información comercial confidencial. Documento emitido automáticamente.
+                  </p>
+                </div>
+                <div className="sm:text-right text-[10px] text-slate-400">
+                  <p>Generado el {new Date().toLocaleString("es-HN")}</p>
+                  <p>Documento Oficial del Catálogo de Clientes</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

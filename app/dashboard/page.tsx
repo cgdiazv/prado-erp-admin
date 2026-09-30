@@ -5604,6 +5604,7 @@ ${accountRowsHtml(equity)}
                 onOpenCustomerStatement={openCustomerStatement}
                 autoOpenCreate={customersAutoOpenCreate}
                 onAutoOpenCreateConsumed={() => setCustomersAutoOpenCreate(false)}
+                companySettings={companySettings}
               />
             </div>
           )}
@@ -5694,6 +5695,7 @@ ${accountRowsHtml(equity)}
                 onBack={() => setCurrentView("dashboard")}
                 loading={loading}
                 formatCurrency={formatCurrency}
+                companySettings={companySettings}
               />
             </div>
           )}

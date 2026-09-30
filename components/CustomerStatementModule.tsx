@@ -484,8 +484,8 @@ export default function CustomerStatementModule({
             </div>
           </div>
 
-          {/* Highlight Financial Summary Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5 mb-6">
+          {/* Highlight Financial Summary Cards (Hidden on print/PDF) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5 mb-6 print:hidden no-print">
             {/* Saldo Anterior */}
             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
               <div className="flex items-center justify-between">

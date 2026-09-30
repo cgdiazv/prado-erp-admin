@@ -43,7 +43,7 @@ export default function TrialBanner({
   };
 
   return (
-    <div className="bg-gradient-to-r from-[#1b426e] via-[#235894] to-[#2e72c0] text-white px-4 py-3 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 animate-in fade-in duration-200">
+    <div className="bg-gradient-to-r from-[#1b426e] via-[#235894] to-[#2e72c0] text-white px-4 py-3 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 animate-in fade-in duration-200 print:hidden no-print">
       <div className="flex items-center gap-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white shrink-0 shadow-xs">
           <Clock className="w-5 h-5" />
