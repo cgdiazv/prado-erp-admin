@@ -76,7 +76,7 @@ export default function MarketingHomePage() {
             {TRIAL_DAYS} días gratis — sin tarjeta de crédito
           </span>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 max-w-3xl mx-auto leading-tight">
-            El ERP contable hecho para las empresas de Honduras
+            La app en línea hecha para facturar y administrar empresas en Honduras
           </h1>
           <p className="text-base text-slate-500 mt-5 max-w-2xl mx-auto leading-relaxed">
             Facturación con CAI, contabilidad de partida doble, bancos, inventario y retenciones SAR —
@@ -160,9 +160,8 @@ export default function MarketingHomePage() {
             {PLANS.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative bg-white rounded-2xl border p-6 flex flex-col shadow-sm ${
-                  plan.highlighted ? "border-[#1b426e] ring-2 ring-[#1b426e]/20 shadow-lg" : "border-slate-200"
-                }`}
+                className={`relative bg-white rounded-2xl border p-6 flex flex-col shadow-sm ${plan.highlighted ? "border-[#1b426e] ring-2 ring-[#1b426e]/20 shadow-lg" : "border-slate-200"
+                  }`}
               >
                 {plan.highlighted && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#1b426e] text-white text-[10px] font-bold uppercase tracking-wider">
@@ -187,11 +186,10 @@ export default function MarketingHomePage() {
                 </ul>
                 <Link
                   href="/signup"
-                  className={`mt-6 block text-center px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm ${
-                    plan.highlighted
-                      ? "bg-[#1b426e] hover:bg-[#143355] text-white"
-                      : "bg-white border border-[#1b426e] text-[#1b426e] hover:bg-slate-50"
-                  }`}
+                  className={`mt-6 block text-center px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm ${plan.highlighted
+                    ? "bg-[#1b426e] hover:bg-[#143355] text-white"
+                    : "bg-white border border-[#1b426e] text-[#1b426e] hover:bg-slate-50"
+                    }`}
                 >
                   Probar {TRIAL_DAYS} días gratis
                 </Link>
