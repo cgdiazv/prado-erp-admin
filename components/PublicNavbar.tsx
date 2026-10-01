@@ -10,8 +10,8 @@ export default function PublicNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
+      <div className="max-w-6xl mx-auto px-4 py-5 md:py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setDrawerOpen(true)}
@@ -22,9 +22,9 @@ export default function PublicNavbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src={logoImg} alt="Prado ERP" priority className="h-10 w-auto object-contain" />
-            <span className="text-lg font-black tracking-tight text-slate-900">Prado ERP</span>
+          <Link href="/" className="flex items-center gap-3">
+            <Image src={logoImg} alt="Prado ERP" priority className="h-11 md:h-12 w-auto object-contain" />
+            <span className="text-xl font-black tracking-tight text-slate-900">Prado ERP</span>
           </Link>
         </div>
         <div className="flex items-center gap-6">
