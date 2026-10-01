@@ -71,11 +71,28 @@ export async function GET(request: NextRequest) {
     });
 
     if (!settings) {
-      const defaultCreate = companyId === "default" ? DEFAULT_COMPANY_DATA : {
+      const companyRecord = await prisma.company.findUnique({
+        where: { id: companyId },
+      }).catch(() => null);
+
+      const initialName = companyRecord?.name || (companyId === "default" ? DEFAULT_COMPANY_DATA.nombre : "Mi Empresa");
+      const initialLegal = companyRecord?.legalName || initialName;
+
+      const defaultCreate = companyId === "default" ? {
+        ...DEFAULT_COMPANY_DATA,
+        id: companyId,
+        nombre: companyRecord?.name || DEFAULT_COMPANY_DATA.nombre,
+        nombreLegal: companyRecord?.legalName || DEFAULT_COMPANY_DATA.nombreLegal,
+      } : {
         ...BLANK_COMPANY_DATA,
         id: companyId,
-        nombre: "Mi Empresa",
-        nombreLegal: "Mi Empresa",
+        nombre: initialName,
+        nombreLegal: initialLegal,
+        email: companyRecord?.email || "",
+        telefono: companyRecord?.phone || "",
+        direccion: companyRecord?.address || "",
+        taxId: companyRecord?.taxId || "",
+        cai: companyRecord?.cai || "Ninguno indicado",
       };
 
       settings = await prisma.companySettings.create({
@@ -160,6 +177,21 @@ export async function PUT(request: NextRequest) {
         ...updateData,
       },
     });
+
+    // Also sync basic details into Company record for consistency
+    await prisma.company.updateMany({
+      where: { id: companyId },
+      data: {
+        ...(updateData.nombre !== undefined ? { name: updateData.nombre || "Mi Empresa" } : {}),
+        ...(updateData.nombreLegal !== undefined ? { legalName: updateData.nombreLegal || "" } : {}),
+        ...(updateData.taxId !== undefined ? { taxId: updateData.taxId || "" } : {}),
+        ...(updateData.cai !== undefined ? { cai: updateData.cai || null } : {}),
+        ...(updateData.email !== undefined ? { email: updateData.email || "" } : {}),
+        ...(updateData.telefono !== undefined ? { phone: updateData.telefono || "" } : {}),
+        ...(updateData.direccion !== undefined ? { address: updateData.direccion || "" } : {}),
+        ...(updateData.logoUrl !== undefined ? { logoUrl: updateData.logoUrl } : {}),
+      },
+    }).catch(() => null);
 
     return NextResponse.json({ success: true, data: settings });
   } catch (error: unknown) {

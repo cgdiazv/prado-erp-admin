@@ -2140,6 +2140,8 @@ export default function AdminDashboard() {
         }
       }
 
+      const previousState = { ...companySettings };
+
       // Optimistic update in UI
       setCompanySettings((prev) => ({
         ...prev,
@@ -2149,13 +2151,26 @@ export default function AdminDashboard() {
 
       // Persist in PostgreSQL database
       try {
-        await fetch("/api/company", {
+        const res = await fetch("/api/company", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ [fieldKey]: updatedValue }),
         });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          console.error("Error updating company setting in DB:", json.error);
+          setCompanySettings(previousState);
+          alert(`Error al guardar: ${json.error || "No se pudo actualizar la información en la base de datos."}`);
+        } else if (json.data) {
+          setCompanySettings((prev) => ({
+            ...prev,
+            [fieldKey]: json.data[fieldKey] ?? updatedValue,
+          }));
+        }
       } catch (err) {
         console.error("Error updating company setting in DB:", err);
+        setCompanySettings(previousState);
+        alert("Error de conexión al guardar la configuración.");
       }
     }
   };
