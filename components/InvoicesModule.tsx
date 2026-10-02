@@ -1262,9 +1262,12 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                       {/* Header de la Factura */}
                       <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
                         <div className="space-y-1">
-                          <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>
-                            {companySettings.nombre}
-                          </h1>
+                          <img
+                            src={companyLogo || "/logo.webp"}
+                            alt={companySettings.nombre || "Logo"}
+                            className="h-9 max-h-11 w-auto max-w-[150px] object-contain mb-1.5"
+                          />
+                          <p className="font-bold text-slate-900 text-xs">{companySettings.nombreLegal || companySettings.nombre}</p>
                           <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                           <p className="text-slate-600 text-xs">
                             RTN: {companySettings.taxId} | Tel: {companySettings.telefono}
@@ -1464,8 +1467,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                 <div>
                   {/* Header */}
                 <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
-                  <div>
-                    <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>{companySettings.nombre}</h1>
+                  <div className="space-y-1">
+                    <img
+                      src={companyLogo || "/logo.webp"}
+                      alt={companySettings.nombre || "Logo"}
+                      className="h-9 max-h-11 w-auto max-w-[150px] object-contain mb-1.5"
+                    />
+                    <p className="font-bold text-slate-900 text-xs">{companySettings.nombreLegal || companySettings.nombre}</p>
                     <p className="text-slate-600 text-xs">{companySettings.direccion}</p>
                     <p className="text-slate-600 text-xs">RTN: {companySettings.taxId} | Tel: {companySettings.telefono}</p>
                     <p className="text-slate-600 text-xs font-mono">CAI: {companySettings.cai}</p>
@@ -2468,12 +2476,16 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                       >
                         <div className="space-y-6">
                           <div className="flex justify-between items-start border-b-2 pb-6" style={{ borderColor: activeInvoiceColor }}>
-                            <div>
-                              <h1 className="text-2xl font-black tracking-tight" style={{ color: activeInvoiceColor }}>{companySettings.nombre}</h1>
-                              <p className="font-bold text-slate-900 mt-1">{companySettings.nombre}</p>
-                              <p className="text-slate-500">{companySettings.direccion}</p>
-                              <p className="text-slate-500">RTN: {companySettings.taxId}</p>
-                              <p className="text-slate-500 font-mono">CAI: {companySettings.cai}</p>
+                            <div className="space-y-1">
+                              <img
+                                src={companyLogo || "/logo.webp"}
+                                alt={companySettings.nombre || "Logo"}
+                                className="h-9 max-h-11 w-auto max-w-[150px] object-contain mb-1.5"
+                              />
+                              <p className="font-bold text-slate-900 text-xs">{companySettings.nombreLegal || companySettings.nombre}</p>
+                              <p className="text-slate-500 text-xs">{companySettings.direccion}</p>
+                              <p className="text-slate-500 text-xs">RTN: {companySettings.taxId}</p>
+                              <p className="text-slate-500 text-xs font-mono">CAI: {companySettings.cai}</p>
                             </div>
                             <div className="text-right">
                               <h2 className="text-xl font-bold text-slate-900">FACTURA</h2>
