@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
           status,
           lines: {
             create: lines.map((l: any) => ({
-              productName: l.productName || "Artículo",
+              productName: l.productName || l.description || l.sku || "Artículo",
               sku: l.sku || null,
               description: l.description || null,
               quantity: Number(l.quantity) || 1,
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
           status,
           lines: {
             create: lines.map((l: any) => ({
-              productName: l.productName || "Artículo",
+              productName: l.productName || l.description || l.sku || "Artículo",
               sku: l.sku || null,
               description: l.description || null,
               quantity: Number(l.quantity) || 1,

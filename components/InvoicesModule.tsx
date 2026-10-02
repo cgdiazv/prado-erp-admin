@@ -816,15 +816,58 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
           const r = field === "rate" ? parseFloat(value) || 0 : line.rate;
           newLine.amount = q * r;
         }
-        if (field === "productName") {
-          const invItem = inventory.find((i) => i.description.toLowerCase().includes(value.toLowerCase()) || i.sku === value);
-          if (invItem) {
-            newLine.productId = invItem.id;
-            newLine.sku = invItem.sku;
-            newLine.rate = invItem.price || 0;
-            newLine.amount = newLine.quantity * newLine.rate;
-            if (!newLine.description) newLine.description = invItem.description;
+        if (field === "sku" || field === "productName") {
+          const val = String(value || "").trim().toLowerCase();
+          if (val) {
+            // 1. Prioridad: Coincidencia exacta por campo SKU / Código de la base de datos
+            const exactBySku = inventory.find(
+              (i) => i.sku && i.sku.toLowerCase() === val
+            );
+            const exactItem =
+              exactBySku ||
+              inventory.find(
+                (i) => i.description && i.description.toLowerCase() === val
+              );
+
+            // 2. Coincidencia parcial por SKU / Código
+            const partialBySku =
+              !exactItem && val.length >= 2
+                ? inventory.find(
+                    (i) => i.sku && i.sku.toLowerCase().includes(val)
+                  )
+                : undefined;
+
+            const partialItem =
+              partialBySku ||
+              (!exactItem && val.length >= 2
+                ? inventory.find(
+                    (i) =>
+                      i.description && i.description.toLowerCase().includes(val)
+                  )
+                : undefined);
+
+            const invItem = exactItem || partialItem;
+
+            if (invItem) {
+              newLine.productId = invItem.id;
+              if (exactItem) {
+                newLine.sku = invItem.sku;
+              }
+              newLine.productName = invItem.description;
+              newLine.rate = invItem.price || 0;
+              newLine.amount = newLine.quantity * newLine.rate;
+              if (
+                !newLine.description ||
+                newLine.description.trim() === "" ||
+                newLine.description === "Descripción de la línea..."
+              ) {
+                newLine.description = invItem.description;
+              }
+            }
           }
+        }
+        if (field === "description" && !newLine.productName) {
+          newLine.productName = value;
         }
         return newLine;
       });
@@ -1976,8 +2019,8 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               <tr>
                                 <th className="p-3 w-8 text-center">#</th>
                                 {salesSettings?.fechaServicio && <th className="p-3 w-32">Fecha servicio</th>}
-                                {salesSettings?.mostrarColumnaProductoServicio !== false && <th className="p-3 min-w-[180px]">Producto / Servicio</th>}
-                                {salesSettings?.mostrarColumnaSku && <th className="p-3 w-28">SKU</th>}
+                                {salesSettings?.mostrarColumnaProductoServicio !== false && <th className="p-3 min-w-[180px]">SKU / CÓDIGO</th>}
+                                {salesSettings?.mostrarColumnaSku && salesSettings?.mostrarColumnaProductoServicio === false && <th className="p-3 w-28">SKU</th>}
                                 <th className="p-3 min-w-[200px]">Descripción</th>
                                 <th className="p-3 w-20 text-right">Cant.</th>
                                 <th className="p-3 w-24 text-right">Tarifa</th>
@@ -2004,19 +2047,25 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                       <input
                                         type="text"
                                         list={`inventory-list-${line.id}`}
-                                        placeholder="Buscar artículo..."
-                                        value={line.productName}
-                                        onChange={(e) => updateInvoiceLine(line.id, "productName", e.target.value)}
-                                        className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                                        placeholder="Buscar SKU / CÓDIGO..."
+                                        value={line.sku || ""}
+                                        onChange={(e) => updateInvoiceLine(line.id, "sku", e.target.value)}
+                                        className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-mono font-bold text-[#1b426e] focus:outline-none focus:border-[#1b426e] uppercase placeholder:font-normal placeholder:normal-case"
                                       />
                                       <datalist id={`inventory-list-${line.id}`}>
                                         {inventory.map((item) => (
-                                          <option key={item.id} value={item.description} />
+                                          <option
+                                            key={item.id}
+                                            value={item.sku}
+                                            label={`${item.sku} — ${item.description}${item.price ? ` (${invoiceCurrencySymbol} ${item.price.toFixed(2)})` : ""}`}
+                                          >
+                                            {item.sku} — {item.description}
+                                          </option>
                                         ))}
                                       </datalist>
                                     </td>
                                   )}
-                                  {salesSettings?.mostrarColumnaSku && (
+                                  {salesSettings?.mostrarColumnaSku && salesSettings?.mostrarColumnaProductoServicio === false && (
                                     <td className="p-3 font-mono text-[11px] text-[#1b426e] font-semibold">
                                       {line.sku || "—"}
                                     </td>
