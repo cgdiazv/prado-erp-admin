@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
           OR: [
             { name: { contains: search, mode: "insensitive" } },
             { macolaCode: { contains: search, mode: "insensitive" } },
+            { rtn: { contains: search, mode: "insensitive" } },
             { email: { contains: search, mode: "insensitive" } },
           ],
         },
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
   try {
     const companyId = await resolveCompanyId(request);
     const body = await request.json();
-    const { macolaCode, name, email, phone, address, currency } = body;
+    const { macolaCode, rtn, name, email, phone, address, currency } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -93,11 +94,12 @@ export async function POST(request: NextRequest) {
         companyId,
         name,
         macolaCode: macolaCode || null,
+        rtn: rtn || null,
         email: email || null,
         phone: phone || null,
         address: address || null,
         currency: currency || "USD",
-      },
+      } as any,
     });
 
     return NextResponse.json({ success: true, data: customer }, { status: 201 });

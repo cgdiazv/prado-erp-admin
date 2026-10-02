@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       );
     }
 
-    const { macolaCode, name, email, phone, address, currency } = body;
+    const { macolaCode, rtn, name, email, phone, address, currency } = body;
 
     // Check macolaCode uniqueness in company if changing
     if (macolaCode && macolaCode !== existing.macolaCode) {
@@ -72,11 +72,12 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       data: {
         ...(name !== undefined && { name }),
         ...(macolaCode !== undefined && { macolaCode: macolaCode || null }),
+        ...(rtn !== undefined && { rtn: rtn || null }),
         ...(email !== undefined && { email: email || null }),
         ...(phone !== undefined && { phone: phone || null }),
         ...(address !== undefined && { address: address || null }),
         ...(currency !== undefined && { currency }),
-      },
+      } as any,
     });
 
     return NextResponse.json({ success: true, data: updated });

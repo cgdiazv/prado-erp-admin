@@ -90,6 +90,7 @@ export default function CustomersModule({
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
+    rtn: "",
     macolaCode: "",
     email: "",
     phone: "",
@@ -233,6 +234,7 @@ export default function CustomersModule({
         body: JSON.stringify({
           name: newCustomerForm.name,
           macolaCode: newCustomerForm.macolaCode || `CUS-${Math.floor(100 + Math.random() * 900)}`,
+          rtn: newCustomerForm.rtn,
           email: newCustomerForm.email,
           phone: newCustomerForm.phone,
           address: newCustomerForm.address,
@@ -268,6 +270,7 @@ export default function CustomersModule({
     setEditingCustomer(c);
     setEditForm({
       name: c.name || "",
+      rtn: (c as any).rtn || "",
       macolaCode: c.macolaCode || "",
       email: c.email || "",
       phone: c.phone || "",
@@ -809,7 +812,17 @@ export default function CustomersModule({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">RTN / Identificación Fiscal</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. 08011990123456"
+                    value={editForm.rtn}
+                    onChange={(e) => setEditForm({ ...editForm, rtn: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
+                  />
+                </div>
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Código</label>
                   <input

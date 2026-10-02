@@ -44,6 +44,7 @@ type Account = {
 type Customer = {
   id: string;
   macolaCode: string | null;
+  rtn?: string | null;
   name: string;
   email: string | null;
   phone: string | null;
@@ -2250,6 +2251,7 @@ export default function AdminDashboard() {
   const [customerForm, setCustomerForm] = useState({
     name: "",
     macolaCode: "",
+    rtn: "",
     email: "",
     phone: "",
     address: "",
@@ -2358,7 +2360,7 @@ export default function AdminDashboard() {
         throw new Error(data.error || "Error al crear cliente");
       }
       setModalSuccess("¡Cliente agregado exitosamente a la base de datos!");
-      setCustomerForm({ name: "", macolaCode: "", email: "", phone: "", address: "", currency: "USD" });
+      setCustomerForm({ name: "", macolaCode: "", rtn: "", email: "", phone: "", address: "", currency: "USD" });
       await loadDashboardData();
       setTimeout(() => {
         setActiveModal(null);
@@ -2407,6 +2409,7 @@ export default function AdminDashboard() {
     setCustomerForm({
       name: c.name || "",
       macolaCode: c.macolaCode || "",
+      rtn: (c as any).rtn || "",
       email: c.email || "",
       phone: c.phone || "",
       address: c.address || "",
@@ -11836,7 +11839,7 @@ ${accountRowsHtml(equity)}
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block font-semibold text-slate-700 mb-1">Código</label>
                       <input
@@ -11844,6 +11847,16 @@ ${accountRowsHtml(equity)}
                         placeholder="Ej. CUS-009"
                         value={customerForm.macolaCode}
                         onChange={(e) => setCustomerForm({ ...customerForm, macolaCode: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">RTN</label>
+                      <input
+                        type="text"
+                        placeholder="08011990123456"
+                        value={customerForm.rtn}
+                        onChange={(e) => setCustomerForm({ ...customerForm, rtn: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
                       />
                     </div>

@@ -222,6 +222,7 @@ export function InvoicesModule({
     invoiceNumber: "",
     customerId: "",
     customerName: "",
+    customerRtn: "",
     customerEmail: "",
     customerAddress: "",
     deliveredTo: "",
@@ -298,14 +299,18 @@ export function InvoicesModule({
             },
           ];
 
+      const custRtn = (editingInvoice as any).customerRtn || matchedCust?.rtn || (!matchedCust?.macolaCode?.startsWith("CUS-") ? matchedCust?.macolaCode : "") || (matchedCust as any)?.taxId || "";
+      const custAddress = (editingInvoice as any).customerAddress || matchedCust?.address || "";
+
       setInvoiceForm({
         invoiceNumber: editingInvoice.num,
         customerId: matchedCust ? matchedCust.id : "",
         customerName: editingInvoice.customer || "",
+        customerRtn: custRtn,
         customerEmail: editingInvoice.email || editingInvoice.customerEmail || matchedCust?.email || "",
-        customerAddress: matchedCust?.address || "",
+        customerAddress: custAddress,
         deliveredTo: editingInvoice.customer || "",
-        deliveryAddress: matchedCust?.address || "",
+        deliveryAddress: custAddress,
         currency: editingInvoice.currency || effectiveCurrencySymbol,
         status: editingInvoice.status || "Pendiente",
         discount: 0,
@@ -334,6 +339,7 @@ export function InvoicesModule({
         invoiceNumber: nextNum,
         customerId: "",
         customerName: "",
+        customerRtn: "",
         customerEmail: "",
         customerAddress: "",
         deliveredTo: "",
@@ -521,6 +527,9 @@ export function InvoicesModule({
       isv15 = Number((totalAmount - subtotal).toFixed(2));
     }
 
+    const custRtn = (previewInvoicePdf as any).customerRtn || matchedCust?.rtn || (!matchedCust?.macolaCode?.startsWith("CUS-") ? matchedCust?.macolaCode : "") || (matchedCust as any)?.taxId || "";
+    const custAddress = (previewInvoicePdf as any).customerAddress || matchedCust?.address || "";
+
     return {
       num: previewInvoicePdf.num,
       customer: previewInvoicePdf.customer,
@@ -530,7 +539,8 @@ export function InvoicesModule({
       status: previewInvoicePdf.status,
       paymentTerms: previewInvoicePdf.paymentTerms || "Neto 30",
       customerEmail: previewInvoicePdf.customerEmail || matchedCust?.email || "",
-      customerAddress: matchedCust?.address || "",
+      customerAddress: custAddress,
+      customerRtn: custRtn,
       lines: invoiceLines,
       currencySymbol: currSymbol,
       subtotal,
@@ -683,6 +693,8 @@ export function InvoicesModule({
             ? {
                 ...i,
                 customer: invoiceForm.customerName || i.customer,
+                customerRtn: invoiceForm.customerRtn,
+                customerAddress: invoiceForm.customerAddress,
                 date: invoiceForm.invoiceDate || i.date,
                 due: invoiceForm.dueDate || i.due,
                 total: finalTotal,
@@ -698,6 +710,8 @@ export function InvoicesModule({
             num: invoiceForm.invoiceNumber,
             date: invoiceForm.invoiceDate || new Date().toISOString().split("T")[0],
             customer: invoiceForm.customerName || "Cliente Sin Nombre",
+            customerRtn: invoiceForm.customerRtn,
+            customerAddress: invoiceForm.customerAddress,
             due: invoiceForm.dueDate || new Date().toISOString().split("T")[0],
             total: finalTotal,
             status: invoiceForm.status || "Pendiente",
@@ -717,6 +731,8 @@ export function InvoicesModule({
           invoiceNumber: invoiceForm.invoiceNumber,
           customerId: invoiceForm.customerId || undefined,
           customerName: invoiceForm.customerName || "Cliente General",
+          customerRtn: invoiceForm.customerRtn || undefined,
+          customerAddress: invoiceForm.customerAddress || undefined,
           customerEmail: invoiceForm.customerEmail || "",
           invoiceDate: invoiceForm.invoiceDate || new Date().toISOString().split("T")[0],
           dueDate: invoiceForm.dueDate || "",
@@ -1292,23 +1308,25 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                         </div>
                       </div>
 
-                      {/* Facturado a / Entregado a */}
+                      {/* Cobrar a / Entregado a */}
                       <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
-                        {/* Facturado a */}
+                        {/* Cobrar a */}
                         <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 space-y-1">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                            Facturado a:
+                            Cobrar a:
                           </span>
                           <p className="font-bold text-slate-900 text-sm">
                             {previewInvoiceData.customer || "Cliente Contado"}
                           </p>
-                          {((previewInvoiceData.matchedCust as any)?.taxId || (previewInvoiceData.matchedCust as any)?.rtn || previewInvoiceData.matchedCust?.macolaCode) && (
+                          {(previewInvoiceData.customerRtn || (previewInvoiceData.matchedCust as any)?.taxId || (previewInvoiceData.matchedCust as any)?.rtn || previewInvoiceData.matchedCust?.macolaCode) && (
                             <p className="text-slate-600 text-xs font-mono">
-                              RTN: {(previewInvoiceData.matchedCust as any)?.taxId || (previewInvoiceData.matchedCust as any)?.rtn || previewInvoiceData.matchedCust?.macolaCode}
+                              <strong className="font-semibold text-slate-700">RTN:</strong> {previewInvoiceData.customerRtn || (previewInvoiceData.matchedCust as any)?.taxId || (previewInvoiceData.matchedCust as any)?.rtn || previewInvoiceData.matchedCust?.macolaCode}
                             </p>
                           )}
                           {previewInvoiceData.customerAddress && (
-                            <p className="text-slate-600 text-xs">{previewInvoiceData.customerAddress}</p>
+                            <p className="text-slate-600 text-xs">
+                              <strong className="font-semibold text-slate-700">Dirección:</strong> {previewInvoiceData.customerAddress}
+                            </p>
                           )}
                           {previewInvoiceData.customerEmail && (
                             <p className="text-slate-600 text-xs">{previewInvoiceData.customerEmail}</p>
@@ -1488,18 +1506,25 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   </div>
                 </div>
 
-                {/* Customer Details: Facturado a (izq) y Entregado a (der) */}
+                {/* Customer Details: Cobrar a (izq) y Entregado a (der) */}
                 <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
-                  {/* Facturado a */}
+                  {/* Cobrar a */}
                   <div className={`p-4 space-y-1 ${
                     invoiceDesign.template === "Standard"
                       ? "rounded-none border border-slate-300 bg-white"
                       : "rounded-2xl border border-slate-200/80 bg-slate-50/80"
                   }`}>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Facturado a:</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cobrar a:</span>
                     <p className="font-bold text-slate-900 text-sm">{invoiceForm.customerName || "Cliente Contado"}</p>
+                    {invoiceForm.customerRtn && (
+                      <p className="text-slate-600 text-xs font-mono">
+                        <strong className="font-semibold text-slate-700">RTN:</strong> {invoiceForm.customerRtn}
+                      </p>
+                    )}
                     {invoiceForm.customerAddress && (
-                      <p className="text-slate-600 text-xs">{invoiceForm.customerAddress}</p>
+                      <p className="text-slate-600 text-xs">
+                        <strong className="font-semibold text-slate-700">Dirección:</strong> {invoiceForm.customerAddress}
+                      </p>
                     )}
                     {invoiceForm.customerEmail && (
                       <p className="text-slate-600 text-xs">{invoiceForm.customerEmail}</p>
@@ -1860,11 +1885,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             value={invoiceForm.customerId}
                             onChange={(e) => {
                               const selected = customers.find((c) => c.id === e.target.value);
+                              const custRtn = selected?.rtn || (!selected?.macolaCode?.startsWith("CUS-") ? selected?.macolaCode : "") || (selected as any)?.taxId || "";
                               setInvoiceForm({
                                 ...invoiceForm,
                                 customerId: e.target.value,
                                 customerName: selected ? selected.name : "",
                                 customerEmail: selected ? selected.email || "" : "",
+                                customerRtn: custRtn,
                                 customerAddress: selected ? selected.address || "" : "",
                                 deliveredTo: selected ? selected.name : "",
                                 deliveryAddress: selected ? selected.address || "" : "",
@@ -1885,6 +1912,29 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               Correo de notificación: <span className="font-mono text-slate-700 font-semibold">{invoiceForm.customerEmail}</span>
                             </p>
                           )}
+
+                          <div className="grid grid-cols-2 gap-2 pt-1">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">RTN Cliente (Cobrar a)</label>
+                              <input
+                                type="text"
+                                value={invoiceForm.customerRtn || ""}
+                                onChange={(e) => setInvoiceForm({ ...invoiceForm, customerRtn: e.target.value })}
+                                placeholder="RTN (14 dígitos)"
+                                className="w-full px-2.5 py-1 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 font-mono focus:outline-none focus:border-[#1b426e]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Dirección Cliente (Cobrar a)</label>
+                              <input
+                                type="text"
+                                value={invoiceForm.customerAddress || ""}
+                                onChange={(e) => setInvoiceForm({ ...invoiceForm, customerAddress: e.target.value })}
+                                placeholder="Dirección de facturación"
+                                className="w-full px-2.5 py-1 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#1b426e]"
+                              />
+                            </div>
+                          </div>
 
                           <div className="grid grid-cols-2 gap-2 pt-1">
                             <div>
@@ -2496,18 +2546,25 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             </div>
                           </div>
 
-                          {/* Facturado a (izq) y Entregado a (der) */}
+                          {/* Cobrar a (izq) y Entregado a (der) */}
                           <div className="grid grid-cols-2 gap-4 text-xs mb-6">
-                            {/* Facturado a */}
+                            {/* Cobrar a */}
                             <div className={`p-4 space-y-1 ${
                               invoiceDesign.template === "Standard"
                                 ? "rounded-none border border-slate-300 bg-white"
                                 : "rounded-2xl border border-slate-200/80 bg-slate-50/80"
                             }`}>
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Facturado a:</span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cobrar a:</span>
                               <p className="font-bold text-slate-900 text-sm">{invoiceForm.customerName || "Cliente Contado"}</p>
+                              {invoiceForm.customerRtn && (
+                                <p className="text-slate-600 text-xs font-mono">
+                                  <strong className="font-semibold text-slate-700">RTN:</strong> {invoiceForm.customerRtn}
+                                </p>
+                              )}
                               {invoiceForm.customerAddress && (
-                                <p className="text-slate-500 text-xs">{invoiceForm.customerAddress}</p>
+                                <p className="text-slate-500 text-xs">
+                                  <strong className="font-semibold text-slate-700">Dirección:</strong> {invoiceForm.customerAddress}
+                                </p>
                               )}
                               {invoiceForm.customerEmail && (
                                 <p className="text-slate-500 text-xs">{invoiceForm.customerEmail}</p>

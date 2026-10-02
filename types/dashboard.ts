@@ -11,6 +11,7 @@ export type Account = {
 export type Customer = {
   id: string;
   macolaCode: string | null;
+  rtn?: string | null;
   name: string;
   email: string | null;
   phone: string | null;
@@ -173,6 +174,8 @@ export type Invoice = {
   currency?: string;
   paymentTerms?: string;
   customerEmail?: string;
+  customerRtn?: string;
+  customerAddress?: string;
   lines?: InvoiceLine[];
 };
 
@@ -180,6 +183,7 @@ export type InvoiceFormData = {
   invoiceNumber: string;
   customerId: string;
   customerName: string;
+  customerRtn?: string;
   customerEmail: string;
   customerAddress: string;
   deliveredTo: string;

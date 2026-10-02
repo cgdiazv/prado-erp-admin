@@ -32,6 +32,7 @@ model Customer {
   companyId  String?  @default("default")
   company    Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   macolaCode String?
+  rtn        String?
   name       String
   email      String?
   phone      String?
@@ -48,6 +49,7 @@ model Vendor {
   companyId      String?         @default("default")
   company        Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   macolaCode     String?
+  rtn            String?
   name           String
   email          String?
   phone          String?
