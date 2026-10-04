@@ -586,14 +586,50 @@ export function PurchasesModule({
   };
 
   const handleSendPOEmail = async () => {
+    const vendorEmail = poForm.vendorEmail?.trim();
+    if (!vendorEmail || !vendorEmail.includes("@")) {
+      alert("Por favor ingresa un correo electrónico de destino válido para el proveedor antes de enviar.");
+      return;
+    }
+
     setSendingPOEmail(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // 1. Guardar la orden con estado "Aprobada" en la base de datos
       await handleSavePOEditor("Aprobada");
-      setPOSuccessMsg(`¡Orden de compra ${poForm.num} enviada con éxito por correo a ${poForm.vendorName} (${poForm.vendorEmail})!`);
-      setTimeout(() => setPOSuccessMsg(""), 4500);
-    } catch (err) {
-      console.error(err);
+
+      // 2. Realizar el envío real a través de Resend
+      const res = await fetch("/api/send-purchase-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: vendorEmail,
+          vendorName: poForm.vendorName || "Proveedor",
+          orderNumber: poForm.num,
+          issueDate: poForm.date,
+          expectedDate: poForm.expectedDate,
+          paymentTerms: poForm.paymentTerms,
+          category: poForm.category,
+          currency: poForm.currency || effectiveCurrencyCode,
+          currencySymbol: getPOCurrencySymbol(),
+          lines: poForm.lines,
+          total: poTotal,
+          notes: poForm.notes,
+          fromEmailOverride: companySettings.email || undefined,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "No se pudo completar el envío del correo.");
+      }
+
+      setPOSuccessMsg(
+        `¡Orden de compra ${poForm.num} enviada con éxito vía Resend a ${poForm.vendorName || "proveedor"} (${vendorEmail})!`
+      );
+      setTimeout(() => setPOSuccessMsg(""), 5000);
+    } catch (err: any) {
+      console.error("Error al enviar orden de compra por correo con Resend:", err);
+      alert(`La orden se actualizó a Aprobada, pero ocurrió un problema al enviar el correo por Resend: ${err.message}`);
     } finally {
       setSendingPOEmail(false);
     }
@@ -3113,7 +3149,7 @@ export function PurchasesModule({
                       {sendingPOEmail ? (
                         <>
                           <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Enviando al proveedor...</span>
+                          <span>Enviando por Resend...</span>
                         </>
                       ) : (
                         <span>Revisar y enviar</span>
