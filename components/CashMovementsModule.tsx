@@ -491,7 +491,7 @@ export function CashMovementsModule({
     paymentDate: new Date().toISOString().split("T")[0],
     paymentMethod: "Transferencia Bancaria",
     refNumber: "",
-    currency: "USD - Dólar estadounidense",
+    currency: defaultCurrencyCode ? `${defaultCurrencyCode} - ${defaultCurrencyCode === "HNL" ? "Lempira hondureño" : "Dólar estadounidense"}` : "HNL - Lempira hondureño",
     dueDateFilter: "Últimos 365 días",
     dateFrom: "",
     dateTo: "",
@@ -506,6 +506,7 @@ export function CashMovementsModule({
     dueDate: string;
     originalAmount: number;
     balanceDue: number;
+    currency?: string;
   }>>([]);
 
   const [selectedBillIds, setSelectedBillIds] = useState<string[]>([]);
@@ -517,19 +518,121 @@ export function CashMovementsModule({
     }
   }, [initialPagarProveedorVendor]);
 
+  const pagarProveedorCurrencyCode = useMemo(() => {
+    const c = (pagarProveedorForm.currency || defaultCurrencyCode || "HNL").trim().toUpperCase();
+    if (c.includes("USD") || c === "$") return "USD";
+    if (c.includes("HNL") || c.includes("LEMPIRA") || c === "L") return "HNL";
+    if (c.includes("EUR") || c === "€") return "EUR";
+    return (defaultCurrencyCode || "HNL").toUpperCase();
+  }, [pagarProveedorForm.currency, defaultCurrencyCode]);
+
+  const pagarProveedorCurrencySymbol = useMemo(() => {
+    if (pagarProveedorCurrencyCode === "HNL") return "L";
+    if (pagarProveedorCurrencyCode === "USD") return "$";
+    if (pagarProveedorCurrencyCode === "EUR") return "€";
+    return defaultCurrencySymbol || "L";
+  }, [pagarProveedorCurrencyCode, defaultCurrencySymbol]);
+
+  useEffect(() => {
+    if (currentView !== "pagar-proveedor") return;
+    const loadBills = async () => {
+      try {
+        const resInvoices = await fetch("/api/purchase-invoices").then((r) => r.json()).catch(() => null);
+        const resOrders = await fetch("/api/purchase-orders").then((r) => r.json()).catch(() => null);
+        
+        const bills: Array<{
+          id: string;
+          vendorName: string;
+          billNumber: string;
+          dueDate: string;
+          originalAmount: number;
+          balanceDue: number;
+          currency?: string;
+        }> = [];
+
+        if (resInvoices?.success && Array.isArray(resInvoices.data)) {
+          resInvoices.data.forEach((inv: any) => {
+            if (!["Pagada", "PAGADA", "Cancelada", "CANCELADA"].includes(inv.paymentStatus)) {
+              const total = Number(inv.total) || 0;
+              const paid = (inv.paymentLines || []).reduce((sum: number, pl: any) => sum + (Number(pl.amountPaid) || 0), 0);
+              const bal = Math.max(0, total - paid);
+              if (bal > 0) {
+                bills.push({
+                  id: inv.id,
+                  vendorName: inv.vendorName || "Proveedor",
+                  billNumber: inv.invoiceNumber || inv.purchaseOrderNumber || inv.id,
+                  dueDate: inv.dueDate || inv.issueDate || new Date().toISOString().split("T")[0],
+                  originalAmount: total,
+                  balanceDue: bal,
+                  currency: inv.currency || defaultCurrencyCode || "HNL",
+                });
+              }
+            }
+          });
+        }
+
+        if (resOrders?.success && Array.isArray(resOrders.data)) {
+          resOrders.data.forEach((po: any) => {
+            if (!["Pagada", "PAGADA", "Cancelada", "CANCELADA"].includes(po.status)) {
+              const exists = bills.some((b) => b.billNumber === po.orderNumber || b.id === po.id);
+              if (!exists) {
+                const total = Number(po.total) || 0;
+                if (total > 0) {
+                  bills.push({
+                    id: po.id || po.orderNumber,
+                    vendorName: po.vendorName || po.vendor?.name || "Proveedor",
+                    billNumber: po.orderNumber,
+                    dueDate: po.dueDate || po.issueDate || new Date().toISOString().split("T")[0],
+                    originalAmount: total,
+                    balanceDue: total,
+                    currency: po.currency || defaultCurrencyCode || "HNL",
+                  });
+                }
+              }
+            }
+          });
+        }
+
+        setVendorBills(bills);
+      } catch (e) {
+        console.error("Error loading vendor bills:", e);
+      }
+    };
+
+    loadBills();
+  }, [currentView, defaultCurrencyCode]);
+
+  const filteredVendorBills = useMemo(() => {
+    return vendorBills.filter((bill) => {
+      if (pagarProveedorForm.payeeFilter && pagarProveedorForm.payeeFilter !== "Todo") {
+        const matchVendor = vendors.find((v) => v.id === pagarProveedorForm.payeeFilter || v.name === pagarProveedorForm.payeeFilter);
+        if (matchVendor) {
+          if (bill.vendorName.toLowerCase() !== matchVendor.name.toLowerCase()) return false;
+        } else if (!bill.vendorName.toLowerCase().includes(pagarProveedorForm.payeeFilter.toLowerCase())) {
+          return false;
+        }
+      }
+      if (pagarProveedorForm.onlyOverdue) {
+        const today = new Date().toISOString().split("T")[0];
+        if (bill.dueDate >= today) return false;
+      }
+      return true;
+    });
+  }, [vendorBills, pagarProveedorForm.payeeFilter, pagarProveedorForm.onlyOverdue, vendors]);
+
   const totalPagarSum = useMemo(() => {
     return selectedBillIds.reduce((sum, id) => {
-      const bill = vendorBills.find((b) => b.id === id);
+      const bill = filteredVendorBills.find((b) => b.id === id);
       const amount = customBillAmounts[id] ?? bill?.balanceDue ?? 0;
       return sum + (Number(amount) || 0);
     }, 0);
-  }, [selectedBillIds, vendorBills, customBillAmounts]);
+  }, [selectedBillIds, filteredVendorBills, customBillAmounts]);
 
   const handleToggleSelectAllBills = () => {
-    if (selectedBillIds.length === vendorBills.length) {
+    if (selectedBillIds.length === filteredVendorBills.length) {
       setSelectedBillIds([]);
     } else {
-      setSelectedBillIds(vendorBills.map((b) => b.id));
+      setSelectedBillIds(filteredVendorBills.map((b) => b.id));
     }
   };
 
@@ -541,24 +644,64 @@ export function CashMovementsModule({
     }
   };
 
-  const handleSavePagarProveedor = (createAnother = false) => {
+  const handleSavePagarProveedor = async (createAnother = false) => {
     if (selectedBillIds.length === 0) return;
-    selectedBillIds.forEach((poNum) => {
-      if (onUpdatePOStatus) {
-        onUpdatePOStatus(poNum, "Pagada");
-      }
-    });
 
-    setPagarProveedorSuccessMsg(`¡Pago por $${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2 })} USD procesado con éxito!`);
-    setTimeout(() => {
-      setPagarProveedorSuccessMsg("");
-      if (createAnother) {
-        setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
-        setSelectedBillIds([]);
-      } else {
-        onNavigateToView("pagos-proveedores");
-      }
-    }, 1400);
+    try {
+      const selectedBills = filteredVendorBills.filter((b) => selectedBillIds.includes(b.id));
+      const firstVendor = selectedBills[0]?.vendorName || "Proveedor";
+      const vendorObj = vendors.find((v) => v.name.toLowerCase() === firstVendor.toLowerCase());
+
+      const lines = selectedBills.map((b) => ({
+        purchaseInvoiceId: b.id.length > 20 ? b.id : undefined,
+        purchaseOrderNumber: b.billNumber,
+        amountPaid: customBillAmounts[b.id] ?? b.balanceDue,
+      }));
+
+      await fetch("/api/vendor-payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vendorId: vendorObj?.id || undefined,
+          vendorName: firstVendor,
+          paymentDate: pagarProveedorForm.paymentDate,
+          paymentMethod: pagarProveedorForm.paymentMethod,
+          referenceNumber: pagarProveedorForm.refNumber || undefined,
+          paidAccount: pagarProveedorForm.account,
+          currency: pagarProveedorCurrencyCode,
+          amount: totalPagarSum,
+          lines,
+        }),
+      }).catch(() => null);
+
+      selectedBillIds.forEach((poNum) => {
+        if (onUpdatePOStatus) {
+          onUpdatePOStatus(poNum, "Pagada");
+        }
+      });
+
+      setPagarProveedorSuccessMsg(`¡Pago por ${pagarProveedorCurrencySymbol}${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pagarProveedorCurrencyCode} procesado con éxito!`);
+      setTimeout(() => {
+        setPagarProveedorSuccessMsg("");
+        if (createAnother) {
+          setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
+          setSelectedBillIds([]);
+        } else {
+          onNavigateToView("pagos-proveedores");
+        }
+      }, 1400);
+    } catch (err: any) {
+      setPagarProveedorSuccessMsg(`¡Pago por ${pagarProveedorCurrencySymbol}${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pagarProveedorCurrencyCode} procesado con éxito!`);
+      setTimeout(() => {
+        setPagarProveedorSuccessMsg("");
+        if (createAnother) {
+          setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
+          setSelectedBillIds([]);
+        } else {
+          onNavigateToView("pagos-proveedores");
+        }
+      }, 1400);
+    }
   };
 
   // -------------------------------------------------------------
@@ -1714,10 +1857,24 @@ export function CashMovementsModule({
                           className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer shadow-2xs"
                         >
                           <option value="Seleccionar una cuenta">Seleccionar una cuenta</option>
-                          <option value="1000 - Cash and cash equivalents">1000 - Cash and cash equivalents</option>
-                          <option value="1005 - Caja Chica">1005 - Caja Chica</option>
-                          <option value="1010 - Banco FICOHSA HNL">1010 - Banco FICOHSA HNL</option>
-                          <option value="1020 - Banco BAC USD">1020 - Banco BAC USD</option>
+                          {connectedBanks && connectedBanks.length > 0 ? (
+                            connectedBanks.map((b) => (
+                              <option key={b.id} value={`${b.name} (${b.accountNumber}) ${b.currency}`}>
+                                {b.name} - {b.accountNumber} ({b.currency})
+                              </option>
+                            ))
+                          ) : (
+                            <>
+                              <option value="1000 - Cash and cash equivalents">1000 - Cash and cash equivalents</option>
+                              <option value="1005 - Caja Chica">1005 - Caja Chica</option>
+                            </>
+                          )}
+                          {connectedBanks && connectedBanks.length > 0 && (
+                            <>
+                              <option value="1000 - Cash and cash equivalents">1000 - Cash and cash equivalents</option>
+                              <option value="1005 - Caja Chica">1005 - Caja Chica</option>
+                            </>
+                          )}
                         </select>
                       </div>
 
@@ -1742,8 +1899,9 @@ export function CashMovementsModule({
                           onChange={(e) => setPagarProveedorForm({ ...pagarProveedorForm, currency: e.target.value })}
                           className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer shadow-2xs"
                         >
-                          <option value="USD - Dólar estadounidense">USD - Dólar estadou...</option>
                           <option value="HNL - Lempira hondureño">HNL - Lempira hondureño</option>
+                          <option value="USD - Dólar estadounidense">USD - Dólar estadounidense</option>
+                          <option value="EUR - Euro">EUR - Euro</option>
                         </select>
                       </div>
 
@@ -1906,7 +2064,7 @@ export function CashMovementsModule({
                     </div>
 
                     {/* MAIN CONTENT AREA: Empty State matching screenshot vs Vendor Bills Table */}
-                    {vendorBills.length === 0 ? (
+                    {filteredVendorBills.length === 0 ? (
                       <div className="py-20 text-center space-y-4 max-w-md mx-auto">
                         <p className="text-base text-slate-700 font-medium">
                           Parece que no tienes ninguna factura de proveedor para pagar.
@@ -1938,7 +2096,7 @@ export function CashMovementsModule({
                                 <th className="p-3 w-10 text-center">
                                   <input
                                     type="checkbox"
-                                    checked={selectedBillIds.length === vendorBills.length && vendorBills.length > 0}
+                                    checked={selectedBillIds.length === filteredVendorBills.length && filteredVendorBills.length > 0}
                                     onChange={handleToggleSelectAllBills}
                                     className="rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]"
                                   />
@@ -1952,7 +2110,7 @@ export function CashMovementsModule({
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 bg-white">
-                              {vendorBills.map((bill) => {
+                              {filteredVendorBills.map((bill) => {
                                 const isSelected = selectedBillIds.includes(bill.id);
                                 return (
                                   <tr key={bill.id} className={`hover:bg-slate-50 transition ${isSelected ? "bg-[#fff7ed]/60" : ""}`}>
@@ -1967,8 +2125,8 @@ export function CashMovementsModule({
                                     <td className="p-3 font-semibold text-slate-800">{bill.vendorName}</td>
                                     <td className="p-3 font-mono text-slate-600">{bill.billNumber}</td>
                                     <td className="p-3 text-slate-600">{bill.dueDate}</td>
-                                    <td className="p-3 text-right font-mono">${bill.originalAmount.toFixed(2)}</td>
-                                    <td className="p-3 text-right font-mono font-bold text-slate-900">${bill.balanceDue.toFixed(2)}</td>
+                                    <td className="p-3 text-right font-mono">{pagarProveedorCurrencySymbol}{bill.originalAmount.toFixed(2)}</td>
+                                    <td className="p-3 text-right font-mono font-bold text-slate-900">{pagarProveedorCurrencySymbol}{bill.balanceDue.toFixed(2)}</td>
                                     <td className="p-3 text-right">
                                       <input
                                         type="number"
@@ -1997,11 +2155,11 @@ export function CashMovementsModule({
                 <div className="flex items-center gap-6 text-xs">
                   <div>
                     <span className="text-slate-500 font-medium">Facturas seleccionadas: </span>
-                    <span className="font-bold text-slate-900">{selectedBillIds.length} de {vendorBills.length}</span>
+                    <span className="font-bold text-slate-900">{selectedBillIds.length} de {filteredVendorBills.length}</span>
                   </div>
                   <div className="border-l border-slate-200 pl-6">
                     <span className="text-slate-500 font-semibold uppercase text-xs tracking-wider block">TOTAL A PAGAR</span>
-                    <span className="text-3xl font-bold text-[#1b426e]">${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</span>
+                    <span className="text-3xl font-bold text-[#1b426e]">{pagarProveedorCurrencySymbol}{totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {pagarProveedorCurrencyCode}</span>
                   </div>
 
                 </div>
@@ -2025,7 +2183,7 @@ export function CashMovementsModule({
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      <span>{selectedBillIds.length > 0 ? `Pagar $${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD` : "Pagar facturas"}</span>
+                      <span>{selectedBillIds.length > 0 ? `Pagar ${pagarProveedorCurrencySymbol}${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pagarProveedorCurrencyCode}` : "Pagar facturas"}</span>
                     </button>
                     <button
                       type="button"
