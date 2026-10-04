@@ -103,6 +103,21 @@ export function PurchasesModule({
     };
   }, [defaultCurrencySymbol, defaultCurrencyCode]);
 
+  // Currency display helper functions
+  const getPOCurrencySymbol = (cur?: string) => {
+    const c = cur || poForm?.currency || effectiveCurrencyCode;
+    if (c === "HNL" || c === "L") return "L";
+    if (c === "EUR" || c === "€") return "€";
+    return "$";
+  };
+
+  const getPOCurrencyName = (cur?: string) => {
+    const c = cur || poForm?.currency || effectiveCurrencyCode;
+    if (c === "HNL" || c === "L") return "LEMPIRAS";
+    if (c === "EUR" || c === "€") return "EUROS";
+    return "DÓLARES";
+  };
+
   // Dynamic Purchase Orders Statistics
   const totalPO = useMemo(() => purchaseOrders.reduce((acc, item) => acc + item.total, 0), [purchaseOrders]);
   const poRecibidas = useMemo(() => purchaseOrders.filter((item) => item.status === "Recibida"), [purchaseOrders]);
@@ -156,31 +171,33 @@ export function PurchasesModule({
   }, []);
 
   const [poForm, setPOForm] = useState({
-    num: "OC-2026-085",
-    vendorName: "Insumos Flexográficos S.A.",
-    vendorEmail: "compras@insumosflexo.hn",
-    vendorAddress: "Zona Industrial San José, San Pedro Sula",
-    category: "Tintas Flexo",
-    currency: "USD",
-    date: "2026-09-03",
-    expectedDate: "2026-09-18",
+    num: "OC-2026-001",
+    vendorName: "",
+    vendorEmail: "",
+    vendorAddress: "",
+    category: "General",
+    currency: effectiveCurrencyCode || "HNL",
+    date: new Date().toISOString().split("T")[0],
+    expectedDate: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
     paymentTerms: "Crédito 30 días",
-    status: "Aprobada",
-    notes: "Entregar en almacén central de materias primas con certificado de calidad del lote.",
+    status: "Pendiente",
+    notes: "Favor incluir certificado de análisis y cumplir normas de seguridad en transporte.",
     lines: [
-      { id: "1", productName: "Tinta Flexográfica Cian UV", sku: "TIN-UV-01", description: "Cubeta de 20kg alta viscosidad", quantity: 5, rate: 450.00, total: 2250.00 },
-      { id: "2", productName: "Tinta Flexográfica Magenta UV", sku: "TIN-UV-02", description: "Cubeta de 20kg alta viscosidad", quantity: 5, rate: 450.00, total: 2250.00 },
-      { id: "3", productName: "Solvente de Limpieza Flexo", sku: "SOL-FL-09", description: "Tambor de 55 galones", quantity: 2, rate: 975.00, total: 1950.00 },
+      { id: "1", productName: "", sku: "", description: "", quantity: 1, rate: 0, total: 0 },
     ],
   });
 
   const poSubtotal = poForm.lines.reduce((acc, l) => acc + (l.total || 0), 0);
   const poTotal = poSubtotal;
 
-  // Initialize PO Form if editingPurchaseOrder is passed or changed
+  // Initialize PO Form if editingPurchaseOrder is passed or changed, or if entering editor with no active selection
   useEffect(() => {
-    if (currentView === "orden-compra-editor" && editingPurchaseOrder) {
-      handleOpenPOEditor(editingPurchaseOrder);
+    if (currentView === "orden-compra-editor") {
+      if (editingPurchaseOrder) {
+        handleOpenPOEditor(editingPurchaseOrder);
+      } else if (!selectedPurchaseOrder) {
+        handleOpenPOEditor();
+      }
     }
   }, [currentView, editingPurchaseOrder]);
 
@@ -195,43 +212,47 @@ export function PurchasesModule({
             description: it.description || "",
             quantity: Number(it.quantity) || 1,
             rate: Number(it.unitCost ?? it.rate) || 0,
-            total: Number(it.totalCost ?? it.total) || 0,
+            total: Number(it.totalCost ?? it.total) || ((Number(it.quantity) || 1) * (Number(it.unitCost ?? it.rate) || 0)),
           }))
         : [
-            { id: "1", productName: `${poToEdit.category} - Lote de Insumos`, sku: "INS-001", description: `Suministro de insumos categoría ${poToEdit.category}`, quantity: 1, rate: poToEdit.total, total: poToEdit.total }
+            { id: "1", productName: `${poToEdit.category || "Insumos"} - Lote`, sku: "INS-001", description: `Suministro de insumos categoría ${poToEdit.category || "General"}`, quantity: 1, rate: Number(poToEdit.total) || 0, total: Number(poToEdit.total) || 0 }
           ];
+
+      const matchingVendor = vendors.find((v) => v.name.toLowerCase().trim() === (poToEdit.vendor || "").toLowerCase().trim());
 
       setPOForm({
         num: poToEdit.num,
         vendorName: poToEdit.vendor,
-        vendorEmail: poToEdit.vendorEmail || "compras@insumosflexo.hn",
-        vendorAddress: poToEdit.vendorAddress || "Zona Industrial San José, San Pedro Sula",
-        category: poToEdit.category || "Tintas Flexo",
-        currency: poToEdit.currency || "USD",
-        date: poToEdit.date,
-        expectedDate: poToEdit.expectedDate || "2026-09-20",
+        vendorEmail: poToEdit.vendorEmail || matchingVendor?.email || "",
+        vendorAddress: poToEdit.vendorAddress || matchingVendor?.address || "",
+        category: poToEdit.category || "General",
+        currency: poToEdit.currency || matchingVendor?.currency || effectiveCurrencyCode || "HNL",
+        date: poToEdit.date || new Date().toISOString().split("T")[0],
+        expectedDate: poToEdit.expectedDate || new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
         paymentTerms: poToEdit.paymentTerms || "Crédito 30 días",
-        status: poToEdit.status,
-        notes: poToEdit.notes || "Entregar en almacén central de materias primas con certificado de calidad del lote.",
+        status: poToEdit.status || "Pendiente",
+        notes: poToEdit.notes || "Favor incluir certificado de análisis y cumplir normas de seguridad en transporte.",
         lines,
       });
     } else {
-      const nextNum = `OC-2026-${Math.floor(100 + Math.random() * 900)}`;
+      const nextNum = `OC-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
+      const defaultVendor = vendors[0];
+      const initialCurrency = defaultVendor?.currency || effectiveCurrencyCode || "HNL";
       setSelectedPurchaseOrder(null);
       setPOForm({
         num: nextNum,
-        vendorName: vendors[0]?.name || "Insumos Flexográficos S.A.",
-        vendorEmail: vendors[0]?.email || "compras@insumosflexo.hn",
-        vendorAddress: vendors[0]?.address || "Zona Industrial San José, San Pedro Sula",
-        category: "Tintas Flexo",
-        currency: "USD",
+        vendorName: defaultVendor?.name || "",
+        vendorEmail: defaultVendor?.email || "",
+        vendorAddress: defaultVendor?.address || "",
+        category: "General",
+        currency: initialCurrency,
         date: new Date().toISOString().split("T")[0],
-        expectedDate: "2026-09-20",
+        expectedDate: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
         paymentTerms: "Crédito 30 días",
-        status: "Aprobada",
+        status: "Pendiente",
         notes: "Favor incluir certificado de análisis y cumplir normas de seguridad en transporte.",
         lines: [
-          { id: "1", productName: "Materia Prima Flexográfica", sku: "MAT-FLX-01", description: "Insumo de producción estándar", quantity: 10, rate: 250.00, total: 2500.00 },
+          { id: "1", productName: "", sku: "", description: "", quantity: 1, rate: 0, total: 0 },
         ],
       });
     }
@@ -310,6 +331,7 @@ export function PurchasesModule({
                 vendorEmail: poForm.vendorEmail,
                 vendorAddress: poForm.vendorAddress,
                 category: poForm.category,
+                currency: poForm.currency,
                 total: poTotalVal,
                 status: finalStatus,
                 date: poForm.date,
@@ -329,6 +351,7 @@ export function PurchasesModule({
           vendorEmail: poForm.vendorEmail,
           vendorAddress: poForm.vendorAddress,
           category: poForm.category,
+          currency: poForm.currency,
           total: poTotalVal,
           status: finalStatus,
           expectedDate: poForm.expectedDate,
@@ -1073,7 +1096,9 @@ export function PurchasesModule({
                             <td className="py-3.5 px-4 font-sans text-slate-600">{po.date}</td>
                             <td className="py-3.5 px-4 font-bold font-sans text-slate-900">{po.vendor}</td>
                             <td className="py-3.5 px-4 font-sans text-slate-600">{po.category}</td>
-                            <td className="py-3.5 px-4 text-right font-bold text-slate-900">${po.total.toFixed(2)} USD</td>
+                            <td className="py-3.5 px-4 text-right font-bold text-slate-900 font-mono">
+                              {getPOCurrencySymbol(po.currency)} {Number(po.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[11px] font-semibold text-slate-500">{po.currency || effectiveCurrencyCode}</span>
+                            </td>
                             <td className="py-3.5 px-4 text-center font-sans">
                               <select
                                 value={po.status}
@@ -1324,7 +1349,7 @@ export function PurchasesModule({
                         <th className="py-3.5 px-4">OC Relacionada</th>
                         <th className="py-3.5 px-4">Proveedor</th>
                         <th className="py-3.5 px-4">Fecha Emisión</th>
-                        <th className="py-3.5 px-4 text-right">Total ($ USD)</th>
+                        <th className="py-3.5 px-4 text-right">Total ({effectiveCurrencySymbol} {effectiveCurrencyCode})</th>
                         <th className="py-3.5 px-4 text-center">Estado Pago</th>
                         <th className="py-3.5 px-4 text-center">Entrada Stock</th>
                         <th className="py-3.5 px-4 text-right">Acciones</th>
@@ -1349,8 +1374,8 @@ export function PurchasesModule({
                               <td className="py-3.5 px-4 text-slate-600">
                                 {inv.issueDate}
                               </td>
-                              <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                                ${(inv.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              <td className="py-3.5 px-4 text-right font-bold text-slate-900 font-mono">
+                                {getPOCurrencySymbol(inv.currency)} {(inv.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </td>
                               <td className="py-3.5 px-4 text-center">
                                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
@@ -1995,19 +2020,19 @@ export function PurchasesModule({
                     <div className="flex justify-between w-64 text-slate-600">
                       <span>Subtotal:</span>
                       <span className="font-mono font-bold">
-                        ${purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        {getPOCurrencySymbol(purchaseInvoiceForm.currency)} {purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0).toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="flex justify-between w-64 text-slate-600">
                       <span>ISV 15%:</span>
                       <span className="font-mono font-bold">
-                        ${(purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0) * 0.15).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        {getPOCurrencySymbol(purchaseInvoiceForm.currency)} {(purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0) * 0.15).toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="flex justify-between w-64 text-slate-900 font-bold text-sm border-t border-slate-300 pt-1 mt-1">
                       <span>TOTAL FACTURA COMPRA:</span>
                       <span className="font-mono text-[#1b426e]">
-                        ${(purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0) * 1.15).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
+                        {getPOCurrencySymbol(purchaseInvoiceForm.currency)} {(purchaseInvoiceForm.items.reduce((acc, it) => acc + (it.quantity || 0) * (it.unitCost || 0), 0) * 1.15).toLocaleString("es-HN", { minimumFractionDigits: 2 })} {purchaseInvoiceForm.currency || effectiveCurrencyCode}
                       </span>
                     </div>
                   </div>
@@ -2089,7 +2114,7 @@ export function PurchasesModule({
                         <th className="py-2.5 px-3">SKU</th>
                         <th className="py-2.5 px-3 text-right">Cant.</th>
                         <th className="py-2.5 px-3 text-right">Precio Unit.</th>
-                        <th className="py-2.5 px-3 text-right">Total (USD)</th>
+                        <th className="py-2.5 px-3 text-right">Total ({poForm.currency || effectiveCurrencyCode})</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -2102,8 +2127,8 @@ export function PurchasesModule({
                           </td>
                           <td className="py-3 px-3 font-mono text-slate-500 text-xs">{l.sku || "—"}</td>
                           <td className="py-3 px-3 text-right font-mono text-slate-700">{l.quantity}</td>
-                          <td className="py-3 px-3 text-right font-mono text-slate-700">${l.rate.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">${l.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td className="py-3 px-3 text-right font-mono text-slate-700">{getPOCurrencySymbol()}{l.rate.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{getPOCurrencySymbol()}{l.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -2117,10 +2142,10 @@ export function PurchasesModule({
                     <div className="col-span-7 bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/80 flex flex-col justify-between">
                       <div>
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">
-                          Valor en Letras (Dólares USD)
+                          Valor en Letras ({poForm.currency || effectiveCurrencyCode})
                         </span>
                         <p className="font-bold text-slate-800 text-xs uppercase leading-relaxed tracking-wide">
-                          {numberToWordsSpanish(poTotal)} DÓLARES CON {Math.round((poTotal % 1) * 100).toString().padStart(2, "0")}/100 USD
+                          {numberToWordsSpanish(poTotal)} {getPOCurrencyName()} CON {Math.round((poTotal % 1) * 100).toString().padStart(2, "0")}/100 {poForm.currency || effectiveCurrencyCode}
                         </p>
                       </div>
                       <div className="pt-3 border-t border-slate-200/60 mt-3 flex items-center justify-between text-[11px] text-slate-400">
@@ -2133,17 +2158,17 @@ export function PurchasesModule({
                     <div className="col-span-5 bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-sm space-y-1 text-xs">
                       <div className="flex justify-between items-center py-[2px] text-slate-600">
                         <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Subtotal Insumos</span>
-                        <span className="font-mono font-bold text-slate-900">${poSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="font-mono font-bold text-slate-900">{getPOCurrencySymbol()}{poSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center py-[2px] text-slate-600">
                         <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Impuestos / Retenciones</span>
-                        <span className="font-mono font-medium text-slate-700">$0.00</span>
+                        <span className="font-mono font-medium text-slate-700">{getPOCurrencySymbol()}0.00</span>
                       </div>
                       <div className="border-t border-slate-100 my-0.5" />
                       <div className="pt-1">
                         <div className="flex justify-between items-center py-2.5 px-3.5 shadow-xs rounded-xl bg-[#1b426e] text-white">
-                          <span className="font-black text-xs uppercase tracking-wider">Total Orden USD</span>
-                          <span className="font-mono font-black text-base">${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className="font-black text-xs uppercase tracking-wider">Total Orden {poForm.currency || effectiveCurrencyCode}</span>
+                          <span className="font-mono font-black text-base">{getPOCurrencySymbol()}{poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                       </div>
                     </div>
@@ -2232,7 +2257,7 @@ export function PurchasesModule({
 
                         <div className="text-right space-y-3">
                           <div className="text-xs font-semibold text-slate-500">
-                            Monto Total: <span className="font-bold text-slate-900 text-sm">${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })} USD</span>
+                            Monto Total: <span className="font-bold text-slate-900 text-sm font-mono">{getPOCurrencySymbol()}{poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {poForm.currency || effectiveCurrencyCode}</span>
                           </div>
                           <div className="flex items-center justify-end gap-2">
                             <span className="text-xs text-slate-500 font-semibold">Estado:</span>
@@ -2267,18 +2292,20 @@ export function PurchasesModule({
                             value={poForm.vendorName}
                             onChange={(e) => {
                               const selected = vendors.find((v) => v.name === e.target.value);
-                              setPOForm({
-                                ...poForm,
+                              setPOForm((prev) => ({
+                                ...prev,
                                 vendorName: e.target.value,
                                 vendorEmail: selected ? selected.email || "compras@proveedor.hn" : "compras@proveedor.hn",
                                 vendorAddress: selected ? selected.address || "Dirección no especificada" : "San Pedro Sula",
-                              });
+                                currency: selected?.currency || prev.currency || effectiveCurrencyCode,
+                              }));
                             }}
                             className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                           >
+                            <option value="">-- Seleccionar Proveedor --</option>
                             {vendors.map((v) => (
                               <option key={v.id} value={v.name}>
-                                {v.name} ({v.currency})
+                                {v.name} ({v.currency || effectiveCurrencyCode})
                               </option>
                             ))}
                           </select>
@@ -2291,7 +2318,7 @@ export function PurchasesModule({
                         </div>
 
                         {/* PO Metadata Grid */}
-                        <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                           <div>
                             <label className="block font-semibold text-slate-700 mb-1">N.º de Orden</label>
                             <input
@@ -2303,7 +2330,20 @@ export function PurchasesModule({
                           </div>
 
                           <div>
-                            <label className="block font-semibold text-slate-700 mb-1">Categoría de Insumos</label>
+                            <label className="block font-semibold text-slate-700 mb-1">Moneda</label>
+                            <select
+                              value={poForm.currency || effectiveCurrencyCode}
+                              onChange={(e) => setPOForm({ ...poForm, currency: e.target.value })}
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer"
+                            >
+                              <option value="HNL">HNL (L - Lempira)</option>
+                              <option value="USD">USD ($ - Dólar)</option>
+                              <option value="EUR">EUR (€ - Euro)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold text-slate-700 mb-1">Categoría</label>
                             <input
                               type="text"
                               value={poForm.category}
@@ -2329,6 +2369,17 @@ export function PurchasesModule({
                               type="date"
                               value={poForm.expectedDate}
                               onChange={(e) => setPOForm({ ...poForm, expectedDate: e.target.value })}
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold text-slate-700 mb-1">Términos de Pago</label>
+                            <input
+                              type="text"
+                              value={poForm.paymentTerms}
+                              onChange={(e) => setPOForm({ ...poForm, paymentTerms: e.target.value })}
+                              placeholder="Ej. Crédito 30 días"
                               className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#1b426e]"
                             />
                           </div>
@@ -2358,7 +2409,7 @@ export function PurchasesModule({
                                 <th className="p-3 min-w-[180px]">Descripción / Especificaciones</th>
                                 <th className="p-3 w-24 text-right">Cantidad</th>
                                 <th className="p-3 w-28 text-right">Precio Unit.</th>
-                                <th className="p-3 w-28 text-right">Total (USD)</th>
+                                <th className="p-3 w-28 text-right">Total ({poForm.currency || effectiveCurrencyCode})</th>
                                 <th className="p-3 w-12 text-center"></th>
                               </tr>
                             </thead>
@@ -2369,18 +2420,70 @@ export function PurchasesModule({
                                   <td className="p-3">
                                     <input
                                       type="text"
+                                      list={`inv-po-${line.id}`}
                                       value={line.productName}
-                                      onChange={(e) => handlePOLineChange(line.id, "productName", e.target.value)}
-                                      placeholder="Nombre del insumo..."
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        const matched = inventory.find(
+                                          (inv) => inv.description.toLowerCase() === val.toLowerCase() || inv.sku.toLowerCase() === val.toLowerCase()
+                                        );
+                                        if (matched) {
+                                          setPOForm((prev) => ({
+                                            ...prev,
+                                            lines: prev.lines.map((l) =>
+                                              l.id === line.id
+                                                ? {
+                                                    ...l,
+                                                    productName: matched.description,
+                                                    sku: matched.sku,
+                                                    rate: matched.cost || l.rate,
+                                                    total: (Number(l.quantity) || 1) * (Number(matched.cost) || Number(l.rate) || 0),
+                                                  }
+                                                : l
+                                            ),
+                                          }));
+                                        } else {
+                                          handlePOLineChange(line.id, "productName", val);
+                                        }
+                                      }}
+                                      placeholder="Insumo o seleccionar de inventario..."
                                       className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium"
                                     />
+                                    <datalist id={`inv-po-${line.id}`}>
+                                      {inventory.map((inv) => (
+                                        <option key={inv.id} value={inv.description}>
+                                          {inv.sku} - Stock: {inv.quantity} (Costo: {getPOCurrencySymbol()}{inv.cost})
+                                        </option>
+                                      ))}
+                                    </datalist>
                                   </td>
                                   <td className="p-3">
                                     <input
                                       type="text"
                                       value={line.sku}
-                                      onChange={(e) => handlePOLineChange(line.id, "sku", e.target.value)}
-                                      placeholder="SKU-001"
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        const matched = inventory.find((inv) => inv.sku.toLowerCase() === val.toLowerCase());
+                                        if (matched) {
+                                          setPOForm((prev) => ({
+                                            ...prev,
+                                            lines: prev.lines.map((l) =>
+                                              l.id === line.id
+                                                ? {
+                                                    ...l,
+                                                    sku: matched.sku,
+                                                    productName: matched.description || l.productName,
+                                                    rate: matched.cost || l.rate,
+                                                    total: (Number(l.quantity) || 1) * (Number(matched.cost) || Number(l.rate) || 0),
+                                                  }
+                                                : l
+                                            ),
+                                          }));
+                                        } else {
+                                          handlePOLineChange(line.id, "sku", val);
+                                        }
+                                      }}
+                                      placeholder="SKU"
                                       className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
@@ -2410,8 +2513,8 @@ export function PurchasesModule({
                                       className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-right focus:outline-none focus:border-[#1b426e]"
                                     />
                                   </td>
-                                  <td className="p-3 text-right font-bold text-slate-900">
-                                    ${line.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                                  <td className="p-3 text-right font-bold text-slate-900 font-mono">
+                                    {getPOCurrencySymbol()}{Number(line.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </td>
                                   <td className="p-3 text-center">
                                     <button
@@ -2452,15 +2555,15 @@ export function PurchasesModule({
                           <div className="space-y-2">
                             <div className="flex justify-between items-center text-slate-600">
                               <span>Subtotal</span>
-                              <span className="font-bold text-slate-900">${poSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                              <span className="font-bold text-slate-900 font-mono">{getPOCurrencySymbol()}{poSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-sm font-bold text-slate-900">
                               <span>Total Orden de Compra</span>
-                              <span className="text-3xl font-bold text-slate-900">${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })} USD</span>
+                              <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{getPOCurrencySymbol()}{poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm font-bold text-slate-500">{poForm.currency || effectiveCurrencyCode}</span></span>
                             </div>
                           </div>
                           <p className="text-[11px] text-slate-400 italic text-left pt-4">
-                            Emisión en dólares (USD). Sujeta a términos de pago especificados en el contrato marco.
+                            Emisión en {poForm.currency || effectiveCurrencyCode} ({getPOCurrencySymbol()}). Sujeta a términos de pago especificados en la orden.
                           </p>
                         </div>
                       </div>
@@ -2472,17 +2575,17 @@ export function PurchasesModule({
                     <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xs max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150">
                       <div className="border-b border-slate-200 pb-4">
                         <h3 className="font-bold text-base text-slate-900">Vista previa del correo para el proveedor</h3>
-                        <p className="text-xs text-slate-500">Formato del correo automático que recibirá {poForm.vendorName}.</p>
+                        <p className="text-xs text-slate-500">Formato del correo automático que recibirá {poForm.vendorName || "el proveedor"}.</p>
                       </div>
 
                       <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4 text-xs text-slate-700 font-sans">
                         <div className="space-y-1 border-b border-slate-200 pb-3">
                           <p><strong>De:</strong> {companySettings.email}</p>
-                          <p><strong>Para:</strong> {poForm.vendorEmail}</p>
+                          <p><strong>Para:</strong> {poForm.vendorEmail || "compras@proveedor.hn"}</p>
                           <p><strong>Asunto:</strong> Orden de Compra {poForm.num} - {companySettings.nombre}</p>
                         </div>
-                        <p>Estimado equipo de {poForm.vendorName},</p>
-                        <p>Adjunto a este correo enviamos la **Orden de Compra {poForm.num}** por un importe total de **${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })} USD** correspondiente a insumos de {poForm.category}.</p>
+                        <p>Estimado equipo de {poForm.vendorName || "Proveedor"},</p>
+                        <p>Adjunto a este correo enviamos la **Orden de Compra {poForm.num}** por un importe total de **{getPOCurrencySymbol()}{poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {poForm.currency || effectiveCurrencyCode}** correspondiente a insumos de {poForm.category}.</p>
                         <p>Agradecemos confirmar recepción e indicar la fecha programada de despacho a nuestro almacén.</p>
                       </div>
                     </div>
@@ -2545,7 +2648,7 @@ export function PurchasesModule({
                                 <th className="py-2.5 px-3">SKU</th>
                                 <th className="py-2.5 px-3 text-right">Cant.</th>
                                 <th className="py-2.5 px-3 text-right">Precio Unit.</th>
-                                <th className="py-2.5 px-3 text-right">Total (USD)</th>
+                                <th className="py-2.5 px-3 text-right">Total ({poForm.currency || effectiveCurrencyCode})</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -2558,8 +2661,8 @@ export function PurchasesModule({
                                   </td>
                                   <td className="py-3 px-3 font-mono text-slate-500 text-xs">{l.sku || "—"}</td>
                                   <td className="py-3 px-3 text-right font-mono text-slate-700">{l.quantity}</td>
-                                  <td className="py-3 px-3 text-right font-mono text-slate-700">${l.rate.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                  <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">${l.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                  <td className="py-3 px-3 text-right font-mono text-slate-700">{getPOCurrencySymbol()}{l.rate.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                  <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{getPOCurrencySymbol()}{l.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -2573,10 +2676,10 @@ export function PurchasesModule({
                             <div className="col-span-7 bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/80 flex flex-col justify-between">
                               <div>
                                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">
-                                  Valor en Letras (Dólares USD)
+                                  Valor en Letras ({poForm.currency || effectiveCurrencyCode})
                                 </span>
                                 <p className="font-bold text-slate-800 text-xs uppercase leading-relaxed tracking-wide">
-                                  {numberToWordsSpanish(poTotal)} DÓLARES CON {Math.round((poTotal % 1) * 100).toString().padStart(2, "0")}/100 USD
+                                  {numberToWordsSpanish(poTotal)} {getPOCurrencyName()} CON {Math.round((poTotal % 1) * 100).toString().padStart(2, "0")}/100 {poForm.currency || effectiveCurrencyCode}
                                 </p>
                               </div>
                               <div className="pt-3 border-t border-slate-200/60 mt-3 flex items-center justify-between text-[11px] text-slate-400">
@@ -2589,17 +2692,17 @@ export function PurchasesModule({
                             <div className="col-span-5 bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-sm space-y-1 text-xs">
                               <div className="flex justify-between items-center py-[2px] text-slate-600">
                                 <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Subtotal Insumos</span>
-                                <span className="font-mono font-bold text-slate-900">${poSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span className="font-mono font-bold text-slate-900">{getPOCurrencySymbol()}{poSubtotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                               </div>
                               <div className="flex justify-between items-center py-[2px] text-slate-600">
                                 <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">Impuestos / Retenciones</span>
-                                <span className="font-mono font-medium text-slate-700">$0.00</span>
+                                <span className="font-mono font-medium text-slate-700">{getPOCurrencySymbol()}0.00</span>
                               </div>
                               <div className="border-t border-slate-100 my-0.5" />
                               <div className="pt-1">
                                 <div className="flex justify-between items-center py-2.5 px-3.5 shadow-xs rounded-xl bg-[#1b426e] text-white">
-                                  <span className="font-black text-xs uppercase tracking-wider">Total Orden USD</span>
-                                  <span className="font-mono font-black text-base">${poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  <span className="font-black text-xs uppercase tracking-wider">Total Orden {poForm.currency || effectiveCurrencyCode}</span>
+                                  <span className="font-mono font-black text-base">{getPOCurrencySymbol()}{poTotal.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                               </div>
                             </div>
@@ -2839,12 +2942,13 @@ export function PurchasesModule({
                             <label className="block">
                               <span className="font-semibold block mb-1">Moneda de la orden</span>
                               <select
-                                value={poForm.currency || "USD"}
+                                value={poForm.currency || effectiveCurrencyCode}
                                 onChange={(e) => setPOForm({ ...poForm, currency: e.target.value })}
-                                className="w-full px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900"
+                                className="w-full px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-bold cursor-pointer"
                               >
-                                <option value="USD">USD ($ Dólar estadounidense)</option>
-                                <option value="HNL">HNL (L Lempira hondureño)</option>
+                                <option value="HNL">HNL (L - Lempira hondureño)</option>
+                                <option value="USD">USD ($ - Dólar estadounidense)</option>
+                                <option value="EUR">EUR (€ - Euro)</option>
                               </select>
                             </label>
 
@@ -3068,7 +3172,7 @@ export function PurchasesModule({
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
                 <div className="p-3.5 bg-slate-100/70 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
                   <span>Ítems / Materiales Solicitados</span>
-                  <span className="text-[11px] font-normal text-slate-500">Multimoneda {selectedPurchaseOrder.currency || "USD"} ($)</span>
+                  <span className="text-[11px] font-normal text-slate-500">Moneda: {selectedPurchaseOrder.currency || effectiveCurrencyCode} ({getPOCurrencySymbol(selectedPurchaseOrder.currency)})</span>
                 </div>
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
@@ -3090,16 +3194,15 @@ export function PurchasesModule({
                           total: Number(item.totalCost ?? item.total) || 0,
                         }))
                       : [
-                          { sku: "MAT-FLX-001", desc: `${selectedPurchaseOrder.category} - Lote Premium Grado A`, qty: 25, price: selectedPurchaseOrder.total * 0.028, total: selectedPurchaseOrder.total * 0.7 },
-                          { sku: "MAT-FLX-002", desc: `Complementos y Soluciones para ${selectedPurchaseOrder.category}`, qty: 10, price: selectedPurchaseOrder.total * 0.03, total: selectedPurchaseOrder.total * 0.3 },
+                          { sku: "MAT-FLX-001", desc: `${selectedPurchaseOrder.category} - Lote`, qty: 1, price: selectedPurchaseOrder.total, total: selectedPurchaseOrder.total },
                         ]
                     ).map((item, i) => (
                       <tr key={i} className="hover:bg-slate-50/80">
                         <td className="py-3 px-4 font-bold text-[#1b426e]">{item.sku}</td>
                         <td className="py-3 px-4 font-sans text-slate-800 font-medium">{item.desc}</td>
                         <td className="py-3 px-4 text-center font-bold">{item.qty}</td>
-                        <td className="py-3 px-4 text-right">${item.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-                        <td className="py-3 px-4 text-right font-bold text-slate-900">${item.total.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                        <td className="py-3 px-4 text-right">{getPOCurrencySymbol(selectedPurchaseOrder.currency)}{item.price.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="py-3 px-4 text-right font-bold text-slate-900">{getPOCurrencySymbol(selectedPurchaseOrder.currency)}{item.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3111,15 +3214,15 @@ export function PurchasesModule({
                 <div className="w-full sm:w-72 bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 text-right">
                   <div className="flex justify-between text-slate-600 text-xs">
                     <span>Subtotal:</span>
-                    <span className="font-mono font-medium">${(selectedPurchaseOrder.subtotal ?? selectedPurchaseOrder.total * 0.85).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span className="font-mono font-medium">{getPOCurrencySymbol(selectedPurchaseOrder.currency)}{(selectedPurchaseOrder.subtotal ?? selectedPurchaseOrder.total * 0.85).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-slate-600 text-xs">
                     <span>Impuesto IVA (15%):</span>
-                    <span className="font-mono font-medium">${(selectedPurchaseOrder.tax ?? selectedPurchaseOrder.total * 0.15).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span className="font-mono font-medium">{getPOCurrencySymbol(selectedPurchaseOrder.currency)}{(selectedPurchaseOrder.tax ?? selectedPurchaseOrder.total * 0.15).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
-                    <span>Total Orden ({selectedPurchaseOrder.currency || "USD"}):</span>
-                    <span className="font-mono text-[#1b426e]">${selectedPurchaseOrder.total.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span>Total Orden ({selectedPurchaseOrder.currency || effectiveCurrencyCode}):</span>
+                    <span className="font-mono text-[#1b426e]">{getPOCurrencySymbol(selectedPurchaseOrder.currency)}{selectedPurchaseOrder.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -3246,7 +3349,7 @@ export function PurchasesModule({
 
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-slate-900">
                 <span>Total Factura Fiscal:</span>
-                <span className="text-base text-[#1b426e] font-mono">${selectedDetailPurchaseInvoice.total.toFixed(2)} USD</span>
+                <span className="text-base text-[#1b426e] font-mono font-bold">{getPOCurrencySymbol(selectedDetailPurchaseInvoice.currency)} {Number(selectedDetailPurchaseInvoice.total || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-xs text-slate-500 font-normal">{selectedDetailPurchaseInvoice.currency || effectiveCurrencyCode}</span></span>
               </div>
 
               {selectedDetailPurchaseInvoice.notes && (

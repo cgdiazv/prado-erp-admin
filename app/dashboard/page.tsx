@@ -319,7 +319,7 @@ export default function AdminDashboard() {
             total: Number(po.total) || 0,
             subtotal: Number(po.subtotal) || 0,
             tax: Number(po.tax) || 0,
-            currency: po.currency || "USD",
+            currency: po.currency || defaultCurrencyCode || "HNL",
             expectedDate: po.expectedDate,
             paymentTerms: po.paymentTerms,
             status: po.status,

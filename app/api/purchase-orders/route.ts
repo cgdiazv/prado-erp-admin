@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       issueDate = new Date().toISOString().split("T")[0],
       expectedDate,
       paymentTerms = "Crédito 30 días",
-      currency = "USD",
+      currency = "HNL",
       status = "Pendiente",
       notes,
       items = [],
