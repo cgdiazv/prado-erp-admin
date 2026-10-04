@@ -17,6 +17,7 @@ import SalesOrdersModule from "@/components/SalesOrdersModule";
 import CustomersModule from "@/components/CustomersModule";
 import VendorsModule from "@/components/VendorsModule";
 import InventoryModule from "@/components/InventoryModule";
+import POSModule from "@/components/pos/POSModule";
 import CommissionsModule from "@/components/CommissionsModule";
 import { Skeleton, CardSkeleton, TableRowsSkeleton } from "@/components/Skeleton";
 import { InvoicesModule, numberToWordsSpanish } from "@/components/InvoicesModule";
@@ -215,7 +216,7 @@ type PurchaseInvoice = {
   createdAt?: string;
 };
 
-type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv";
+type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv" | "pos";
 
 
 
@@ -3941,7 +3942,8 @@ ${accountRowsHtml(equity)}
                   currentView === "notas-credito-debito" ||
                   currentView === "vendedores" ||
                   currentView === "comisiones" ||
-                  currentView === "antiguedad-saldos"
+                  currentView === "antiguedad-saldos" ||
+                  currentView === "pos"
                   ? "font-semibold text-slate-900"
                   : ""
                 }`}
@@ -3965,6 +3967,17 @@ ${accountRowsHtml(equity)}
 
             {ventasOpen && !sidebarCollapsed && (
               <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
+                {/* 0. Punto de Venta (POS) */}
+                <button
+                  onClick={() => setCurrentView("pos")}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "pos"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                >
+                  <span>Punto de Venta (POS)</span>
+                </button>
+
                 {/* 1. Clientes */}
                 <button
                   onClick={() => setCurrentView("clientes")}
@@ -4402,6 +4415,7 @@ ${accountRowsHtml(equity)}
                   {currentView === "antiguedad-saldos-proveedores" && "Reportes / Antigüedad de Saldos Proveedores"}
                   {currentView === "estado-cuenta-cliente" && "Clientes / Estado de Cuenta Individual"}
                   {currentView === "retenciones-isv" && "Compras / Comprobantes de Retención SAR"}
+                  {currentView === "pos" && "Terminal Punto de Venta (POS)"}
                   {currentView === "configuracion" && "Configuración del Sistema"}
                 </span>
               </div>
@@ -5643,6 +5657,23 @@ ${accountRowsHtml(equity)}
                 onPayVendor={(vendorName) => openPagarProveedorView(vendorName)}
                 autoOpenCreate={vendorsAutoOpenCreate}
                 onAutoOpenCreateConsumed={() => setVendorsAutoOpenCreate(false)}
+              />
+            </div>
+          )}
+
+          {/* ================= VIEW: PUNTO DE VENTA (POS) ================= */}
+          {currentView === "pos" && (
+            <div className="animate-in fade-in duration-150 p-3 lg:p-6">
+              <POSModule
+                inventory={inventory}
+                setInventory={setInventory}
+                customers={customers}
+                salesReps={salesReps}
+                companySettings={companySettings}
+                companyLogo={companyLogo}
+                formatCurrency={formatCurrency}
+                onRefreshData={loadDashboardData}
+                onNavigateBack={() => setCurrentView("dashboard")}
               />
             </div>
           )}

@@ -363,4 +363,5 @@ export type NavItem =
   | "antiguedad-saldos"
   | "antiguedad-saldos-proveedores"
   | "estado-cuenta-cliente"
-  | "retenciones-isv";
+  | "retenciones-isv"
+  | "pos";
