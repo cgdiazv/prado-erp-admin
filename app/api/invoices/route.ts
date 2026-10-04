@@ -174,6 +174,62 @@ export async function POST(request: NextRequest) {
       console.error("Error creating accounting entry for invoice:", accountingErr);
     }
 
+    // AUTOMATIC INVENTORY STOCK DEDUCTION
+    try {
+      for (const line of lines) {
+        const qty = Number(line.quantity) || 1;
+        let item = null;
+        if (line.productId) {
+          item = await prisma.inventoryItem.findFirst({
+            where: { id: line.productId, companyId },
+          });
+        }
+        if (!item && line.sku) {
+          item = await prisma.inventoryItem.findFirst({
+            where: { sku: line.sku, companyId },
+          });
+        }
+
+        if (item) {
+          const newQty = Math.max(0, item.quantity - qty);
+          await prisma.inventoryItem.update({
+            where: { id: item.id },
+            data: { quantity: newQty },
+          });
+
+          // Decrement lot if applicable
+          const lotNum = line.selectedLot || line.lotNumber;
+          if (lotNum) {
+            const lot = await prisma.itemLot.findFirst({
+              where: { inventoryItemId: item.id, lotNumber: lotNum },
+            });
+            if (lot) {
+              await prisma.itemLot.update({
+                where: { id: lot.id },
+                data: { quantity: Math.max(0, lot.quantity - qty) },
+              });
+            }
+          }
+
+          // Mark serial as sold if applicable
+          const serialNum = line.selectedSerial || line.serialNumber;
+          if (serialNum) {
+            const serial = await prisma.itemSerial.findFirst({
+              where: { inventoryItemId: item.id, serialNumber: serialNum },
+            });
+            if (serial) {
+              await prisma.itemSerial.update({
+                where: { id: serial.id },
+                data: { status: "VENDIDO" },
+              });
+            }
+          }
+        }
+      }
+    } catch (invErr: any) {
+      console.error("Error deducting inventory for invoice:", invErr);
+    }
+
     return NextResponse.json({
       success: true,
       data: savedInvoice,

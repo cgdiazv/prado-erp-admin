@@ -479,12 +479,15 @@ export default function POSModule({
         total: cartTotals.total,
         status: "Pagada",
         lines: cart.map((c) => ({
+          productId: c.productId,
           sku: c.sku,
           productName: c.description,
           description: c.description,
           quantity: c.quantity,
           rate: c.price,
           amount: c.price * c.quantity,
+          selectedLot: c.selectedLot,
+          selectedSerial: c.selectedSerial,
         })),
       };
 
@@ -494,6 +497,11 @@ export default function POSModule({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(invoicePayload),
       });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error("Error creating POS invoice:", errData);
+      }
 
       // Update local inventory state
       if (setInventory) {
@@ -533,7 +541,9 @@ export default function POSModule({
       setCompletedSale(completed);
       setCart([]);
       setShowCheckoutModal(false);
-      if (onRefreshData) onRefreshData();
+      if (onRefreshData) {
+        await onRefreshData();
+      }
     } catch (err) {
       console.error("Error processing POS sale:", err);
     } finally {
@@ -1158,18 +1168,18 @@ export default function POSModule({
       {/* ================= 4. SALE COMPLETED / THERMAL RECEIPT MODAL ================= */}
       {completedSale && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            {/* Header */}
-            <div className="p-4 bg-emerald-600 text-white text-center">
-              <div className="w-10 h-10 rounded-full bg-white text-emerald-600 mx-auto flex items-center justify-center font-bold mb-1 shadow-sm">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-base">¡Venta Exitosa!</h3>
-              <p className="text-xs text-emerald-100">Ticket #{completedSale.ticketNumber}</p>
-            </div>
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-150 relative">
+            <button
+              type="button"
+              onClick={() => setCompletedSale(null)}
+              className="absolute top-2.5 right-2.5 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer z-10"
+              title="Cerrar"
+            >
+              <X className="w-4 h-4" />
+            </button>
 
             {/* Printable Receipt Paper Container */}
-            <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 pt-7">
               <div
                 id="pos-thermal-receipt"
                 className="bg-white p-4 rounded-xl border border-dashed border-slate-300 font-mono text-[11px] text-slate-800 space-y-2 shadow-2xs"

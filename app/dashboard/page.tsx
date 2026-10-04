@@ -2624,6 +2624,51 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadInvoices = async () => {
+    try {
+      const res = await fetch("/api/invoices");
+      const invcRes = await res.json();
+      if (invcRes && invcRes.success && Array.isArray(invcRes.data)) {
+        setInvoicesList(
+          invcRes.data.map((inv: any) => ({
+            num: inv.invoiceNumber,
+            date: inv.invoiceDate,
+            customer: inv.customerName,
+            due: inv.dueDate || "",
+            total: inv.total,
+            status: inv.status,
+            currency: inv.currency || "USD",
+            paymentTerms: inv.paymentTerms,
+            customerEmail: inv.customerEmail || "",
+            lines: inv.lines || [],
+          }))
+        );
+      }
+    } catch (err) {
+      console.error("Error loading invoices:", err);
+    }
+  };
+
+  const loadInventory = async () => {
+    try {
+      const res = await fetch("/api/inventory");
+      const invRes = await res.json();
+      if (invRes && invRes.success && Array.isArray(invRes.data)) {
+        setInventory(invRes.data);
+      }
+    } catch (err) {
+      console.error("Error loading inventory:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentView === "lista-facturas") {
+      loadInvoices();
+    } else if (currentView === "inventario") {
+      loadInventory();
+    }
+  }, [currentView]);
+
   const loadBankingData = async () => {
     try {
       const [bankRes, txRes, ruleRes] = await Promise.all([
@@ -5672,7 +5717,9 @@ ${accountRowsHtml(equity)}
                 companySettings={companySettings}
                 companyLogo={companyLogo}
                 formatCurrency={formatCurrency}
-                onRefreshData={loadDashboardData}
+                onRefreshData={async () => {
+                  await Promise.all([loadDashboardData(), loadInvoices(), loadInventory()]);
+                }}
                 onNavigateBack={() => setCurrentView("dashboard")}
               />
             </div>
@@ -11742,6 +11789,7 @@ ${accountRowsHtml(equity)}
               onNavigateToSettings={() => setCurrentView("configuracion")}
               onOpenInvoiceEditor={(inv) => openInvoiceEditor(inv)}
               onCloseInvoiceEditor={closeInvoiceEditor}
+              onRefreshInvoices={loadInvoices}
               onRefreshAccounts={() => {
                 fetch("/api/accounts")
                   .then((r) => r.json())

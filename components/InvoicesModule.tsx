@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -34,6 +34,7 @@ export interface InvoicesModuleProps {
   onCloseInvoiceEditor: () => void;
   onRefreshAccounts?: () => void;
   onReceivePayment?: (invoice: Invoice) => void;
+  onRefreshInvoices?: () => void;
 }
 
 export const numberToWordsSpanish = (amount: number, currencySymbol = "$"): string => {
@@ -148,7 +149,13 @@ export function InvoicesModule({
   onCloseInvoiceEditor,
   onRefreshAccounts,
   onReceivePayment,
+  onRefreshInvoices,
 }: InvoicesModuleProps) {
+  useEffect(() => {
+    if (onRefreshInvoices) {
+      onRefreshInvoices();
+    }
+  }, [onRefreshInvoices]);
   // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
   const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
     if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
@@ -1088,7 +1095,19 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                     </svg>
                   </div>
 
-                  <span className="text-xs text-slate-500 font-medium">Mostrando {invoicesList.length} facturas emitidas</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 font-medium">Mostrando {invoicesList.length} facturas emitidas</span>
+                    {onRefreshInvoices && (
+                      <button
+                        type="button"
+                        onClick={() => onRefreshInvoices()}
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition cursor-pointer shadow-2xs"
+                        title="Actualizar facturas"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
