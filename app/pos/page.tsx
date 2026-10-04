@@ -67,7 +67,7 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 p-2 sm:p-4 flex flex-col justify-center">
+    <div className="min-h-screen h-screen bg-slate-900 overflow-hidden select-none overscroll-none flex flex-col justify-center">
       <POSModule
         inventory={inventory}
         setInventory={setInventory}

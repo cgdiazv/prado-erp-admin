@@ -91,38 +91,73 @@ export default function POSModule({
   isStandalone = false,
 }: POSModuleProps) {
   // ----------------------------------------------------
-  // Fullscreen state
+  // Fullscreen state - Defaults to TRUE on mount
   // ----------------------------------------------------
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(true);
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement && !isFullscreen) {
-      if (containerRef.current?.requestFullscreen) {
-        containerRef.current
-          .requestFullscreen()
-          .then(() => setIsFullscreen(true))
-          .catch(() => {
-            // Fallback to CSS overlay fullscreen
-            setIsFullscreen(true);
-          });
-      } else {
-        setIsFullscreen(true);
+    if (!isFullscreen) {
+      setIsFullscreen(true);
+      if (containerRef.current?.requestFullscreen && !document.fullscreenElement) {
+        containerRef.current.requestFullscreen().catch(() => {});
       }
     } else {
+      setIsFullscreen(false);
       if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen().catch(() => {});
       }
-      setIsFullscreen(false);
     }
   };
 
   useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+    // Automatically go full screen on open
+    setIsFullscreen(true);
+
+    const tryNativeFullscreen = () => {
+      if (containerRef.current?.requestFullscreen && !document.fullscreenElement) {
+        containerRef.current.requestFullscreen().catch(() => {
+          // CSS fullscreen overlay acts as rock-solid fallback
+        });
+      }
     };
-    document.addEventListener("fullscreenchange", handleFsChange);
-    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+
+    tryNativeFullscreen();
+
+    // On user's first gesture, ensure native fullscreen if available
+    const handleFirstGesture = () => {
+      tryNativeFullscreen();
+      window.removeEventListener("click", handleFirstGesture);
+      window.removeEventListener("touchstart", handleFirstGesture);
+    };
+    window.addEventListener("click", handleFirstGesture, { once: true });
+    window.addEventListener("touchstart", handleFirstGesture, { once: true });
+
+    // Prevent tablet swipe down from closing or collapsing fullscreen:
+    // We intentionally DO NOT tie isFullscreen to document.fullscreenElement exit,
+    // so the POS interface remains 100% full-screen even if a tablet gesture is detected.
+    const preventOverscrollSwipe = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        // If swiping near top edge, prevent pull-to-refresh or swipe down to exit
+        if (touch.clientY < 50) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("touchmove", preventOverscrollSwipe, { passive: false });
+    }
+
+    return () => {
+      window.removeEventListener("click", handleFirstGesture);
+      window.removeEventListener("touchstart", handleFirstGesture);
+      if (container) {
+        container.removeEventListener("touchmove", preventOverscrollSwipe);
+      }
+    };
   }, []);
 
   // ----------------------------------------------------
@@ -561,13 +596,17 @@ export default function POSModule({
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col bg-slate-100 overflow-hidden select-none transition-all duration-150 ${
+      className={`flex flex-col bg-slate-100 overflow-hidden select-none overscroll-none transition-all duration-150 ${
         isFullscreen
           ? "fixed inset-0 z-50 w-screen h-screen rounded-none border-0"
           : isStandalone
-          ? "h-[calc(100vh-2rem)] min-h-[640px] rounded-2xl border border-slate-200 shadow-sm"
+          ? "h-screen min-h-[640px] rounded-none border-0"
           : "h-[calc(100vh-5rem)] min-h-[640px] rounded-2xl border border-slate-200 shadow-sm"
       }`}
+      style={{
+        overscrollBehavior: "none",
+        touchAction: "pan-x pan-y",
+      }}
     >
       {/* ================= 1. TOP OPERATIONAL BAR ================= */}
       <div className="bg-[#1b426e] text-white px-4 py-2.5 flex items-center justify-between gap-3 shadow-md z-10 shrink-0">
