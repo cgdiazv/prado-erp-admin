@@ -324,7 +324,7 @@ export default function VendorsModule({
           <table className="w-full text-left text-xs text-slate-600">
             <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
               <tr>
-                <th className="p-3.5">Código Macola</th>
+                <th className="p-3.5">Código</th>
                 <th className="p-3.5">Proveedor</th>
                 <th className="p-3.5">Correo</th>
                 <th className="p-3.5">Teléfono</th>
@@ -474,7 +474,7 @@ export default function VendorsModule({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Código Macola</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Código</label>
                         <input
                           type="text"
                           placeholder="Ej. VEN-010"
@@ -708,7 +708,7 @@ export default function VendorsModule({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Código Macola</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Código</label>
                   <input
                     type="text"
                     placeholder="Ej. VEN-009"

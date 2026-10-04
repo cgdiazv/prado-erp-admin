@@ -1436,7 +1436,7 @@ export default function AdminDashboard() {
       endpoint: "/api/vendors",
       fields: [
         { key: "name", label: "Nombre / Razón Social", required: true, hint: "Ej: Insumos Flexográficos S.A." },
-        { key: "macolaCode", label: "Código Macola / Proveedor", required: false, hint: "Ej: PROV-001" },
+        { key: "macolaCode", label: "Código / Proveedor", required: false, hint: "Ej: PROV-001" },
         { key: "rtn", label: "RTN / ID Fiscal", required: false, hint: "Ej: 08019998877665" },
         { key: "email", label: "Correo Electrónico", required: false, hint: "Ej: contacto@insumosflexo.com" },
         { key: "phone", label: "Teléfono", required: false, hint: "Ej: +504 2233-4455" },
@@ -1821,7 +1821,7 @@ export default function AdminDashboard() {
         case "proveedores":
           endpoint = "/api/vendors";
           filename = "Proveedores";
-          columnHeaders = ["Código Macola", "Nombre / Razón Social", "RTN", "Correo", "Teléfono", "Dirección", "Moneda"];
+          columnHeaders = ["Código", "Nombre / Razón Social", "RTN", "Correo", "Teléfono", "Dirección", "Moneda"];
           extractRow = (v) => [v.macolaCode || "", v.name || "", v.rtn || "", v.email || "", v.phone || "", v.address || "", v.currency || "USD"];
           break;
         case "productos":
@@ -12668,7 +12668,7 @@ ${accountRowsHtml(equity)}
                         ]
                         : currentView === "proveedores"
                           ? [
-                            { id: "macolaCode", label: "Código Macola" },
+                            { id: "macolaCode", label: "Código" },
                             { id: "name", label: "Proveedor" },
                             { id: "email", label: "Correo" },
                             { id: "phone", label: "Teléfono" },

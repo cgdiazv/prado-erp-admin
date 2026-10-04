@@ -1296,7 +1296,7 @@ export default function VendorPaymentsModule({
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Beneficiario / Proveedor:</span>
                   <div className="font-bold text-slate-900 text-sm mt-0.5">{activeVoucher.vendorName}</div>
                   {activeVoucher.vendor?.macolaCode && (
-                    <span className="text-[10px] text-slate-500 font-mono">Código Macola: {activeVoucher.vendor.macolaCode}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Código: {activeVoucher.vendor.macolaCode}</span>
                   )}
                 </div>
                 <div>
