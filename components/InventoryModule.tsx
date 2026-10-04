@@ -62,6 +62,46 @@ interface InventoryModuleProps {
   companyLogo?: string | null;
 }
 
+export type InventoryColumnKey =
+  | "sku"
+  | "description"
+  | "category"
+  | "tracking"
+  | "quantity"
+  | "cost"
+  | "price"
+  | "inventoryValue"
+  | "actions";
+
+export interface InventoryColumnDef {
+  key: InventoryColumnKey;
+  label: string;
+}
+
+export const INVENTORY_COLUMNS: InventoryColumnDef[] = [
+  { key: "sku", label: "SKU / Código" },
+  { key: "description", label: "Descripción del artículo" },
+  { key: "category", label: "Categoría" },
+  { key: "tracking", label: "Rastreo (Lote / Serie)" },
+  { key: "quantity", label: "Existencias" },
+  { key: "cost", label: "Costo promedio" },
+  { key: "price", label: "Precio venta" },
+  { key: "inventoryValue", label: "Valor inventario" },
+  { key: "actions", label: "Acciones" },
+];
+
+export const DEFAULT_VISIBLE_COLUMNS: Record<InventoryColumnKey, boolean> = {
+  sku: true,
+  description: true,
+  category: true,
+  tracking: true,
+  quantity: true,
+  cost: true,
+  price: true,
+  inventoryValue: true,
+  actions: true,
+};
+
 export default function InventoryModule({
   inventory: initialInventory,
   setInventory,
@@ -433,6 +473,63 @@ export default function InventoryModule({
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
+
+  // Column Selection State
+  const [visibleColumns, setVisibleColumns] = useState<Record<InventoryColumnKey, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("prado_inventory_visible_columns");
+        if (saved) {
+          return { ...DEFAULT_VISIBLE_COLUMNS, ...JSON.parse(saved) };
+        }
+      } catch {
+        // fallback
+      }
+    }
+    return DEFAULT_VISIBLE_COLUMNS;
+  });
+  const [showColumnSelector, setShowColumnSelector] = useState(false);
+  const columnSelectorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("prado_inventory_visible_columns", JSON.stringify(visibleColumns));
+    } catch {
+      // fallback
+    }
+  }, [visibleColumns]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target as Node)) {
+        setShowColumnSelector(false);
+      }
+    };
+    if (showColumnSelector) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showColumnSelector]);
+
+  const toggleColumn = (key: InventoryColumnKey) => {
+    setVisibleColumns((prev) => {
+      if (prev[key]) {
+        const activeCount = Object.values(prev).filter(Boolean).length;
+        if (activeCount <= 1) return prev;
+      }
+      return { ...prev, [key]: !prev[key] };
+    });
+  };
+
+  const resetVisibleColumns = () => {
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
+  };
+
+  const visibleColumnCount = useMemo(() => {
+    return 1 + Object.values(visibleColumns).filter(Boolean).length;
+  }, [visibleColumns]);
 
   // Bulk Delete State & Handlers
   const [showDeleteBulkModal, setShowDeleteBulkModal] = useState(false);
@@ -1137,7 +1234,7 @@ export default function InventoryModule({
           {/* Table Card */}
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
             <div className="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-semibold text-sm text-slate-900">
                   Control Maestro de Inventario ({filteredInventory.length})
                 </h2>
@@ -1146,6 +1243,53 @@ export default function InventoryModule({
                     Pág. {safeCurrentPage} / {totalPages}
                   </span>
                 )}
+
+                {/* Selector de columnas a mostrar */}
+                <div className="relative" ref={columnSelectorRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowColumnSelector((prev) => !prev)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition cursor-pointer"
+                    title="Seleccionar columnas a mostrar"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Columnas</span>
+                    <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${showColumnSelector ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {showColumnSelector && (
+                    <div className="absolute left-0 mt-1.5 w-60 bg-white rounded-xl shadow-xl border border-slate-200 p-2.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 px-1">
+                        <span className="text-xs font-bold text-slate-800">Columnas visibles</span>
+                        <button
+                          type="button"
+                          onClick={resetVisibleColumns}
+                          className="text-[10px] font-semibold text-[#1b426e] hover:underline cursor-pointer"
+                        >
+                          Restablecer
+                        </button>
+                      </div>
+                      <div className="space-y-0.5 max-h-64 overflow-y-auto">
+                        {INVENTORY_COLUMNS.map((col) => (
+                          <label
+                            key={col.key}
+                            className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer text-xs text-slate-700 select-none transition"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={visibleColumns[col.key]}
+                              onChange={() => toggleColumn(col.key)}
+                              className="w-3.5 h-3.5 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer accent-[#1b426e]"
+                            />
+                            <span className={visibleColumns[col.key] ? "font-medium text-slate-900" : "text-slate-400"}>
+                              {col.label}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 self-end md:self-auto">
@@ -1301,20 +1445,20 @@ export default function InventoryModule({
                         />
                       </div>
                     </th>
-                    <th className="p-3.5">SKU / CÓDIGO</th>
-                    <th className="p-3.5">DESCRIPCIÓN DEL ARTÍCULO</th>
-                    <th className="p-3.5">CATEGORÍA</th>
-                    <th className="p-3.5">RASTREO</th>
-                    <th className="p-3.5 text-right">EXISTENCIAS</th>
-                    <th className="p-3.5 text-right">COSTO PROM.</th>
-                    <th className="p-3.5 text-right">PRECIO VENTA</th>
-                    <th className="p-3.5 text-right">VALOR INVENTARIO</th>
-                    <th className="p-3.5 text-right">ACCIONES</th>
+                    {visibleColumns.sku && <th className="p-3.5">SKU / CÓDIGO</th>}
+                    {visibleColumns.description && <th className="p-3.5">DESCRIPCIÓN DEL ARTÍCULO</th>}
+                    {visibleColumns.category && <th className="p-3.5">CATEGORÍA</th>}
+                    {visibleColumns.tracking && <th className="p-3.5">RASTREO</th>}
+                    {visibleColumns.quantity && <th className="p-3.5 text-right">EXISTENCIAS</th>}
+                    {visibleColumns.cost && <th className="p-3.5 text-right">COSTO PROM.</th>}
+                    {visibleColumns.price && <th className="p-3.5 text-right">PRECIO VENTA</th>}
+                    {visibleColumns.inventoryValue && <th className="p-3.5 text-right">VALOR INVENTARIO</th>}
+                    {visibleColumns.actions && <th className="p-3.5 text-right">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <TableRowsSkeleton cols={10} rows={8} />
+                    <TableRowsSkeleton cols={visibleColumnCount} rows={8} />
                   ) : (
                     <>
                       {paginatedInventory.map((item) => {
@@ -1339,126 +1483,144 @@ export default function InventoryModule({
                                 />
                               </div>
                             </td>
-                            <td className="p-3.5 font-mono font-bold text-[#1b426e] whitespace-nowrap">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditProduct(item)}
-                                className="hover:underline cursor-pointer flex items-center gap-1.5 group whitespace-nowrap"
-                                title="Haz clic para editar producto"
-                              >
-                                <span>{item.sku}</span>
-                              </button>
-                            </td>
-                            <td className="p-3.5 font-medium text-slate-900 whitespace-nowrap">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditProduct(item)}
-                                className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium flex items-center gap-2.5 whitespace-nowrap"
-                                title="Haz clic para editar producto"
-                              >
-                                {item.imageUrl ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={item.imageUrl}
-                                    alt=""
-                                    className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
-                                  />
+                            {visibleColumns.sku && (
+                              <td className="p-3.5 font-mono font-bold text-[#1b426e] whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditProduct(item)}
+                                  className="hover:underline cursor-pointer flex items-center gap-1.5 group whitespace-nowrap"
+                                  title="Haz clic para editar producto"
+                                >
+                                  <span>{item.sku}</span>
+                                </button>
+                              </td>
+                            )}
+                            {visibleColumns.description && (
+                              <td className="p-3.5 font-medium text-slate-900 whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditProduct(item)}
+                                  className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium flex items-center gap-2.5 whitespace-nowrap"
+                                  title="Haz clic para editar producto"
+                                >
+                                  {item.imageUrl ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                      src={item.imageUrl}
+                                      alt=""
+                                      className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
+                                    />
+                                  ) : (
+                                    <span className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                      <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
+                                    </span>
+                                  )}
+                                  <span className="whitespace-nowrap">{item.description}</span>
+                                </button>
+                              </td>
+                            )}
+                            {visibleColumns.category && (
+                              <td className="p-3.5 font-medium whitespace-nowrap">
+                                {item.category ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
+                                    {item.category}
+                                  </span>
                                 ) : (
-                                  <span className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
-                                    <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
-                                  </span>
+                                  <span className="text-slate-400 text-[11px] italic whitespace-nowrap">Sin categoría</span>
                                 )}
-                                <span className="whitespace-nowrap">{item.description}</span>
-                              </button>
-                            </td>
-                            <td className="p-3.5 font-medium whitespace-nowrap">
-                              {item.category ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
-                                  {item.category}
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 text-[11px] italic whitespace-nowrap">Sin categoría</span>
-                              )}
-                            </td>
-                            <td className="p-3.5 whitespace-nowrap">
-                              {item.trackingType === "LOT" ? (
-                                <button
-                                  type="button"
-                                  onClick={() => openLotManagementModal(item)}
-                                  className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[11px] hover:bg-amber-100 transition cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-                                >
-                                  <Package className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                                  <span className="whitespace-nowrap">Por Lote</span>
-                                  <span className="bg-amber-200 text-amber-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold shrink-0">
-                                    {item.lots?.length || 0}
-                                  </span>
-                                </button>
-                              ) : item.trackingType === "SERIAL" ? (
-                                <button
-                                  type="button"
-                                  onClick={() => openSerialManagementModal(item)}
-                                  className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold text-[11px] hover:bg-purple-100 transition cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-                                >
-                                  <Tag className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                                  <span className="whitespace-nowrap">Por N.º Serie</span>
-                                  <span className="bg-purple-200 text-purple-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold shrink-0">
-                                    {item.serials?.length || 0}
-                                  </span>
-                                </button>
-                              ) : (
-                                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium text-[11px] whitespace-nowrap">
-                                  Sin rastreo
-                                </span>
-                              )}
-                            </td>
-                            <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">
-                              <span className={item.quantity <= 0 ? "text-rose-600 font-bold" : "text-slate-800"}>
-                                {item.quantity}
-                              </span>
-                            </td>
-                            <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.cost)}</td>
-                            <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.price)}</td>
-                            <td className="p-3.5 text-right font-mono text-slate-900 font-bold whitespace-nowrap">
-                              {formatCurrency(item.quantity * item.cost)}
-                            </td>
-                            <td className="p-3.5 text-right font-sans whitespace-nowrap">
-                              <div className="flex items-center justify-end gap-1.5">
+                              </td>
+                            )}
+                            {visibleColumns.tracking && (
+                              <td className="p-3.5 whitespace-nowrap">
                                 {item.trackingType === "LOT" ? (
                                   <button
                                     type="button"
                                     onClick={() => openLotManagementModal(item)}
-                                    className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
-                                    title="Gestionar Lotes y Vencimientos"
+                                    className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[11px] hover:bg-amber-100 transition cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
                                   >
-                                    <span>Lotes</span>
+                                    <Package className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                    <span className="whitespace-nowrap">Por Lote</span>
+                                    <span className="bg-amber-200 text-amber-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold shrink-0">
+                                      {item.lots?.length || 0}
+                                    </span>
                                   </button>
                                 ) : item.trackingType === "SERIAL" ? (
                                   <button
                                     type="button"
                                     onClick={() => openSerialManagementModal(item)}
-                                    className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
-                                    title="Gestionar Números de Serie"
+                                    className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold text-[11px] hover:bg-purple-100 transition cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
                                   >
-                                    <span>Series</span>
+                                    <Tag className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                                    <span className="whitespace-nowrap">Por N.º Serie</span>
+                                    <span className="bg-purple-200 text-purple-900 px-1.5 py-0.2 text-[10px] rounded-full font-bold shrink-0">
+                                      {item.serials?.length || 0}
+                                    </span>
                                   </button>
-                                ) : null}
+                                ) : (
+                                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium text-[11px] whitespace-nowrap">
+                                    Sin rastreo
+                                  </span>
+                                )}
+                              </td>
+                            )}
+                            {visibleColumns.quantity && (
+                              <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">
+                                <span className={item.quantity <= 0 ? "text-rose-600 font-bold" : "text-slate-800"}>
+                                  {item.quantity}
+                                </span>
+                              </td>
+                            )}
+                            {visibleColumns.cost && (
+                              <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.cost)}</td>
+                            )}
+                            {visibleColumns.price && (
+                              <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.price)}</td>
+                            )}
+                            {visibleColumns.inventoryValue && (
+                              <td className="p-3.5 text-right font-mono text-slate-900 font-bold whitespace-nowrap">
+                                {formatCurrency(item.quantity * item.cost)}
+                              </td>
+                            )}
+                            {visibleColumns.actions && (
+                              <td className="p-3.5 text-right font-sans whitespace-nowrap">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {item.trackingType === "LOT" ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => openLotManagementModal(item)}
+                                      className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
+                                      title="Gestionar Lotes y Vencimientos"
+                                    >
+                                      <span>Lotes</span>
+                                    </button>
+                                  ) : item.trackingType === "SERIAL" ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => openSerialManagementModal(item)}
+                                      className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 shadow-xs"
+                                      title="Gestionar Números de Serie"
+                                    >
+                                      <span>Series</span>
+                                    </button>
+                                  ) : null}
 
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditProduct(item)}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
-                                  title="Haz clic para editar producto"
-                                >
-                                  <span>Editar</span>
-                                </button>
-                              </div>
-                            </td>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditProduct(item)}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
+                                    title="Haz clic para editar producto"
+                                  >
+                                    <span>Editar</span>
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         );
                       })}
                       {paginatedInventory.length === 0 && (
                         <tr>
-                          <td colSpan={10} className="p-8 text-center text-slate-400">
+                          <td colSpan={visibleColumnCount} className="p-8 text-center text-slate-400">
                             No se encontraron artículos en inventario
                           </td>
                         </tr>
