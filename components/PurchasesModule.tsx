@@ -10,6 +10,8 @@ import {
   FileText,
   CheckCircle2,
   X,
+  Pencil,
+  Receipt,
 } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import { numberToWordsSpanish } from "@/components/InvoicesModule";
@@ -1413,7 +1415,16 @@ export function PurchasesModule({
 
                         return filteredPOs.map((po) => (
                           <tr key={po.num} className="hover:bg-slate-50 transition">
-                            <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">{po.num}</td>
+                            <td className="py-3.5 px-4 font-bold font-mono">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenPOEditor(po)}
+                                className="text-[#1b426e] hover:text-[#004d40] hover:underline cursor-pointer transition text-left font-mono font-bold"
+                                title="Abrir y editar orden de compra"
+                              >
+                                {po.num}
+                              </button>
+                            </td>
                             <td className="py-3.5 px-4 font-sans text-slate-600">{po.date}</td>
                             <td className="py-3.5 px-4 font-bold font-sans text-slate-900">{po.vendor}</td>
                             <td className="py-3.5 px-4 font-sans text-slate-600">{po.category}</td>
@@ -1444,30 +1455,21 @@ export function PurchasesModule({
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    setSelectedPurchaseOrder(po);
-                                    setShowPODetailModal(true);
-                                  }}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer transition text-[11px]"
-                                  title="Ver detalle de la orden"
-                                >
-                                  Detalle
-                                </button>
-                                <button
-                                  type="button"
                                   onClick={() => handleOpenPOEditor(po)}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer transition text-[11px]"
+                                  className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 font-semibold cursor-pointer transition text-[11px] flex items-center gap-1.5 shadow-2xs border border-slate-200/80"
                                   title="Editar orden en pantalla completa"
                                 >
-                                  Editar
+                                  <Pencil className="w-3.5 h-3.5 text-slate-600" />
+                                  <span className="hidden sm:inline">Editar</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleCreatePurchaseInvoiceFromPO(po)}
-                                  className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold cursor-pointer transition text-[11px]"
+                                  className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 font-semibold cursor-pointer transition text-[11px] border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs"
                                   title="Convertir esta orden en Factura de Compra"
                                 >
-                                  Facturar
+                                  <Receipt className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span className="hidden sm:inline">Facturar</span>
                                 </button>
                                 <button
                                   type="button"
@@ -1475,10 +1477,11 @@ export function PurchasesModule({
                                     handleOpenPOEditor(po);
                                     setTimeout(() => window.print(), 300);
                                   }}
-                                  className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold cursor-pointer transition text-[11px]"
-                                  title="Imprimir documento de orden"
+                                  className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-900 font-semibold cursor-pointer transition text-[11px] border border-blue-200/80 flex items-center gap-1.5 shadow-2xs"
+                                  title="Imprimir documento / Ver PDF"
                                 >
-                                  PDF
+                                  <Printer className="w-3.5 h-3.5 text-blue-600" />
+                                  <span className="hidden sm:inline">PDF</span>
                                 </button>
                               </div>
                             </td>
