@@ -2550,7 +2550,7 @@ export default function AdminDashboard() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [accRes, cusRes, venRes, invRes, bankRes, txRes, ruleRes, noteRes, invcRes, poRes] = await Promise.all([
+      const [accRes, cusRes, venRes, invRes, bankRes, txRes, ruleRes, noteRes, invcRes, poRes, piRes] = await Promise.all([
         fetch("/api/accounts").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/customers").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/vendors").then((r) => r.json()).catch(() => ({ success: false })),
@@ -2561,6 +2561,7 @@ export default function AdminDashboard() {
         fetch("/api/credit-debit-notes").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/invoices").then((r) => r.json()).catch(() => ({ success: false })),
         fetch("/api/purchase-orders").then((r) => r.json()).catch(() => ({ success: false })),
+        fetch("/api/purchase-invoices").then((r) => r.json()).catch(() => ({ success: false })),
       ]);
 
       loadProductCategories();
@@ -2576,6 +2577,9 @@ export default function AdminDashboard() {
       if (txRes.success) setBankTransactions(txRes.data || []);
       if (ruleRes.success) setAutomationRules(ruleRes.data || []);
       if (noteRes && noteRes.success) setCreditDebitNotes(noteRes.data || []);
+      if (piRes && piRes.success && Array.isArray(piRes.data)) {
+        setPurchaseInvoices(piRes.data);
+      }
       if (invcRes && invcRes.success && Array.isArray(invcRes.data)) {
         setInvoicesList(
           invcRes.data.map((inv: any) => ({

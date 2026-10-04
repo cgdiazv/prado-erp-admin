@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { postPurchaseInvoiceEntry } from "@/lib/accounting";
 import { resolveCompanyId } from "@/lib/tenant";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const db = prisma as any;
@@ -131,6 +133,23 @@ export async function POST(req: Request) {
       });
     } catch (accountingErr) {
       console.error("Error creating accounting entry for purchase invoice:", accountingErr);
+    }
+
+    // 4. AUTOMATICALLY UPDATE RELATED PURCHASE ORDER STATUS TO "Recibida"
+    if (body.purchaseOrderNumber) {
+      try {
+        await db.purchaseOrder.updateMany({
+          where: {
+            orderNumber: body.purchaseOrderNumber,
+            companyId,
+          },
+          data: {
+            status: "Recibida",
+          },
+        });
+      } catch (poErr) {
+        console.warn("Could not update related purchase order status:", poErr);
+      }
     }
 
     return NextResponse.json({ success: true, data: newInvoice, journalEntry });

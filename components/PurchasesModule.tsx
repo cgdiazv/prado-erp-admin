@@ -120,9 +120,15 @@ export function PurchasesModule({
 
   // Dynamic Purchase Orders Statistics
   const totalPO = useMemo(() => purchaseOrders.reduce((acc, item) => acc + item.total, 0), [purchaseOrders]);
-  const poRecibidas = useMemo(() => purchaseOrders.filter((item) => item.status === "Recibida"), [purchaseOrders]);
+  const poRecibidas = useMemo(
+    () => purchaseOrders.filter((item) => item.status === "Recibida" || item.status === "Facturada"),
+    [purchaseOrders]
+  );
   const totalPORecibidas = useMemo(() => poRecibidas.reduce((acc, item) => acc + item.total, 0), [poRecibidas]);
-  const poPendientes = useMemo(() => purchaseOrders.filter((item) => item.status === "Pendiente" || item.status === "Aprobada"), [purchaseOrders]);
+  const poPendientes = useMemo(
+    () => purchaseOrders.filter((item) => item.status === "Pendiente" || item.status === "Aprobada"),
+    [purchaseOrders]
+  );
   const totalPOPendientes = useMemo(() => poPendientes.reduce((acc, item) => acc + item.total, 0), [poPendientes]);
 
   // -------------------------------------------------------------
@@ -219,6 +225,57 @@ export function PurchasesModule({
       }
     }
   }, [currentView, editingPurchaseOrder]);
+
+  // Auto-sync purchase invoices and purchase orders from database when entering their lists
+  useEffect(() => {
+    if (currentView === "factura-compra-lista") {
+      fetch("/api/purchase-invoices")
+        .then((r) => r.json())
+        .then((res) => {
+          if (res?.success && Array.isArray(res.data)) {
+            setPurchaseInvoices(res.data);
+          }
+        })
+        .catch((err) => console.error("Error refreshing purchase invoices:", err));
+    } else if (currentView === "lista-ordenes-compra") {
+      fetch("/api/purchase-orders")
+        .then((r) => r.json())
+        .then((res) => {
+          if (res?.success && Array.isArray(res.data)) {
+            setPurchaseOrders(
+              res.data.map((po: any) => ({
+                id: po.id,
+                num: po.orderNumber,
+                date: po.issueDate,
+                vendor: po.vendorName,
+                vendorId: po.vendorId,
+                vendorEmail: po.vendorEmail,
+                vendorAddress: po.vendorAddress,
+                category: po.category,
+                total: Number(po.total) || 0,
+                subtotal: Number(po.subtotal) || 0,
+                tax: Number(po.tax) || 0,
+                currency: po.currency || "USD",
+                expectedDate: po.expectedDate,
+                paymentTerms: po.paymentTerms,
+                status: po.status,
+                notes: po.notes,
+                lines: (po.items || []).map((it: any) => ({
+                  id: it.id,
+                  productName: it.productName,
+                  sku: it.sku || "",
+                  description: it.description || "",
+                  quantity: Number(it.quantity) || 1,
+                  rate: Number(it.unitCost) || 0,
+                  total: Number(it.totalCost) || 0,
+                })),
+              }))
+            );
+          }
+        })
+        .catch((err) => console.error("Error refreshing purchase orders:", err));
+    }
+  }, [currentView]);
 
   const handleOpenPOEditor = (poToEdit?: any) => {
     if (poToEdit) {
@@ -828,19 +885,76 @@ export function PurchasesModule({
         throw new Error(data.error || "Error al registrar factura de compra");
       }
 
-      const [invRes, itemsRes] = await Promise.all([
-        fetch("/api/purchase-invoices").then((r) => r.json()),
-        fetch("/api/inventory").then((r) => r.json()),
+      // 1. Actualizar inmediatamente el estado de la Orden de Compra relacionada a "Recibida"
+      if (purchaseInvoiceForm.purchaseOrderNumber) {
+        setPurchaseOrders((prev) =>
+          prev.map((po) =>
+            po.num === purchaseInvoiceForm.purchaseOrderNumber
+              ? { ...po, status: "Recibida" }
+              : po
+          )
+        );
+      }
+
+      // 2. Insertar inmediatamente la nueva factura en el estado local
+      if (data.data) {
+        setPurchaseInvoices((prev) => {
+          const exists = prev.some(
+            (inv) => inv.id === data.data.id || inv.invoiceNumber === data.data.invoiceNumber
+          );
+          if (exists) {
+            return prev.map((inv) => (inv.id === data.data.id ? data.data : inv));
+          }
+          return [data.data, ...prev];
+        });
+      }
+
+      // 3. Sincronizar desde el backend
+      const [invRes, itemsRes, poRes] = await Promise.all([
+        fetch("/api/purchase-invoices").then((r) => r.json()).catch(() => null),
+        fetch("/api/inventory").then((r) => r.json()).catch(() => null),
+        fetch("/api/purchase-orders").then((r) => r.json()).catch(() => null),
       ]);
 
-      if (invRes.success) setPurchaseInvoices(invRes.data);
-      if (itemsRes.success && Array.isArray(itemsRes.data)) setInventory(itemsRes.data);
+      if (invRes?.success && Array.isArray(invRes.data)) setPurchaseInvoices(invRes.data);
+      if (itemsRes?.success && Array.isArray(itemsRes.data)) setInventory(itemsRes.data);
+      if (poRes?.success && Array.isArray(poRes.data)) {
+        setPurchaseOrders(
+          poRes.data.map((po: any) => ({
+            id: po.id,
+            num: po.orderNumber,
+            date: po.issueDate,
+            vendor: po.vendorName,
+            vendorId: po.vendorId,
+            vendorEmail: po.vendorEmail,
+            vendorAddress: po.vendorAddress,
+            category: po.category,
+            total: Number(po.total) || 0,
+            subtotal: Number(po.subtotal) || 0,
+            tax: Number(po.tax) || 0,
+            currency: po.currency || "USD",
+            expectedDate: po.expectedDate,
+            paymentTerms: po.paymentTerms,
+            status: po.status,
+            notes: po.notes,
+            lines: (po.items || []).map((it: any) => ({
+              id: it.id,
+              productName: it.productName,
+              sku: it.sku || "",
+              description: it.description || "",
+              quantity: Number(it.quantity) || 1,
+              rate: Number(it.unitCost) || 0,
+              total: Number(it.totalCost) || 0,
+            })),
+          }))
+        );
+      }
 
       setPurchaseInvoiceSuccess("Factura de Compra e Ingreso a Inventario registrado exitosamente.");
       if (onRefreshAccounts) onRefreshAccounts();
       setTimeout(() => {
         onNavigateToView("factura-compra-lista");
-      }, 1200);
+      }, 800);
     } catch (err: any) {
       setPurchaseInvoiceError(err.message || "Ocurrió un error al guardar la factura de compra");
     } finally {
