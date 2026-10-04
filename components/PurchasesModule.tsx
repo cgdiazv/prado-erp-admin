@@ -142,6 +142,25 @@ export function PurchasesModule({
   const [poSuccessMsg, setPOSuccessMsg] = useState("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
+  // Quick SKU search & creation state
+  const [showQuickSKUModal, setShowQuickSKUModal] = useState(false);
+  const [quickSKUForm, setQuickSKUForm] = useState({
+    sku: "",
+    description: "",
+    category: "",
+    cost: 0,
+    price: 0,
+    quantity: 0,
+  });
+  const [quickSKULoading, setQuickSKULoading] = useState(false);
+  const [quickSKUError, setQuickSKUError] = useState("");
+  const [quickAddSKUInput, setQuickAddSKUInput] = useState("");
+
+  const availableCategories = useMemo(
+    () => Array.from(new Set(inventory.map((i) => i.category).filter(Boolean))) as string[],
+    [inventory]
+  );
+
   // Almacenes dinámicos
   const [purchasesWarehouses, setPurchasesWarehouses] = useState<Array<{ id: string; name: string; code?: string }>>([
     { id: "wh-1", name: "Bodega Principal Zip Búfalo", code: "BOD-01" },
@@ -296,11 +315,163 @@ export function PurchasesModule({
   };
 
   const handleRemovePOLine = (id: string) => {
-    if (poForm.lines.length <= 1) return;
-    setPOForm((prev) => ({
-      ...prev,
-      lines: prev.lines.filter((l) => l.id !== id),
-    }));
+    setPOForm((prev) => {
+      const remaining = prev.lines.filter((l) => l.id !== id);
+      if (remaining.length === 0) {
+        return {
+          ...prev,
+          lines: [
+            {
+              id: Date.now().toString(),
+              productName: "",
+              sku: "",
+              description: "",
+              quantity: 1,
+              rate: 0,
+              total: 0,
+            },
+          ],
+        };
+      }
+      return {
+        ...prev,
+        lines: remaining,
+      };
+    });
+  };
+
+  const handleQuickAddBySKU = (skuToSearch?: string) => {
+    const targetSku = (skuToSearch || quickAddSKUInput).trim();
+    if (!targetSku) return;
+
+    const matched = inventory.find(
+      (inv) => inv.sku.toLowerCase() === targetSku.toLowerCase()
+    );
+
+    if (matched) {
+      setPOForm((prev) => {
+        const emptyLineIndex = prev.lines.findIndex(
+          (l) => !l.productName.trim() && !l.sku.trim() && Number(l.rate) === 0
+        );
+        const newLine = {
+          id: Date.now().toString(),
+          productName: matched.description,
+          sku: matched.sku,
+          description: matched.category ? `Cat: ${matched.category}` : "",
+          quantity: 1,
+          rate: Number(matched.cost) || 0,
+          total: Number(matched.cost) || 0,
+        };
+
+        if (emptyLineIndex >= 0) {
+          const nextLines = [...prev.lines];
+          nextLines[emptyLineIndex] = newLine;
+          return { ...prev, lines: nextLines };
+        } else {
+          return { ...prev, lines: [...prev.lines, newLine] };
+        }
+      });
+      setQuickAddSKUInput("");
+    } else {
+      // No existe en inventario: abrir modal para crearlo
+      setQuickSKUForm({
+        sku: targetSku,
+        description: "",
+        category: "",
+        cost: 0,
+        price: 0,
+        quantity: 1,
+      });
+      setQuickSKUError("");
+      setShowQuickSKUModal(true);
+    }
+  };
+
+  const handleCreateAndAddProductBySKU = async (saveToInventory: boolean = true) => {
+    const sku = quickSKUForm.sku.trim();
+    const description = quickSKUForm.description.trim();
+
+    if (!sku) {
+      setQuickSKUError("El SKU es obligatorio");
+      return;
+    }
+    if (!description) {
+      setQuickSKUError("El nombre o descripción del producto es obligatorio");
+      return;
+    }
+
+    setQuickSKULoading(true);
+    setQuickSKUError("");
+
+    try {
+      const unitCost = Number(quickSKUForm.cost) || 0;
+      const unitPrice = Number(quickSKUForm.price) || 0;
+      const quantityToAdd = Math.max(1, Number(quickSKUForm.quantity) || 1);
+
+      if (saveToInventory) {
+        const res = await fetch("/api/inventory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sku,
+            description,
+            category: quickSKUForm.category?.trim() || null,
+            cost: unitCost,
+            price: unitPrice,
+            quantity: 0,
+            trackingType: "NONE",
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "No se pudo registrar el producto en el catálogo");
+        }
+
+        if (data.data) {
+          setInventory((prev) => [data.data, ...prev]);
+        }
+      }
+
+      // Añadir a las líneas de la orden de compra
+      setPOForm((prev) => {
+        const emptyLineIndex = prev.lines.findIndex(
+          (l) => !l.productName.trim() && !l.sku.trim() && Number(l.rate) === 0
+        );
+        const newLine = {
+          id: Date.now().toString(),
+          productName: description,
+          sku: sku,
+          description: quickSKUForm.category?.trim() ? `Cat: ${quickSKUForm.category.trim()}` : "",
+          quantity: quantityToAdd,
+          rate: unitCost,
+          total: quantityToAdd * unitCost,
+        };
+
+        if (emptyLineIndex >= 0) {
+          const nextLines = [...prev.lines];
+          nextLines[emptyLineIndex] = newLine;
+          return { ...prev, lines: nextLines };
+        } else {
+          return { ...prev, lines: [...prev.lines, newLine] };
+        }
+      });
+
+      setShowQuickSKUModal(false);
+      setQuickAddSKUInput("");
+      setQuickSKUForm({
+        sku: "",
+        description: "",
+        category: "",
+        cost: 0,
+        price: 0,
+        quantity: 1,
+      });
+    } catch (err: any) {
+      setQuickSKUError(err.message || "Error al procesar el producto");
+    } finally {
+      setQuickSKULoading(false);
+    }
   };
 
   const handleUpdatePOStatus = (num: string, newStatus: string) => {
@@ -2388,15 +2559,77 @@ export function PurchasesModule({
 
                       {/* ITEMS / MATERIALS TABLE */}
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-bold text-xs text-slate-900 uppercase tracking-wider">Líneas de Insumos y Materias Primas</h3>
-                          <button
-                            type="button"
-                            onClick={handleAddPOLine}
-                            className="px-3 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-bold text-xs transition cursor-pointer border border-[#fed7aa] flex items-center gap-1"
-                          >
-                            <span>+ Añadir línea</span>
-                          </button>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-xs text-slate-900 uppercase tracking-wider">Líneas de Insumos y Materias Primas</h3>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold">
+                              {poForm.lines.length} {poForm.lines.length === 1 ? "línea" : "líneas"}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* Barra rápida de agregar por SKU */}
+                            <div className="flex items-center bg-white border border-slate-300 rounded-xl overflow-hidden shadow-2xs focus-within:border-[#1b426e] focus-within:ring-1 focus-within:ring-[#1b426e]">
+                              <input
+                                type="text"
+                                list="po-quick-sku-list"
+                                value={quickAddSKUInput}
+                                onChange={(e) => setQuickAddSKUInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleQuickAddBySKU();
+                                  }
+                                }}
+                                placeholder="Escanear o agregar SKU..."
+                                className="px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none w-48 font-mono"
+                              />
+                              <datalist id="po-quick-sku-list">
+                                {inventory.map((inv) => (
+                                  <option key={inv.id} value={inv.sku}>
+                                    {inv.sku} - {inv.description}
+                                  </option>
+                                ))}
+                              </datalist>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickAddBySKU()}
+                                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border-l border-slate-300 transition cursor-pointer"
+                              >
+                                Agregar
+                              </button>
+                            </div>
+
+                            {/* Botón modal de Nuevo Producto por SKU */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setQuickSKUForm({
+                                  sku: quickAddSKUInput.trim(),
+                                  description: "",
+                                  category: "",
+                                  cost: 0,
+                                  price: 0,
+                                  quantity: 1,
+                                });
+                                setQuickSKUError("");
+                                setShowQuickSKUModal(true);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition cursor-pointer border border-emerald-300 flex items-center gap-1 shadow-2xs"
+                              title="Registrar nuevo producto en inventario por SKU"
+                            >
+                              <span>+ Nuevo Producto (SKU)</span>
+                            </button>
+
+                            {/* Botón Añadir línea estándar */}
+                            <button
+                              type="button"
+                              onClick={handleAddPOLine}
+                              className="px-3 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-bold text-xs transition cursor-pointer border border-[#fed7aa] flex items-center gap-1"
+                            >
+                              <span>+ Añadir línea</span>
+                            </button>
+                          </div>
                         </div>
 
                         <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
@@ -2405,7 +2638,7 @@ export function PurchasesModule({
                               <tr>
                                 <th className="p-3 w-10 text-center">#</th>
                                 <th className="p-3 min-w-[200px]">Insumo / Producto</th>
-                                <th className="p-3 w-28">SKU</th>
+                                <th className="p-3 w-36">SKU</th>
                                 <th className="p-3 min-w-[180px]">Descripción / Especificaciones</th>
                                 <th className="p-3 w-24 text-right">Cantidad</th>
                                 <th className="p-3 w-28 text-right">Precio Unit.</th>
@@ -2458,34 +2691,65 @@ export function PurchasesModule({
                                     </datalist>
                                   </td>
                                   <td className="p-3">
-                                    <input
-                                      type="text"
-                                      value={line.sku}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        const matched = inventory.find((inv) => inv.sku.toLowerCase() === val.toLowerCase());
-                                        if (matched) {
-                                          setPOForm((prev) => ({
-                                            ...prev,
-                                            lines: prev.lines.map((l) =>
-                                              l.id === line.id
-                                                ? {
-                                                    ...l,
-                                                    sku: matched.sku,
-                                                    productName: matched.description || l.productName,
-                                                    rate: matched.cost || l.rate,
-                                                    total: (Number(l.quantity) || 1) * (Number(matched.cost) || Number(l.rate) || 0),
-                                                  }
-                                                : l
-                                            ),
-                                          }));
-                                        } else {
-                                          handlePOLineChange(line.id, "sku", val);
-                                        }
-                                      }}
-                                      placeholder="SKU"
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
-                                    />
+                                    <div className="relative flex items-center">
+                                      <input
+                                        type="text"
+                                        list={`inv-sku-${line.id}`}
+                                        value={line.sku}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          const matched = inventory.find((inv) => inv.sku.toLowerCase() === val.toLowerCase());
+                                          if (matched) {
+                                            setPOForm((prev) => ({
+                                              ...prev,
+                                              lines: prev.lines.map((l) =>
+                                                l.id === line.id
+                                                  ? {
+                                                      ...l,
+                                                      sku: matched.sku,
+                                                      productName: matched.description || l.productName,
+                                                      rate: matched.cost || l.rate,
+                                                      total: (Number(l.quantity) || 1) * (Number(matched.cost) || Number(l.rate) || 0),
+                                                    }
+                                                  : l
+                                              ),
+                                            }));
+                                          } else {
+                                            handlePOLineChange(line.id, "sku", val);
+                                          }
+                                        }}
+                                        placeholder="SKU"
+                                        className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e]"
+                                      />
+                                      <datalist id={`inv-sku-${line.id}`}>
+                                        {inventory.map((inv) => (
+                                          <option key={inv.id} value={inv.sku}>
+                                            {inv.sku} - {inv.description}
+                                          </option>
+                                        ))}
+                                      </datalist>
+                                      {line.sku.trim() && !inventory.some((inv) => inv.sku.toLowerCase() === line.sku.trim().toLowerCase()) && (
+                                        <button
+                                          type="button"
+                                          title="Crear como nuevo producto en inventario"
+                                          onClick={() => {
+                                            setQuickSKUForm({
+                                              sku: line.sku.trim(),
+                                              description: line.productName || "",
+                                              category: "",
+                                              cost: Number(line.rate) || 0,
+                                              price: 0,
+                                              quantity: Number(line.quantity) || 1,
+                                            });
+                                            setQuickSKUError("");
+                                            setShowQuickSKUModal(true);
+                                          }}
+                                          className="absolute right-1 text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded px-1.5 py-0.5 font-bold cursor-pointer transition shadow-2xs"
+                                        >
+                                          + Crear
+                                        </button>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="p-3">
                                     <input
@@ -2519,9 +2783,13 @@ export function PurchasesModule({
                                   <td className="p-3 text-center">
                                     <button
                                       type="button"
-                                      onClick={() => handleRemovePOLine(line.id)}
-                                      className="text-slate-400 hover:text-red-600 transition cursor-pointer p-1"
-                                      title="Eliminar línea"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleRemovePOLine(line.id);
+                                      }}
+                                      className="text-slate-400 hover:text-red-600 transition cursor-pointer p-1.5 rounded-lg hover:bg-red-50"
+                                      title="Eliminar o limpiar línea"
                                     >
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -3809,6 +4077,167 @@ export function PurchasesModule({
               >
                 Cerrar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CREAR / AÑADIR PRODUCTO POR SKU */}
+      {showQuickSKUModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 to-[#1b426e] text-white flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-white/10 text-white backdrop-blur-xs">
+                  <Package className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">Nuevo Producto / Insumo</h3>
+                  <p className="text-[11px] text-slate-300">Registrar insumo por SKU e incorporar a la orden de compra</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQuickSKUModal(false)}
+                className="text-slate-300 hover:text-white transition cursor-pointer p-1 rounded-lg hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 sm:p-6 space-y-4 text-xs">
+              {quickSKUError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium text-xs flex items-center justify-between">
+                  <span>{quickSKUError}</span>
+                  <button type="button" onClick={() => setQuickSKUError("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2">×</button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Código SKU <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={quickSKUForm.sku}
+                    onChange={(e) => setQuickSKUForm({ ...quickSKUForm, sku: e.target.value })}
+                    placeholder="Ej. MAT-PLAST-001"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Descripción o Nombre del Producto <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={quickSKUForm.description}
+                    onChange={(e) => setQuickSKUForm({ ...quickSKUForm, description: e.target.value })}
+                    placeholder="Ej. Polietileno de Alta Densidad Virgen"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Categoría</label>
+                  <input
+                    type="text"
+                    list="quick-sku-categories"
+                    value={quickSKUForm.category}
+                    onChange={(e) => setQuickSKUForm({ ...quickSKUForm, category: e.target.value })}
+                    placeholder="Ej. Materia Prima"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
+                  />
+                  <datalist id="quick-sku-categories">
+                    {availableCategories.map((cat, idx) => (
+                      <option key={idx} value={cat} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Cantidad a Ordenar</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={quickSKUForm.quantity}
+                    onChange={(e) => setQuickSKUForm({ ...quickSKUForm, quantity: Math.max(1, Number(e.target.value) || 1) })}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Costo Unitario Compra ({getPOCurrencySymbol()})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={quickSKUForm.cost}
+                    onChange={(e) => setQuickSKUForm({ ...quickSKUForm, cost: Number(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Precio Sugerido Venta ({getPOCurrencySymbol()})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={quickSKUForm.price}
+                    onChange={(e) => setQuickSKUForm({ ...quickSKUForm, price: Number(e.target.value) || 0 })}
+                    placeholder="Opcional"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 sm:p-5 border-t border-slate-100 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+              <button
+                type="button"
+                onClick={() => setShowQuickSKUModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={quickSKULoading}
+                  onClick={() => handleCreateAndAddProductBySKU(false)}
+                  className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs transition cursor-pointer"
+                  title="Añadir a esta orden sin registrar en el catálogo general"
+                >
+                  Solo a esta orden
+                </button>
+
+                <button
+                  type="button"
+                  disabled={quickSKULoading}
+                  onClick={() => handleCreateAndAddProductBySKU(true)}
+                  className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#163558] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                >
+                  {quickSKULoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <span>Guardar en Inventario y Añadir</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
