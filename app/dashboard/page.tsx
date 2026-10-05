@@ -2229,12 +2229,14 @@ export default function AdminDashboard() {
   const [customersAutoOpenCreate, setCustomersAutoOpenCreate] = useState(false);
   const [vendorsAutoOpenCreate, setVendorsAutoOpenCreate] = useState(false);
   const [inventoryAutoOpenCreate, setInventoryAutoOpenCreate] = useState(false);
+  const [vendorPaymentsAutoOpenCreate, setVendorPaymentsAutoOpenCreate] = useState(false);
 
   // Quick Actions Bar State & Config
   const quickActions = [
     { id: "crear-cotizacion", label: "Crear Cotización" },
     { id: "crear-factura", label: "Crear Factura de Venta" },
     { id: "registrar-pago", label: "Registrar Cobro a Cliente" },
+    { id: "pagar-proveedor", label: "Registrar Pago a Proveedor" },
     { id: "crear-factura-compra", label: "Registrar Factura de Compra" },
     { id: "crear-orden-compra", label: "Crear Orden de Compra" },
     { id: "crear-producto", label: "Crear Producto / Insumo" },
@@ -2342,8 +2344,11 @@ export default function AdminDashboard() {
 
   const [pagarProveedorVendorFilter, setPagarProveedorVendorFilter] = useState<string | null>(null);
   const openPagarProveedorView = (vendorFilter?: string | React.MouseEvent) => {
-    setPagarProveedorVendorFilter(typeof vendorFilter === "string" ? vendorFilter : null);
-    setCurrentView("pagar-proveedor");
+    const vName = typeof vendorFilter === "string" ? vendorFilter : null;
+    setPagarProveedorVendorFilter(vName);
+    setSelectedPaymentVendor(vName || "");
+    setVendorPaymentsAutoOpenCreate(true);
+    setCurrentView("pagos-proveedores");
   };
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
@@ -6074,12 +6079,14 @@ ${accountRowsHtml(equity)}
           )}
 
           {/* ================= VIEW: PAGOS A PROVEEDORES (CUENTAS POR PAGAR) ================= */}
-          {currentView === "pagos-proveedores" && (
+          {(currentView === "pagos-proveedores" || currentView === "pagar-proveedor") && (
             <VendorPaymentsModule
               onBack={() => setCurrentView("proveedores")}
               formatCurrency={formatCurrency}
               companySettings={companySettings}
-              initialVendorFilter={selectedPaymentVendor}
+              initialVendorFilter={selectedPaymentVendor || pagarProveedorVendorFilter || ""}
+              autoOpenCreate={currentView === "pagar-proveedor" || vendorPaymentsAutoOpenCreate}
+              onAutoOpenCreateConsumed={() => setVendorPaymentsAutoOpenCreate(false)}
             />
           )}
 
@@ -11863,10 +11870,9 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: EDITAR ORDEN DE COMPRA (PÁGINA COMPLETA COMO CREAR FACTURA) ================= */}
           {/* ================= VIEW: DEPÓSITO BANCARIO ================= */}
-          {/* CASH MOVEMENTS & BANKING WORKSPACES (Views: deposito-bancario, agregar-gasto, pagar-proveedor, recibir-pago) */}
+          {/* CASH MOVEMENTS & BANKING WORKSPACES (Views: deposito-bancario, agregar-gasto, recibir-pago) */}
           {(currentView === "deposito-bancario" ||
             currentView === "agregar-gasto" ||
-            currentView === "pagar-proveedor" ||
             currentView === "recibir-pago") && (
               <CashMovementsModule
                 currentView={currentView}
