@@ -717,15 +717,16 @@ export default function VendorAgingReportModule({
                           className="py-3.5 px-4 text-center print:hidden"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="flex items-center justify-center gap-1.5">
+                          <div className="flex items-center justify-center gap-1">
                             {onNavigateToPayment && (
                               <button
                                 type="button"
                                 onClick={() => onNavigateToPayment(row.vendorName)}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] transition border border-emerald-200 cursor-pointer"
+                                className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer inline-flex items-center justify-center"
                                 title="Programar pago a proveedor"
+                                aria-label="Programar pago a proveedor"
                               >
-                                Pagar
+                                <DollarSign className="w-4 h-4" />
                               </button>
                             )}
                           </div>
@@ -821,9 +822,11 @@ export default function VendorAgingReportModule({
                                                 onClick={() =>
                                                   onNavigateToPayment(row.vendorName, bill.invoiceNumber)
                                                 }
-                                                className="px-2 py-0.5 rounded bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-bold text-[10px] border border-[#fed7aa] cursor-pointer"
+                                                className="p-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer inline-flex items-center justify-center"
+                                                title="Programar pago de factura"
+                                                aria-label="Programar pago de factura"
                                               >
-                                                Pagar
+                                                <DollarSign className="w-3.5 h-3.5" />
                                               </button>
                                             )}
                                           </td>
