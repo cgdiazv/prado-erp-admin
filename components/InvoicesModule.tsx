@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Edit3, Eye } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -1129,9 +1129,27 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                       ) : (
                         filteredInvoices.map((fact) => (
                           <tr key={fact.num} className="hover:bg-slate-50 transition">
-                            <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">#{fact.num}</td>
+                            <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">
+                              <button
+                                type="button"
+                                onClick={() => onOpenInvoiceEditor(fact)}
+                                className="hover:underline text-left cursor-pointer hover:text-[#1b426e] transition font-bold"
+                                title="Ver y editar factura"
+                              >
+                                #{fact.num}
+                              </button>
+                            </td>
                             <td className="py-3.5 px-4 font-sans text-slate-600">{fact.date}</td>
-                            <td className="py-3.5 px-4 font-bold font-sans text-slate-900">{fact.customer}</td>
+                            <td className="py-3.5 px-4 font-bold font-sans text-slate-900">
+                              <button
+                                type="button"
+                                onClick={() => onOpenInvoiceEditor(fact)}
+                                className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-bold"
+                                title="Ver y editar factura"
+                              >
+                                {fact.customer}
+                              </button>
+                            </td>
                             <td className="py-3.5 px-4 font-sans text-slate-500">{fact.due}</td>
                             <td className="py-3.5 px-4 text-right font-bold text-slate-900">
                               {getInvoiceCurrency(fact).symbol}{fact.total.toLocaleString("es-HN", { minimumFractionDigits: 2 })} {getInvoiceCurrency(fact).code}
@@ -1159,35 +1177,40 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               </span>
                             </td>
                             <td className="py-3.5 px-4 text-right font-sans">
-                              <div className="flex items-center justify-end gap-1.5">
+                              <div className="flex items-center justify-end gap-1">
+                                {/* Cobrar / Recibir Pago */}
                                 {fact.status !== "Cobrada" && fact.status !== "Pagada" && (
                                   <button
                                     type="button"
                                     onClick={() => onReceivePayment && onReceivePayment(fact)}
-                                    className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-900 border border-emerald-200 transition cursor-pointer shadow-2xs"
+                                    className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer inline-flex items-center justify-center"
                                     title="Recibir pago"
                                     aria-label="Recibir pago"
                                   >
                                     <DollarSign className="w-4 h-4" />
                                   </button>
                                 )}
-                                <button
-                                  type="button"
-                                  onClick={() => onOpenInvoiceEditor(fact)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
-                                  title="Editar factura"
-                                  aria-label="Editar factura"
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
+
+                                {/* Ver / Imprimir Documento PDF */}
                                 <button
                                   type="button"
                                   onClick={() => setPreviewInvoicePdf(fact)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
-                                  title="Abrir documento PDF e imprimir"
-                                  aria-label="Abrir documento PDF e imprimir"
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                  title="Vista previa e impresión"
+                                  aria-label="Vista previa e impresión"
                                 >
                                   <Printer className="w-4 h-4" />
+                                </button>
+
+                                {/* Editar Factura */}
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenInvoiceEditor(fact)}
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                  title="Editar factura"
+                                  aria-label="Editar factura"
+                                >
+                                  <Edit3 className="w-4 h-4" />
                                 </button>
                               </div>
                             </td>
