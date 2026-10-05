@@ -4445,8 +4445,8 @@ ${accountRowsHtml(equity)}
                   {currentView === "caja-chica" && "Contabilidad / Arqueo & Control de Caja Chica"}
                   {currentView === "conciliacion-bancaria" && "Contabilidad / Conciliación de Extracto Mensual"}
                   {currentView === "clientes" && "Directorio de Clientes"}
-                  {currentView === "cotizaciones" && "Ventas / Cotizaciones & Presupuestos"}
-                  {currentView === "pedidos-venta" && "Ventas / Pedidos de Venta (Sales Orders)"}
+                  {currentView === "cotizaciones" && "Cotizaciones"}
+                  {currentView === "pedidos-venta" && "Pedidos de Venta"}
                   {currentView === "lista-facturas" && "Gestión de Facturas"}
                   {currentView === "notas-credito-debito" && "Notas de Crédito / Débito"}
                   {currentView === "proveedores" && "Directorio de Proveedores"}
@@ -6058,7 +6058,7 @@ ${accountRowsHtml(equity)}
           )}
 
           {/* ================= VIEW: PAGOS A PROVEEDORES (CUENTAS POR PAGAR) ================= */}
-          {(currentView === "pagos-proveedores" || currentView === "pagar-proveedor") && (
+          {currentView === "pagos-proveedores" && (
             <VendorPaymentsModule
               onBack={() => setCurrentView("proveedores")}
               formatCurrency={formatCurrency}
@@ -12663,7 +12663,7 @@ ${accountRowsHtml(equity)}
                       {(currentView === "clientes"
                         ? [
                           { id: "macolaCode", label: "Código" },
-                          { id: "name", label: "Nombre de Empresa / Cliente" },
+                          { id: "name", label: "Cliente" },
                           { id: "email", label: "Correo Electrónico" },
                           { id: "phone", label: "Teléfono" },
                           { id: "address", label: "Dirección" },

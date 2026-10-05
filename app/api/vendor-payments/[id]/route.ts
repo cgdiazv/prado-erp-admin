@@ -155,6 +155,20 @@ export async function PATCH(
             where: { id: inv.id },
             data: { paymentStatus: newStatus },
           });
+
+          if (newStatus !== "PAGADA" && inv.purchaseOrderNumber) {
+            try {
+              await db.purchaseOrder.updateMany({
+                where: {
+                  orderNumber: inv.purchaseOrderNumber,
+                  companyId,
+                },
+                data: { status: "Recibida" },
+              });
+            } catch (poErr) {
+              console.warn("Could not revert linked purchase order status:", poErr);
+            }
+          }
         }
       }
 

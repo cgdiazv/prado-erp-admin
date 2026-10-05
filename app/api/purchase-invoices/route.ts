@@ -12,7 +12,15 @@ export async function GET(req: Request) {
 
     const invoices = await db.purchaseInvoice.findMany({
       where: { companyId },
-      include: { items: true },
+      include: {
+        items: true,
+        paymentLines: {
+          include: {
+            vendorPayment: true,
+          },
+        },
+        taxRetentions: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 

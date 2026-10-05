@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Customer } from "@/types/dashboard";
 import { TableRowsSkeleton } from "@/components/Skeleton";
-import { FileText, Download, Printer, Settings, Plus, Search, ArrowLeft, ChevronDown, X, Building2, Users, CheckCircle2 } from "lucide-react";
+import { FileText, Download, Printer, Settings, Plus, Search, ArrowLeft, ChevronDown, X, Building2, Users, CheckCircle2, Pencil } from "lucide-react";
 
 interface CustomersModuleProps {
   customers: Customer[];
@@ -429,7 +429,7 @@ export default function CustomersModule({
             <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
               <tr>
                 <th className="p-3.5">Código</th>
-                <th className="p-3.5">Nombre de Empresa / Cliente</th>
+                <th className="p-3.5">Cliente</th>
                 <th className="p-3.5">Correo Electrónico</th>
                 <th className="p-3.5">Teléfono</th>
                 <th className="p-3.5">Dirección</th>
@@ -469,22 +469,24 @@ export default function CustomersModule({
                       <td className="p-3.5 text-slate-500 truncate max-w-xs">{c.address || "—"}</td>
                       <td className="p-3.5 font-medium">{c.currency}</td>
                       <td className="p-3.5 text-right print:hidden">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
                             onClick={() => onOpenCustomerStatement(c.id)}
-                            className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-[#ffedd5] text-[#1b426e] font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-[#fed7aa]"
-                            title="Ver Estado de Cuenta del cliente"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] hover:bg-[#fff7ed] border border-transparent hover:border-[#fed7aa] transition cursor-pointer inline-flex items-center justify-center"
+                            title="Ver Estado de Cuenta"
+                            aria-label="Ver Estado de Cuenta"
                           >
-                            <FileText className="w-3 h-3" />
-                            <span>Estado de Cuenta</span>
+                            <FileText className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleOpenEditCustomer(c)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 border border-transparent hover:border-slate-200 transition cursor-pointer inline-flex items-center justify-center"
+                            title="Editar cliente"
+                            aria-label="Editar cliente"
                           >
-                            <span>Editar</span>
+                            <Pencil className="w-4 h-4" />
                           </button>
                         </div>
                       </td>

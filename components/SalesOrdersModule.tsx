@@ -33,6 +33,8 @@ import {
   ArrowRight,
   Info,
   X,
+  Eye,
+  Download,
 } from "lucide-react";
 
 export interface SalesOrderItem {
@@ -238,6 +240,33 @@ export default function SalesOrdersModule({
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
   const [converting, setConverting] = useState(false);
 
+  // Estados de página de editor completo (idéntico a Cotizaciones y Facturas)
+  const [activeEditorTab, setActiveEditorTab] = useState<"Editar" | "Hoja de Despacho" | "Vista Previa PDF">("Editar");
+  const [showPrintDownloadDropdown, setShowPrintDownloadDropdown] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const printDownloadDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Datos corporativos
+  const compName = companySettings?.nombreLegal || companySettings?.nombre || "PRADO DISTRIBUIDORA";
+  const compRtn = companySettings?.rtn || "";
+  const compAddress = companySettings?.direccion || "";
+  const compContact = [companySettings?.telefono ? `Tel: ${companySettings.telefono}` : "", companySettings?.email].filter(Boolean).join(" • ");
+
+  // Cerrar dropdown al hacer click afuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        printDownloadDropdownRef.current &&
+        !printDownloadDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowPrintDownloadDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Formulario
   const initialFormState = {
     id: "",
@@ -378,6 +407,8 @@ export default function SalesOrdersModule({
       currency: effectiveCurrencyCode || "USD",
       orderNumber: nextOrderNumber,
     });
+    setActiveEditorTab("Editar");
+    setShowPrintDownloadDropdown(false);
     setShowEditorModal(true);
   };
 
@@ -419,6 +450,8 @@ export default function SalesOrdersModule({
         notes: it.notes || "",
       })),
     });
+    setActiveEditorTab("Editar");
+    setShowPrintDownloadDropdown(false);
     setShowEditorModal(true);
   };
 
@@ -434,6 +467,10 @@ export default function SalesOrdersModule({
     const total = Number((taxableBase + tax).toFixed(2));
     return { subtotal, tax, total };
   };
+
+  const formTotals = useMemo(() => {
+    return calculateFormTotals(formData.items, formData.discount, formData.taxRate);
+  }, [formData.items, formData.discount, formData.taxRate]);
 
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...formData.items];
@@ -453,6 +490,30 @@ export default function SalesOrdersModule({
       items: newItems,
       ...totals,
     }));
+  };
+
+  const handleSelectSku = (index: number, skuValue: string) => {
+    const prod = inventory.find((p) => p.sku === skuValue);
+    if (prod) {
+      const newItems = [...formData.items];
+      const item = {
+        ...newItems[index],
+        sku: prod.sku,
+        productName: prod.description,
+        description: prod.description,
+        rate: prod.price || 0,
+        amount: Number(((newItems[index].quantityOrdered || 1) * (prod.price || 0)).toFixed(2)),
+      };
+      newItems[index] = item;
+      const totals = calculateFormTotals(newItems, formData.discount, formData.taxRate);
+      setFormData((prev) => ({
+        ...prev,
+        items: newItems,
+        ...totals,
+      }));
+    } else {
+      handleItemChange(index, "sku", skuValue);
+    }
   };
 
   const handleAddItem = () => {
@@ -511,6 +572,7 @@ export default function SalesOrdersModule({
       ...prev,
       customerId: customer.id,
       customerName: customer.name,
+      customerRtn: (customer as any).rtn || prev.customerRtn || "",
       customerEmail: customer.email || "",
       customerPhone: customer.phone || "",
       customerAddress: customer.address || "",
@@ -518,17 +580,20 @@ export default function SalesOrdersModule({
     }));
   };
 
-  const handleSaveOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveOrder = async (e?: React.FormEvent, closeModal = true) => {
+    if (e) e.preventDefault();
     if (!formData.customerName.trim()) {
       setErrorAlert("Debe indicar el nombre del cliente.");
+      setActiveEditorTab("Editar");
       return;
     }
     if (formData.items.some((it) => !it.productName.trim())) {
       setErrorAlert("Todos los ítems deben tener un nombre o descripción.");
+      setActiveEditorTab("Editar");
       return;
     }
 
+    setSavingOrder(true);
     try {
       const isEditing = Boolean(formData.id);
       const url = isEditing ? `/api/sales-orders/${formData.id}` : "/api/sales-orders";
@@ -549,8 +614,12 @@ export default function SalesOrdersModule({
       const json = await res.json();
 
       if (json.success) {
-        setSuccessAlert(json.message || "Pedido guardado exitosamente.");
-        setShowEditorModal(false);
+        setSuccessAlert(json.message || (isEditing ? "Pedido actualizado exitosamente." : "Pedido guardado exitosamente."));
+        if (closeModal) {
+          setShowEditorModal(false);
+        } else if (!formData.id && json.data?.id) {
+          setFormData((prev) => ({ ...prev, id: json.data.id }));
+        }
         fetchOrders();
       } else {
         setErrorAlert(json.error || "Error al guardar el pedido.");
@@ -558,6 +627,79 @@ export default function SalesOrdersModule({
     } catch (err: any) {
       console.error("Error al guardar pedido:", err);
       setErrorAlert("Ocurrió un error inesperado al guardar.");
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
+  // Descargar PDF del pedido
+  const downloadSalesOrderPDF = async () => {
+    setShowPrintDownloadDropdown(false);
+    setIsGeneratingPDF(true);
+    try {
+      const printableElem = document.getElementById("printable-sales-order-document");
+      if (!printableElem) {
+        window.print();
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "fixed";
+      wrapper.style.left = "-9999px";
+      wrapper.style.top = "0";
+      wrapper.style.width = "816px";
+      wrapper.style.background = "#ffffff";
+      wrapper.style.minHeight = "1056px";
+      wrapper.style.color = "#000000";
+      wrapper.style.zIndex = "-9999";
+
+      const clone = printableElem.cloneNode(true) as HTMLElement;
+      clone.classList.remove("hidden");
+      clone.classList.remove("print:block");
+      clone.classList.remove("print:flex");
+      clone.style.display = "flex";
+      clone.style.flexDirection = "column";
+      clone.style.justifyContent = "space-between";
+      clone.style.minHeight = "1056px";
+      clone.style.width = "100%";
+      clone.style.background = "#ffffff";
+      clone.style.color = "#000000";
+      clone.style.padding = "32px";
+      clone.style.boxSizing = "border-box";
+
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      const html2canvasModule = await import("html2canvas");
+      const html2canvas = html2canvasModule.default || html2canvasModule;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 816,
+      });
+
+      document.body.removeChild(wrapper);
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "letter",
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Pedido_${formData.orderNumber || "Venta"}.pdf`);
+    } catch (err) {
+      console.error("Error al descargar PDF:", err);
+      window.print();
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -957,7 +1099,17 @@ export default function SalesOrdersModule({
                     {/* Pedido / O.C. Cliente */}
                     <td className="py-3.5 px-4 font-sans">
                       <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{order.orderNumber}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            handleOpenEdit(order);
+                          }}
+                          className="hover:underline text-left cursor-pointer hover:text-[#1b426e] transition font-bold"
+                          title="Ver y editar pedido de venta"
+                        >
+                          {order.orderNumber}
+                        </button>
                         {order.quoteNumber && (
                           <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-medium">
                             Cot: {order.quoteNumber}
@@ -1020,20 +1172,21 @@ export default function SalesOrdersModule({
                     {/* Acciones */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        {/* Botón Ver / Detalle */}
+                        {/* Botón Ver / Detalle (Solo icono) */}
                         <button
                           type="button"
                           onClick={() => {
                             setSelectedOrder(order);
-                            setShowDetailModal(true);
+                            handleOpenEdit(order);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition cursor-pointer"
-                          title="Ver detalle del pedido y hoja de despacho"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition cursor-pointer"
+                          title="Ver y editar pedido de venta"
+                          aria-label="Ver y editar pedido de venta"
                         >
-                          Ver Detalle
+                          <Eye className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* Botón Facturar si está despachado o confirmado */}
+                        {/* Botón Facturar (Solo icono) */}
                         {order.status !== "FACTURADO" && order.status !== "CANCELADO" && (
                           <button
                             type="button"
@@ -1041,17 +1194,20 @@ export default function SalesOrdersModule({
                               setSelectedOrder(order);
                               setShowConvertModal(true);
                             }}
-                            className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition cursor-pointer flex items-center gap-1"
+                            className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer"
                             title="Generar Factura SAR con 1 clic"
+                            aria-label="Generar Factura SAR"
                           >
-                            <FileCheck className="w-3 h-3" />
-                            <span>Facturar</span>
+                            <FileCheck className="w-3.5 h-3.5" />
                           </button>
                         )}
 
                         {order.status === "FACTURADO" && order.invoiceNumber && (
-                          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            {order.invoiceNumber}
+                          <span
+                            className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
+                            title={`Factura emitida: #${order.invoiceNumber}`}
+                          >
+                            #{order.invoiceNumber}
                           </span>
                         )}
                       </div>
@@ -1064,381 +1220,926 @@ export default function SalesOrdersModule({
         )}
       </div>
 
-      {/* ================= MODAL: CREAR / EDITAR PEDIDO ================= */}
+      {/* ================= PÁGINA COMPLETA: CREAR / EDITAR PEDIDO DE VENTA ================= */}
       {showEditorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-4xl w-full border border-slate-200 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95">
-            <div className="p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#fff7ed] border border-orange-200 flex items-center justify-center text-[#1b426e]">
-                  <PackageCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
-                    {formData.id ? `Editar Pedido ${formData.orderNumber}` : "Registrar Nuevo Pedido de Venta"}
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Complete la información comercial y de despacho del cliente.
-                  </p>
-                </div>
-              </div>
-
+        <div className="fixed inset-0 z-40 flex flex-col bg-slate-100 text-slate-800 animate-in fade-in duration-150 overflow-hidden print:static print:inset-auto print:bg-white print:overflow-visible print:block print:p-0">
+          {/* TOP HEADER BAR */}
+          <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-30 shadow-2xs print:hidden">
+            <div className="flex items-center gap-4">
               <button
                 type="button"
                 onClick={() => setShowEditorModal(false)}
-                className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
               >
-                <X className="w-4 h-4" />
+                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Regresar</span>
               </button>
+
+              <h1 className="text-base font-bold text-slate-900 flex items-center gap-2 border-l border-slate-200 pl-4">
+                <span>{formData.id ? `Editar Pedido ${formData.orderNumber}` : `Pedido de Venta ${formData.orderNumber || nextOrderNumber}`}</span>
+              </h1>
+
+              {/* Sub-tabs: Editar vs Hoja de Despacho vs Vista de PDF */}
+              <div className="flex items-center gap-1 border-l border-slate-200 pl-6">
+                {(["Editar", "Hoja de Despacho", "Vista Previa PDF"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveEditorTab(tab)}
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer ${
+                      activeEditorTab === tab
+                        ? "bg-[#fff7ed] text-[#1b426e] border border-[#1b426e]/30"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <form onSubmit={handleSaveOrder} className="p-6 space-y-6">
-              {/* Bloque 1: Cabecera */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* N.º Pedido */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    N.º Pedido de Venta *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.orderNumber}
-                    onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowEditorModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                title="Cerrar editor"
+              >
+                ✕
+              </button>
+            </div>
+          </header>
 
-                {/* N.º Orden de Compra Cliente (PO) */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    N.º O.C. del Cliente (Customer PO) *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.customerPoNumber}
-                    onChange={(e) => setFormData({ ...formData, customerPoNumber: e.target.value })}
-                    placeholder="Ej. OC-CERV-2026-891"
-                    className="w-full px-3 py-2 bg-white border border-orange-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
+          {/* MAIN CONTENT WORKSPACE */}
+          <div className="flex-1 flex overflow-hidden print:hidden">
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
 
-                {/* Cotización de Referencia */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Cotización Vinculada (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.quoteNumber}
-                    onChange={(e) => setFormData({ ...formData, quoteNumber: e.target.value })}
-                    placeholder="Ej. COT-2026-0001"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
+              {/* PESTAÑA: EDITAR */}
+              {activeEditorTab === "Editar" && (
+                <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xs max-w-5xl mx-auto space-y-8">
+                  {/* Fila Superior: Membrete corporativo y Correlativo */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-100 pb-6">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-[#fff7ed] border border-orange-200 flex items-center justify-center text-[#1b426e] shrink-0">
+                        <PackageCheck className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-black text-slate-900 leading-tight">
+                          {compName}
+                        </h2>
+                        {compRtn && <p className="text-xs text-slate-500 font-mono mt-0.5">RTN: {compRtn}</p>}
+                        {compAddress && <p className="text-xs text-slate-500 mt-0.5">{compAddress}</p>}
+                        {compContact && <p className="text-[11px] text-slate-400 mt-0.5">{compContact}</p>}
+                      </div>
+                    </div>
 
-                {/* Cliente */}
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Cliente / Razón Social *
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={formData.customerName}
-                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                      required
-                      placeholder="Nombre o empresa del cliente"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                    />
-                    {customers.length > 0 && (
+                    <div className="text-right w-full sm:w-auto">
+                      <h3 className="text-xl font-black text-[#1b426e] tracking-tight">PEDIDO DE VENTA</h3>
+                      <div className="flex items-center justify-end gap-2 mt-2">
+                        <label className="text-xs font-bold text-slate-600">N.º:</label>
+                        <input
+                          type="text"
+                          value={formData.orderNumber}
+                          onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
+                          required
+                          className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold text-slate-900 text-right w-44 focus:outline-none focus:border-[#1b426e]"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-end gap-3 mt-2 text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-500">Moneda:</span>
+                          <select
+                            value={formData.currency}
+                            onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                            className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md font-semibold text-slate-700"
+                          >
+                            <option value="HNL">HNL (L)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                          </select>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-500">Estado:</span>
+                          <select
+                            value={formData.status}
+                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                            className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md font-semibold text-slate-700"
+                          >
+                            <option value="CONFIRMADO">Confirmado</option>
+                            <option value="BORRADOR">Borrador</option>
+                            <option value="EN_PREPARACION">En Almacén</option>
+                            <option value="DESPACHADO">Despachado</option>
+                            <option value="FACTURADO">Facturado</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Fila Central: Datos Comerciales y del Cliente */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/70 p-6 rounded-2xl border border-slate-200/80">
+                    {/* Cliente / Razón Social */}
+                    <div className="md:col-span-2 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-700">
+                          Cliente / Razón Social *
+                        </label>
+                        {customers.length > 0 && (
+                          <span className="text-[11px] text-slate-500">
+                            o seleccione de la lista:
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          required
+                          placeholder="Nombre o empresa del cliente..."
+                          value={formData.customerName}
+                          onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                          className="flex-1 px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e] font-semibold text-slate-900"
+                        />
+                        {customers.length > 0 && (
+                          <select
+                            onChange={(e) => {
+                              const c = customers.find((cust) => cust.id === e.target.value);
+                              if (c) handleSelectCustomer(c);
+                            }}
+                            value={formData.customerId || ""}
+                            className="w-44 px-2 py-1 text-xs bg-white border border-slate-300 rounded-xl text-slate-700"
+                          >
+                            <option value="">Buscar de lista...</option>
+                            {customers.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
+                            RTN del Cliente
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="05019000000000"
+                            value={formData.customerRtn || ""}
+                            onChange={(e) => setFormData({ ...formData, customerRtn: e.target.value })}
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg font-mono focus:border-[#1b426e]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
+                            Dirección de Entrega
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Muelle o planta de entrega"
+                            value={formData.customerAddress || ""}
+                            onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:border-[#1b426e]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Referencias Comerciales: O.C. Cliente y Cotización */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          N.º O.C. del Cliente (Customer PO) *
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.customerPoNumber || ""}
+                          onChange={(e) => setFormData({ ...formData, customerPoNumber: e.target.value })}
+                          placeholder="Ej. OC-CERV-2026-891"
+                          className="w-full px-3 py-2 bg-white border border-orange-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Cotización Vinculada (Opcional)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.quoteNumber || ""}
+                          onChange={(e) => setFormData({ ...formData, quoteNumber: e.target.value })}
+                          placeholder="Ej. COT-2026-0001"
+                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Fila 2: Fechas, Almacén, Términos y Vendedor */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Fecha del Pedido
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.orderDate}
+                        onChange={(e) => setFormData({ ...formData, orderDate: e.target.value })}
+                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Fecha Prometida de Entrega
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.expectedDeliveryDate || ""}
+                        onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
+                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700">
+                          Almacén de Despacho
+                        </label>
+                        {onOpenWarehousesConfig && (
+                          <button
+                            type="button"
+                            onClick={onOpenWarehousesConfig}
+                            className="text-[11px] font-semibold text-[#1b426e] hover:underline cursor-pointer flex items-center gap-1"
+                            title="Administrar almacenes en Configuración"
+                          >
+                            ⚙️ Configurar
+                          </button>
+                        )}
+                      </div>
                       <select
-                        onChange={(e) => {
-                          const cust = customers.find((c) => c.id === e.target.value);
-                          if (cust) handleSelectCustomer(cust);
-                        }}
-                        value={formData.customerId}
-                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-[#1b426e] max-w-[150px]"
+                        value={formData.warehouse}
+                        onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
+                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 font-semibold"
                       >
-                        <option value="">Elegir de lista...</option>
-                        {customers.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
+                        {internalWarehouses.map((wh) => (
+                          <option key={wh.id} value={wh.name}>
+                            {wh.name} {wh.code ? `(${wh.code})` : ""}
                           </option>
                         ))}
                       </select>
-                    )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Términos de Pago
+                      </label>
+                      <select
+                        value={formData.paymentTerms}
+                        onChange={(e) => setFormData({ ...formData, paymentTerms: e.target.value })}
+                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800"
+                      >
+                        <option value="Contado">Contado</option>
+                        <option value="Neto 15 días">Neto 15 días</option>
+                        <option value="Neto 30 días">Neto 30 días</option>
+                        <option value="Neto 60 días">Neto 60 días</option>
+                        <option value="Contra Entrega">Contra Entrega</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Vendedor / Ejecutivo
+                      </label>
+                      {salesReps.length > 0 ? (
+                        <select
+                          value={formData.salesRepName || ""}
+                          onChange={(e) => {
+                            const rep = salesReps.find((r) => r.name === e.target.value);
+                            setFormData({
+                              ...formData,
+                              salesRepName: e.target.value,
+                              salesRepId: rep ? rep.id : "",
+                            });
+                          }}
+                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800"
+                        >
+                          <option value="">Sin asignar / General</option>
+                          {salesReps.map((r) => (
+                            <option key={r.id} value={r.name}>
+                              {r.name} ({r.code})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Nombre del ejecutivo..."
+                          value={formData.salesRepName || ""}
+                          onChange={(e) => setFormData({ ...formData, salesRepName: e.target.value })}
+                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800"
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Teléfono / Contacto
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Teléfono del cliente"
+                        value={formData.customerPhone || ""}
+                        onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* RTN */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">RTN del Cliente</label>
-                  <input
-                    type="text"
-                    value={formData.customerRtn}
-                    onChange={(e) => setFormData({ ...formData, customerRtn: e.target.value })}
-                    placeholder="05019000000000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
+                  {/* Tabla de Productos / Materiales */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <span>Productos & Materiales Ordenados</span>
+                        <span className="text-xs font-normal text-slate-400">
+                          ({formData.items.length} {formData.items.length === 1 ? "ítem" : "ítems"})
+                        </span>
+                      </h4>
+                    </div>
 
-                {/* Fecha Pedido */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Fecha del Pedido</label>
-                  <input
-                    type="date"
-                    value={formData.orderDate}
-                    onChange={(e) => setFormData({ ...formData, orderDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
+                            <th className="p-3 w-10 text-center">#</th>
+                            <th className="p-3 w-48">SKU / Catálogo</th>
+                            <th className="p-3">Producto *</th>
+                            <th className="p-3">Descripción / Arte</th>
+                            <th className="p-3 w-28 text-center">Cant. Ordenada *</th>
+                            <th className="p-3 w-32 text-right">Precio Unit. ({getCurrencySymbol(formData.currency)})</th>
+                            <th className="p-3 w-32 text-right">Importe ({getCurrencySymbol(formData.currency)})</th>
+                            <th className="p-3 w-10 text-center"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {formData.items.map((it, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50/50">
+                              <td className="p-3 text-center text-slate-400 font-bold">{idx + 1}</td>
 
-                {/* Fecha Prometida de Entrega */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Fecha Prometida de Entrega
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.expectedDeliveryDate}
-                    onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
+                              {/* SKU con buscador por catálogo */}
+                              <td className="p-3">
+                                <div className="space-y-1">
+                                  <input
+                                    type="text"
+                                    placeholder="SKU..."
+                                    value={it.sku || ""}
+                                    onChange={(e) => handleSelectSku(idx, e.target.value)}
+                                    className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-mono text-slate-800 focus:border-[#1b426e]"
+                                  />
+                                  {inventory.length > 0 && (
+                                    <select
+                                      onChange={(e) => {
+                                        if (e.target.value) handleSelectSku(idx, e.target.value);
+                                      }}
+                                      value={inventory.some((inv) => inv.sku === it.sku) ? (it.sku || "") : ""}
+                                      className="w-full px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-500"
+                                    >
+                                      <option value="">-- Catálogo por SKU --</option>
+                                      {inventory.map((inv) => (
+                                        <option key={inv.id} value={inv.sku}>
+                                          {inv.sku} — {inv.description.slice(0, 24)} ({getCurrencySymbol(formData.currency)}{inv.price})
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </div>
+                              </td>
 
-                {/* Almacén */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700">Almacén de Despacho</label>
-                    {onOpenWarehousesConfig && (
+                              {/* Producto */}
+                              <td className="p-3">
+                                <input
+                                  type="text"
+                                  placeholder="Nombre del producto..."
+                                  required
+                                  value={it.productName}
+                                  onChange={(e) => handleItemChange(idx, "productName", e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:border-[#1b426e]"
+                                />
+                              </td>
+
+                              {/* Especificaciones */}
+                              <td className="p-3">
+                                <input
+                                  type="text"
+                                  placeholder="Especificaciones o arte..."
+                                  value={it.description || ""}
+                                  onChange={(e) => handleItemChange(idx, "description", e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-700 focus:border-[#1b426e]"
+                                />
+                              </td>
+
+                              {/* Cantidad Ordenada */}
+                              <td className="p-3 text-center">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  step="any"
+                                  value={it.quantityOrdered}
+                                  onChange={(e) => handleItemChange(idx, "quantityOrdered", e.target.value)}
+                                  className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-center font-bold text-slate-900 focus:border-[#1b426e]"
+                                />
+                              </td>
+
+                              {/* Precio Unitario */}
+                              <td className="p-3 text-right">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="any"
+                                  value={it.rate}
+                                  onChange={(e) => handleItemChange(idx, "rate", e.target.value)}
+                                  className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-right font-mono font-bold text-slate-900 focus:border-[#1b426e]"
+                                />
+                              </td>
+
+                              {/* Monto */}
+                              <td className="p-3 text-right font-black text-slate-900 font-mono">
+                                {getCurrencySymbol(formData.currency)}{Number(it.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+
+                              {/* Acción */}
+                              <td className="p-3 text-center">
+                                {formData.items.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveItem(idx)}
+                                    className="p-1 text-slate-400 hover:text-rose-600 transition cursor-pointer"
+                                    title="Eliminar fila"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1">
                       <button
                         type="button"
-                        onClick={onOpenWarehousesConfig}
-                        className="text-[11px] font-semibold text-[#1b426e] hover:underline cursor-pointer flex items-center gap-1"
-                        title="Administrar almacenes en Configuración"
+                        onClick={handleAddItem}
+                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition cursor-pointer flex items-center gap-1.5 border border-slate-300/80"
                       >
-                        ⚙️ Configurar
+                        <Plus className="w-3.5 h-3.5 text-[#1b426e]" />
+                        <span>+ Agregar producto o material</span>
                       </button>
-                    )}
+                    </div>
                   </div>
-                  <select
-                    value={formData.warehouse}
-                    onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
-                  >
-                    {internalWarehouses.map((wh) => (
-                      <option key={wh.id} value={wh.name}>
-                        {wh.name} {wh.code ? `(${wh.code})` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              {/* Bloque 2: Tabla de Ítems */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Productos & Materiales Ordenados
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={handleAddItem}
-                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-[#1b426e]" />
-                    <span>Agregar Ítem</span>
-                  </button>
-                </div>
+                  {/* Sección Inferior: Notas y Desglose de Totales */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
+                    <div className="space-y-4 text-xs">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Instrucciones de Despacho para Bodega
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={formData.shippingNotes || ""}
+                          onChange={(e) => setFormData({ ...formData, shippingNotes: e.target.value })}
+                          placeholder="Empaque, paletizado, horarios de muelle, transportista..."
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:border-[#1b426e]"
+                        />
+                      </div>
 
-                <div className="border border-slate-200 rounded-2xl overflow-hidden">
-                  <table className="w-full text-left text-xs border-collapse">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Notas Internas & Observaciones Comerciales
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={formData.notes || ""}
+                          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                          placeholder="Comentarios de ventas, crédito o control interno..."
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:border-[#1b426e]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Desglose de Totales */}
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2.5 text-xs">
+                        <div className="flex justify-between items-center text-slate-600">
+                          <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">
+                            Subtotal:
+                          </span>
+                          <span className="font-mono font-medium text-slate-800">
+                            {getCurrencySymbol(formData.currency)} {formTotals.subtotal.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-slate-600">
+                          <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">
+                            Descuento ({getCurrencySymbol(formData.currency)}):
+                          </span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={formData.discount}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setFormData((prev) => ({ ...prev, discount: val }));
+                            }}
+                            className="w-24 px-2 py-1 text-xs bg-white border border-slate-300 rounded-lg text-right font-mono"
+                          />
+                        </div>
+
+                        <div className="flex justify-between items-center text-slate-600">
+                          <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">
+                            Tasa de Impuesto (I.S.V.):
+                          </span>
+                          <select
+                            value={formData.taxRate}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setFormData((prev) => ({ ...prev, taxRate: val }));
+                            }}
+                            className="w-28 px-2 py-1 text-xs bg-white border border-slate-300 rounded-lg font-semibold"
+                          >
+                            <option value={15}>15% (SAR General)</option>
+                            <option value={18}>18% (Especial)</option>
+                            <option value={0}>0% (Exento)</option>
+                          </select>
+                        </div>
+
+                        <div className="flex justify-between items-center text-slate-600">
+                          <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">
+                            Total I.S.V. ({formData.taxRate}%):
+                          </span>
+                          <span className="font-mono font-medium text-slate-800">
+                            {getCurrencySymbol(formData.currency)} {formTotals.tax.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="border-t border-slate-300 pt-3">
+                          <div className="flex justify-between items-center py-2 px-3 bg-slate-200 border border-slate-300 text-slate-900 rounded-xl shadow-xs">
+                            <span className="font-black text-xs uppercase tracking-wider text-slate-700">Total del Pedido:</span>
+                            <span className="font-mono font-black text-xl text-[#1b426e]">
+                              {getCurrencySymbol(formData.currency)} {formTotals.total.toFixed(2)}{" "}
+                              <span className="text-xs font-normal text-slate-600">{formData.currency}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PESTAÑA: HOJA DE DESPACHO (PICKING & PACKING) */}
+              {activeEditorTab === "Hoja de Despacho" && (
+                <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xs max-w-4xl mx-auto space-y-6 animate-in fade-in duration-150">
+                  <div className="flex justify-between items-start border-b border-slate-200 pb-5">
+                    <div>
+                      <h3 className="font-black text-slate-900 text-base tracking-wide">
+                        {compName}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {[compAddress, compContact].filter(Boolean).join(" • ")}
+                      </p>
+                      <p className="text-xs font-bold text-orange-600 mt-1 uppercase tracking-wider flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>Hoja de Despacho & Control de Almacén (Packing Slip)</span>
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-xs font-mono font-bold text-slate-800 block">
+                        Pedido: {formData.orderNumber || nextOrderNumber}
+                      </span>
+                      <span className="text-[11px] text-slate-500 block">Fecha: {formData.orderDate}</span>
+                      {formData.expectedDeliveryDate && (
+                        <span className="text-[11px] text-indigo-700 font-semibold block">
+                          Entrega Prometida: {formData.expectedDeliveryDate}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Datos Operativos de Entrega */}
+                  <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+                    <div>
+                      <span className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">
+                        Entregar a / Cliente:
+                      </span>
+                      <p className="font-bold text-slate-900 text-sm mt-0.5">{formData.customerName || "Cliente"}</p>
+                      {formData.customerRtn && <p className="text-slate-600 font-mono">RTN: {formData.customerRtn}</p>}
+                      {formData.customerAddress && <p className="text-slate-500 mt-0.5">{formData.customerAddress}</p>}
+                      {formData.customerPhone && <p className="text-slate-500">Tel: {formData.customerPhone}</p>}
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">
+                        Datos Logísticos:
+                      </span>
+                      <p className="text-slate-700 mt-0.5">
+                        <span className="font-semibold">O.C. Cliente:</span> {formData.customerPoNumber || "N/A"}
+                      </p>
+                      <p className="text-slate-700">
+                        <span className="font-semibold">Almacén:</span> {formData.warehouse}
+                      </p>
+                      <p className="text-slate-700">
+                        <span className="font-semibold">Términos:</span> {formData.paymentTerms}
+                      </p>
+                      <p className="text-slate-700">
+                        <span className="font-semibold">Vendedor:</span> {formData.salesRepName || "General"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Instrucciones de Despacho */}
+                  {formData.shippingNotes && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2">
+                      <Truck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold">Instrucciones de Despacho y Transporte:</span>
+                        <p className="text-[11px] mt-0.5">{formData.shippingNotes}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tabla de Artículos a Despachar */}
+                  <table className="w-full text-left text-xs border-collapse border border-slate-200 rounded-xl overflow-hidden">
                     <thead>
-                      <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[11px]">
-                        <th className="py-2.5 px-3">Artículo / SKU</th>
-                        <th className="py-2.5 px-3">Descripción</th>
-                        <th className="py-2.5 px-3 w-28 text-center">Cant. Ordenada</th>
-                        <th className="py-2.5 px-3 w-28 text-right">Precio Unit.</th>
-                        <th className="py-2.5 px-3 w-32 text-right">Monto</th>
-                        <th className="py-2.5 px-2 w-10 text-center"></th>
+                      <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 text-[10px] uppercase">
+                        <th className="py-2.5 px-3 w-10 text-center">✓</th>
+                        <th className="py-2.5 px-3 w-32">SKU</th>
+                        <th className="py-2.5 px-3">Producto / Material</th>
+                        <th className="py-2.5 px-3">Especificaciones</th>
+                        <th className="py-2.5 px-3 text-center w-24">Cant. Ordenada</th>
+                        <th className="py-2.5 px-3 text-center w-24">Cant. Preparada</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-200 text-slate-700">
                       {formData.items.map((it, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3">
-                            <input
-                              type="text"
-                              value={it.productName}
-                              onChange={(e) => handleItemChange(idx, "productName", e.target.value)}
-                              placeholder="Nombre del producto"
-                              required
-                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1b426e]"
-                            />
-                            {inventory.length > 0 && (
-                              <select
-                                onChange={(e) => {
-                                  const inv = inventory.find((x) => x.id === e.target.value);
-                                  if (inv) handleSelectInventoryItem(idx, inv);
-                                }}
-                                className="w-full mt-1 px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-500"
-                              >
-                                <option value="">Copiar desde inventario...</option>
-                                {inventory.map((inv) => (
-                                  <option key={inv.id} value={inv.id}>
-                                    {inv.sku} - {inv.description} ({getCurrencySymbol(formData.currency)}{inv.price})
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </td>
-                          <td className="py-2 px-3">
-                            <input
-                              type="text"
-                              value={it.description || ""}
-                              onChange={(e) => handleItemChange(idx, "description", e.target.value)}
-                              placeholder="Especificaciones o arte"
-                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-[#1b426e]"
-                            />
-                          </td>
+                        <tr key={idx} className="hover:bg-slate-50">
                           <td className="py-2 px-3 text-center">
-                            <input
-                              type="number"
-                              min="1"
-                              step="any"
-                              value={it.quantityOrdered}
-                              onChange={(e) => handleItemChange(idx, "quantityOrdered", e.target.value)}
-                              className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none focus:border-[#1b426e]"
-                            />
+                            <input type="checkbox" defaultChecked className="rounded text-[#1b426e]" />
                           </td>
-                          <td className="py-2 px-3 text-right">
-                            <input
-                              type="number"
-                              min="0"
-                              step="any"
-                              value={it.rate}
-                              onChange={(e) => handleItemChange(idx, "rate", e.target.value)}
-                              className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right text-slate-800 focus:outline-none focus:border-[#1b426e]"
-                            />
-                          </td>
-                          <td className="py-2 px-3 text-right font-black text-slate-900 font-mono">
-                            {getCurrencySymbol(formData.currency)}{Number(it.amount || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {formData.items.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveItem(idx)}
-                                className="p-1 text-slate-400 hover:text-rose-600 transition cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </td>
+                          <td className="py-2 px-3 font-mono text-[11px] text-slate-700">{it.sku || "—"}</td>
+                          <td className="py-2 px-3 font-semibold text-slate-900">{it.productName || "Artículo"}</td>
+                          <td className="py-2 px-3 text-slate-500 text-[11px]">{it.description || "—"}</td>
+                          <td className="py-2 px-3 text-center font-bold text-slate-900">{it.quantityOrdered}</td>
+                          <td className="py-2 px-3 text-center font-bold text-[#1b426e]">{it.quantityCommitted || it.quantityOrdered}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
-              </div>
 
-              {/* Bloque 3: Notas y Totales */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Instrucciones de Despacho para Bodega
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={formData.shippingNotes}
-                      onChange={(e) => setFormData({ ...formData, shippingNotes: e.target.value })}
-                      placeholder="Empaque, paletizado, horarios de entrega..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#1b426e]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Notas Internas</label>
-                    <textarea
-                      rows={2}
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      placeholder="Comentarios de ventas o crédito..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#1b426e]"
-                    />
+                  {/* Firmas de Control */}
+                  <div className="grid grid-cols-3 gap-6 pt-10 text-center text-xs text-slate-600">
+                    <div className="border-t border-slate-300 pt-2">
+                      <p className="font-semibold text-slate-800">Preparado por Bodega</p>
+                      <p className="text-[10px] text-slate-400">Firma y Fecha de Alistamiento</p>
+                    </div>
+                    <div className="border-t border-slate-300 pt-2">
+                      <p className="font-semibold text-slate-800">Verificado por Supervisor</p>
+                      <p className="text-[10px] text-slate-400">Control de Calidad y Conteo</p>
+                    </div>
+                    <div className="border-t border-slate-300 pt-2">
+                      <p className="font-semibold text-slate-800">Recibido por Transportista</p>
+                      <p className="text-[10px] text-slate-400">Firma y N.º de Placa</p>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Subtotal:</span>
-                    <span className="font-bold font-mono">
-                      {getCurrencySymbol(formData.currency)}{formData.items.reduce((acc, it) => acc + (Number(it.amount) || 0), 0).toFixed(2)}
-                    </span>
-                  </div>
+              {/* PESTAÑA: VISTA PREVIA PDF (Carta 8.5" × 11") */}
+              {activeEditorTab === "Vista Previa PDF" && (
+                <div className="overflow-x-auto pb-12 flex flex-col items-center">
+                  <div
+                    id="printable-sales-order-document"
+                    className="w-[8.5in] min-h-[11in] bg-white border border-slate-300 rounded-xs shadow-xl p-12 flex flex-col justify-between text-slate-800 text-xs shrink-0 my-2 animate-in fade-in duration-150"
+                    style={{ width: "8.5in", minHeight: "11in" }}
+                  >
+                    <div className="space-y-6">
+                      {/* Membrete formal */}
+                      <div className="flex justify-between items-start border-b border-slate-200 pb-6">
+                        <div>
+                          <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                            {compName}
+                          </h1>
+                          {compRtn && <p className="text-xs text-slate-600 font-mono mt-0.5">RTN: {compRtn}</p>}
+                          {compAddress && <p className="text-xs text-slate-500 mt-0.5">{compAddress}</p>}
+                          {compContact && <p className="text-xs text-slate-400 mt-0.5">{compContact}</p>}
+                        </div>
 
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span>Descuento ({getCurrencySymbol(formData.currency)}):</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={formData.discount}
-                      onChange={(e) => {
-                        const val = Number(e.target.value) || 0;
-                        const totals = calculateFormTotals(formData.items, val, formData.taxRate);
-                        setFormData((prev) => ({ ...prev, discount: val, ...totals }));
-                      }}
-                      className="w-24 px-2 py-1 bg-white border border-slate-200 rounded text-xs text-right font-mono"
-                    />
-                  </div>
+                        <div className="text-right">
+                          <h2 className="text-xl font-bold text-slate-900">PEDIDO DE VENTA</h2>
+                          <p className="font-mono font-bold text-slate-700 text-sm mt-1">{formData.orderNumber || nextOrderNumber}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">Fecha: {formData.orderDate}</p>
+                          {formData.expectedDeliveryDate && (
+                            <p className="text-xs text-slate-500">Entrega: {formData.expectedDeliveryDate}</p>
+                          )}
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span>Tasa ISV:</span>
-                    <select
-                      value={formData.taxRate}
-                      onChange={(e) => {
-                        const val = Number(e.target.value) || 0;
-                        const totals = calculateFormTotals(formData.items, formData.discount, val);
-                        setFormData((prev) => ({ ...prev, taxRate: val, ...totals }));
-                      }}
-                      className="px-2 py-1 bg-white border border-slate-200 rounded text-xs"
-                    >
-                      <option value={15}>15% ISV General</option>
-                      <option value={18}>18% ISV Licores/Cigarrillos</option>
-                      <option value={0}>0% Exento / Exonerado</option>
-                    </select>
-                  </div>
+                      {/* Datos del Cliente */}
+                      <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80 text-xs">
+                        <div>
+                          <p className="text-slate-400 font-semibold uppercase text-[10px]">Facturar / Entregar a:</p>
+                          <p className="text-sm font-bold text-slate-900 mt-0.5">{formData.customerName || "Cliente"}</p>
+                          {formData.customerRtn && <p className="text-slate-600 mt-0.5 font-mono">RTN: {formData.customerRtn}</p>}
+                          {formData.customerAddress && <p className="text-slate-500 mt-0.5">{formData.customerAddress}</p>}
+                          {formData.customerPhone && <p className="text-slate-500">Tel: {formData.customerPhone}</p>}
+                        </div>
 
-                  <div className="pt-2 border-t border-slate-200 flex justify-between font-black text-sm text-slate-900">
-                    <span>Total del Pedido:</span>
-                    <span className="text-emerald-700 font-mono">
-                      {getCurrencySymbol(formData.currency)}{calculateFormTotals(formData.items, formData.discount, formData.taxRate).total.toFixed(2)}{" "}
-                      {formData.currency || effectiveCurrencyCode}
-                    </span>
+                        <div className="text-right space-y-0.5">
+                          <p className="text-slate-400 font-semibold uppercase text-[10px]">Condiciones Comerciales:</p>
+                          <p className="text-slate-700"><span className="font-semibold">O.C. Cliente:</span> {formData.customerPoNumber || "N/A"}</p>
+                          <p className="text-slate-700"><span className="font-semibold">Términos:</span> {formData.paymentTerms}</p>
+                          <p className="text-slate-700"><span className="font-semibold">Moneda:</span> {formData.currency}</p>
+                          <p className="text-slate-700"><span className="font-semibold">Almacén:</span> {formData.warehouse}</p>
+                          <p className="text-slate-700"><span className="font-semibold">Vendedor:</span> {formData.salesRepName || "General"}</p>
+                        </div>
+                      </div>
+
+                      {/* Tabla de Productos */}
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b-2 border-slate-300 text-slate-600 font-bold">
+                            <th className="py-2 px-2 w-10 text-center">#</th>
+                            <th className="py-2 px-2">Descripción del Producto</th>
+                            <th className="py-2 px-2 w-20 text-center">Cantidad</th>
+                            <th className="py-2 px-2 w-28 text-right">Precio Unit. ({getCurrencySymbol(formData.currency)})</th>
+                            <th className="py-2 px-2 w-28 text-right">Importe ({getCurrencySymbol(formData.currency)})</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {formData.items.map((it, i) => (
+                            <tr key={i}>
+                              <td className="py-2.5 px-2 text-center text-slate-400">{i + 1}</td>
+                              <td className="py-2.5 px-2">
+                                <div className="font-bold text-slate-900">{it.productName || "Artículo"}</div>
+                                {it.sku && <div className="text-[#1b426e] font-mono text-[10px]">SKU: {it.sku}</div>}
+                                {it.description && <div className="text-slate-500 text-[11px]">{it.description}</div>}
+                              </td>
+                              <td className="py-2.5 px-2 text-center font-medium">{it.quantityOrdered}</td>
+                              <td className="py-2.5 px-2 text-right">{getCurrencySymbol(formData.currency)} {(Number(it.rate) || 0).toFixed(2)}</td>
+                              <td className="py-2.5 px-2 text-right font-bold text-slate-900">{getCurrencySymbol(formData.currency)} {(Number(it.amount) || 0).toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {/* Totales */}
+                      <div className="flex justify-end pt-2">
+                        <div className="w-64 space-y-1.5 text-xs text-slate-700">
+                          <div className="flex justify-between">
+                            <span>Subtotal:</span>
+                            <span className="font-semibold">{getCurrencySymbol(formData.currency)} {formTotals.subtotal.toFixed(2)}</span>
+                          </div>
+                          {formData.discount > 0 && (
+                            <div className="flex justify-between text-slate-500">
+                              <span>Descuento:</span>
+                              <span>-{getCurrencySymbol(formData.currency)} {(Number(formData.discount) || 0).toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span>I.S.V. ({formData.taxRate}%):</span>
+                            <span className="font-semibold">{getCurrencySymbol(formData.currency)} {formTotals.tax.toFixed(2)}</span>
+                          </div>
+                          <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
+                            <span>Total General ({formData.currency}):</span>
+                            <span className="font-mono text-base">{getCurrencySymbol(formData.currency)} {formTotals.total.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Notas */}
+                      {(formData.shippingNotes || formData.notes) && (
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-[11px] space-y-1 text-slate-600">
+                          {formData.shippingNotes && (
+                            <p><strong>Instrucciones de Despacho:</strong> {formData.shippingNotes}</p>
+                          )}
+                          {formData.notes && (
+                            <p><strong>Observaciones:</strong> {formData.notes}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Firmas */}
+                    <div className="grid grid-cols-2 gap-12 pt-12 border-t border-slate-200 text-center text-xs">
+                      <div className="border-t border-slate-300 pt-2">
+                        <p className="font-semibold text-slate-900">{compName}</p>
+                        <p className="text-[11px] text-slate-400">Autorizado por Ventas / Operaciones</p>
+                      </div>
+                      <div className="border-t border-slate-300 pt-2">
+                        <p className="font-semibold text-slate-900">{formData.customerName || "Cliente"}</p>
+                        <p className="text-[11px] text-slate-400">Aceptación y Recibido Conforme</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Botones de acción del modal */}
-              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setShowEditorModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#e07116] text-white text-xs font-bold shadow-md shadow-orange-500/20 transition cursor-pointer"
-                >
-                  {formData.id ? "Guardar Cambios" : "Confirmar y Crear Pedido"}
-                </button>
-              </div>
-            </form>
+              )}
+            </div>
           </div>
+
+          {/* FIXED BOTTOM ACTION BAR */}
+          <footer className="bg-white border-t border-slate-200 px-6 py-3 flex items-center justify-between z-30 shadow-md print:hidden">
+            <div ref={printDownloadDropdownRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowPrintDownloadDropdown(!showPrintDownloadDropdown)}
+                disabled={isGeneratingPDF}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
+                {isGeneratingPDF ? (
+                  <>
+                    <span className="inline-block w-3 h-3 border-2 border-slate-600 border-t-transparent rounded-full animate-spin"></span>
+                    <span>Generando PDF...</span>
+                  </>
+                ) : (
+                  <span>Imprimir o descargar</span>
+                )}
+              </button>
+
+              {showPrintDownloadDropdown && (
+                <div className="absolute bottom-full left-0 mb-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 text-xs font-normal text-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPrintDownloadDropdown(false);
+                      window.print();
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition cursor-pointer font-medium text-slate-800 flex items-center justify-between"
+                  >
+                    <span>Imprimir</span>
+                    <Printer className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadSalesOrderPDF}
+                    disabled={isGeneratingPDF}
+                    className="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition cursor-pointer font-medium text-slate-800 flex items-center justify-between"
+                  >
+                    <span>Descargar PDF</span>
+                    {isGeneratingPDF ? (
+                      <span className="text-[10px] text-amber-600 font-semibold animate-pulse">Generando...</span>
+                    ) : (
+                      <Download className="w-3.5 h-3.5 text-slate-400" />
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowEditorModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                disabled={savingOrder}
+                onClick={() => handleSaveOrder(undefined, false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer"
+              >
+                Guardar y seguir editando
+              </button>
+
+              <button
+                type="button"
+                disabled={savingOrder}
+                onClick={() => handleSaveOrder(undefined, true)}
+                className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#e07116] text-white text-xs font-bold shadow-md shadow-orange-500/20 transition cursor-pointer flex items-center gap-1.5"
+              >
+                {savingOrder ? (
+                  <>
+                    <span className="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{formData.id ? "Guardar Cambios" : "Guardar Pedido de Venta"}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </footer>
         </div>
       )}
 

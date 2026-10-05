@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Skeleton, TableRowsSkeleton, TableCardSkeleton } from "@/components/Skeleton";
-import { BookOpen, FileText, Layers, Scale, Search, RefreshCw, Download, Printer, CheckCircle, ArrowLeft, Eye, ExternalLink } from "lucide-react";
+import { BookOpen, FileText, Layers, Scale, Search, RefreshCw, Download, Printer, CheckCircle, ArrowLeft, Eye, ExternalLink, Pencil } from "lucide-react";
 
 interface Account {
   id: string;
@@ -361,9 +361,11 @@ export default function AccountingBooksModule({
                         <button
                           type="button"
                           onClick={() => onOpenEditAccount(acc)}
-                          className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
+                          className="p-1.5 text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                          title="Editar cuenta"
+                          aria-label="Editar cuenta"
                         >
-                          Editar
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                       </td>
                     </tr>

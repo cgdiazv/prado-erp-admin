@@ -507,15 +507,19 @@ export function CashMovementsModule({
     originalAmount: number;
     balanceDue: number;
     currency?: string;
+    purchaseOrderNumber?: string;
+    isPO?: boolean;
   }>>([]);
 
   const [selectedBillIds, setSelectedBillIds] = useState<string[]>([]);
   const [customBillAmounts, setCustomBillAmounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (initialPagarProveedorVendor) {
-      setPagarProveedorForm((prev) => ({ ...prev, payeeFilter: initialPagarProveedorVendor }));
-    }
+    setPagarProveedorForm((prev) => ({
+      ...prev,
+      payeeFilter: initialPagarProveedorVendor || "Todo",
+    }));
+    setSelectedBillIds([]);
   }, [initialPagarProveedorVendor]);
 
   const pagarProveedorCurrencyCode = useMemo(() => {
@@ -537,8 +541,10 @@ export function CashMovementsModule({
     if (currentView !== "pagar-proveedor") return;
     const loadBills = async () => {
       try {
-        const resInvoices = await fetch("/api/purchase-invoices").then((r) => r.json()).catch(() => null);
-        const resOrders = await fetch("/api/purchase-orders").then((r) => r.json()).catch(() => null);
+        const [resInvoices, resOrders] = await Promise.all([
+          fetch("/api/purchase-invoices").then((r) => r.json()).catch(() => null),
+          fetch("/api/purchase-orders").then((r) => r.json()).catch(() => null),
+        ]);
         
         const bills: Array<{
           id: string;
@@ -548,15 +554,40 @@ export function CashMovementsModule({
           originalAmount: number;
           balanceDue: number;
           currency?: string;
+          purchaseOrderNumber?: string;
+          isPO?: boolean;
         }> = [];
+
+        // Track PO numbers that have any purchase invoice (whether paid, partial, or pending)
+        const invoicedPoNumbers = new Set<string>();
 
         if (resInvoices?.success && Array.isArray(resInvoices.data)) {
           resInvoices.data.forEach((inv: any) => {
-            if (!["Pagada", "PAGADA", "Cancelada", "CANCELADA"].includes(inv.paymentStatus)) {
+            if (inv.purchaseOrderNumber) {
+              invoicedPoNumbers.add(inv.purchaseOrderNumber.trim().toUpperCase());
+            }
+
+            const isPaidOrCancelled = [
+              "PAGADA",
+              "PAGADO",
+              "PAGADAS",
+              "CANCELADA",
+              "CANCELADO",
+              "ANULADA",
+              "ANULADO",
+            ].includes((inv.paymentStatus || "").trim().toUpperCase());
+
+            if (!isPaidOrCancelled) {
               const total = Number(inv.total) || 0;
-              const paid = (inv.paymentLines || []).reduce((sum: number, pl: any) => sum + (Number(pl.amountPaid) || 0), 0);
-              const bal = Math.max(0, total - paid);
-              if (bal > 0) {
+              const retAmount = (inv.taxRetentions || [])
+                .filter((r: any) => r.status === "ISSUED")
+                .reduce((sum: number, r: any) => sum + (Number(r.retentionAmount) || 0), 0);
+              const paid = (inv.paymentLines || [])
+                .filter((pl: any) => pl.vendorPayment?.status === "APLICADO" || !pl.vendorPayment)
+                .reduce((sum: number, pl: any) => sum + (Number(pl.amountPaid) || 0), 0);
+              const bal = Math.max(0, Math.round((total - retAmount - paid) * 100) / 100);
+
+              if (bal > 0.01) {
                 bills.push({
                   id: inv.id,
                   vendorName: inv.vendorName || "Proveedor",
@@ -565,29 +596,54 @@ export function CashMovementsModule({
                   originalAmount: total,
                   balanceDue: bal,
                   currency: inv.currency || defaultCurrencyCode || "HNL",
+                  purchaseOrderNumber: inv.purchaseOrderNumber || undefined,
+                  isPO: false,
                 });
               }
             }
           });
         }
 
+        // Only include open, un-invoiced Purchase Orders if they don't already have an invoice
+        // and have not been received/invoiced/paid/cancelled
         if (resOrders?.success && Array.isArray(resOrders.data)) {
           resOrders.data.forEach((po: any) => {
-            if (!["Pagada", "PAGADA", "Cancelada", "CANCELADA"].includes(po.status)) {
-              const exists = bills.some((b) => b.billNumber === po.orderNumber || b.id === po.id);
-              if (!exists) {
-                const total = Number(po.total) || 0;
-                if (total > 0) {
-                  bills.push({
-                    id: po.id || po.orderNumber,
-                    vendorName: po.vendorName || po.vendor?.name || "Proveedor",
-                    billNumber: po.orderNumber,
-                    dueDate: po.dueDate || po.issueDate || new Date().toISOString().split("T")[0],
-                    originalAmount: total,
-                    balanceDue: total,
-                    currency: po.currency || defaultCurrencyCode || "HNL",
-                  });
-                }
+            const poNumClean = (po.orderNumber || "").trim().toUpperCase();
+            const poStatusClean = (po.status || "").trim().toUpperCase();
+
+            // Exclude if already invoiced (invoice exists in system)
+            if (invoicedPoNumbers.has(poNumClean)) return;
+
+            // Exclude if already paid, received, invoiced, or cancelled
+            const excludedStatuses = [
+              "PAGADA",
+              "PAGADO",
+              "RECIBIDA",
+              "RECIBIDO",
+              "FACTURADA",
+              "FACTURADO",
+              "CANCELADA",
+              "CANCELADO",
+              "ANULADA",
+              "ANULADO",
+            ];
+            if (excludedStatuses.includes(poStatusClean)) return;
+
+            const exists = bills.some((b) => b.billNumber === po.orderNumber || b.id === po.id);
+            if (!exists) {
+              const total = Number(po.total) || 0;
+              if (total > 0) {
+                bills.push({
+                  id: po.id || po.orderNumber,
+                  vendorName: po.vendorName || po.vendor?.name || "Proveedor",
+                  billNumber: po.orderNumber,
+                  dueDate: po.dueDate || po.issueDate || new Date().toISOString().split("T")[0],
+                  originalAmount: total,
+                  balanceDue: total,
+                  currency: po.currency || defaultCurrencyCode || "HNL",
+                  purchaseOrderNumber: po.orderNumber,
+                  isPO: true,
+                });
               }
             }
           });
@@ -653,8 +709,10 @@ export function CashMovementsModule({
       const vendorObj = vendors.find((v) => v.name.toLowerCase() === firstVendor.toLowerCase());
 
       const lines = selectedBills.map((b) => ({
-        purchaseInvoiceId: b.id.length > 20 ? b.id : undefined,
-        purchaseOrderNumber: b.billNumber,
+        purchaseInvoiceId: !b.isPO ? b.id : undefined,
+        invoiceNumber: b.billNumber,
+        originalAmount: b.originalAmount,
+        balanceBefore: b.balanceDue,
         amountPaid: customBillAmounts[b.id] ?? b.balanceDue,
       }));
 
@@ -674,19 +732,20 @@ export function CashMovementsModule({
         }),
       }).catch(() => null);
 
-      selectedBillIds.forEach((poNum) => {
-        if (onUpdatePOStatus) {
-          onUpdatePOStatus(poNum, "Pagada");
+      selectedBills.forEach((b) => {
+        const poToUpdate = b.isPO ? b.billNumber : b.purchaseOrderNumber;
+        if (poToUpdate && onUpdatePOStatus) {
+          onUpdatePOStatus(poToUpdate, "Pagada");
         }
       });
 
       setPagarProveedorSuccessMsg(`¡Pago por ${pagarProveedorCurrencySymbol}${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pagarProveedorCurrencyCode} procesado con éxito!`);
       setTimeout(() => {
         setPagarProveedorSuccessMsg("");
-        if (createAnother) {
-          setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
-          setSelectedBillIds([]);
-        } else {
+        setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
+        setSelectedBillIds([]);
+        if (onRefreshAccounts) onRefreshAccounts();
+        if (!createAnother) {
           onNavigateToView("pagos-proveedores");
         }
       }, 1400);
@@ -694,10 +753,10 @@ export function CashMovementsModule({
       setPagarProveedorSuccessMsg(`¡Pago por ${pagarProveedorCurrencySymbol}${totalPagarSum.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pagarProveedorCurrencyCode} procesado con éxito!`);
       setTimeout(() => {
         setPagarProveedorSuccessMsg("");
-        if (createAnother) {
-          setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
-          setSelectedBillIds([]);
-        } else {
+        setVendorBills((prev) => prev.filter((b) => !selectedBillIds.includes(b.id)));
+        setSelectedBillIds([]);
+        if (onRefreshAccounts) onRefreshAccounts();
+        if (!createAnother) {
           onNavigateToView("pagos-proveedores");
         }
       }, 1400);

@@ -20,7 +20,7 @@ interface VendorsModuleProps {
   onBack: () => void;
   onNavigateToAging: () => void;
   onNavigateToPayments: () => void;
-  onPayVendor: (vendorName: string) => void;
+  onPayVendor?: (vendorName: string) => void;
   loading?: boolean;
   autoOpenCreate?: boolean;
   onAutoOpenCreateConsumed?: () => void;
@@ -365,15 +365,6 @@ export default function VendorsModule({
                       <td className="p-3.5 text-slate-500 truncate max-w-xs">{v.address || "—"}</td>
                       <td className="p-3.5 font-medium">{v.currency}</td>
                       <td className="p-3.5 text-right space-x-1.5">
-                        <button
-                          type="button"
-                          onClick={() => onPayVendor(v.name)}
-                          className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-orange-100 text-[#ea580c] font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-[#ffedd5]"
-                          title="Pagar facturas de este proveedor"
-                        >
-                          <CreditCard className="w-3.5 h-3.5" />
-                          <span>Pagar</span>
-                        </button>
                         <button
                           type="button"
                           onClick={() => handleOpenEditVendor(v)}
