@@ -452,7 +452,7 @@ export default function AdminDashboard() {
   const [newAccountForm, setNewAccountForm] = useState({
     code: "",
     name: "",
-    type: "Efectivo y equivalentes de efectivo",
+    type: "Efectivo",
     detailType: "Banco",
     isSubAccount: false,
     parentAccountId: "",
@@ -3066,7 +3066,7 @@ export default function AdminDashboard() {
   // Official Account Types and Subtypes Hierarchy
   const ACCOUNT_CATEGORIES: Record<string, string[]> = {
     ACTIVO: [
-      "Efectivo y equivalentes de efectivo",
+      "Efectivo",
       "Cuentas por cobrar (C/C)",
       "Activos corrientes",
       "Activos fijos",
@@ -3093,6 +3093,18 @@ export default function AdminDashboard() {
   };
 
   const DETAIL_TYPES_MAP: Record<string, string[]> = {
+    "Efectivo": [
+      "Ahorros",
+      "Alquileres de propiedad fiduciaria",
+      "Banco",
+      "Caja chica",
+      "Cuenta de anticipos de clientes",
+      "Dinero en efectivo",
+      "Dinero recibido sin depositar",
+      "Efectivo disponible",
+      "Efectivo",
+      "Mercado monetario",
+    ],
     "Efectivo y equivalentes de efectivo": [
       "Ahorros",
       "Alquileres de propiedad fiduciaria",
@@ -3102,7 +3114,7 @@ export default function AdminDashboard() {
       "Dinero en efectivo",
       "Dinero recibido sin depositar",
       "Efectivo disponible",
-      "Efectivo y equivalentes de efectivo",
+      "Efectivo",
       "Mercado monetario",
     ],
     "Cuentas por cobrar (C/C)": [
@@ -3188,6 +3200,10 @@ export default function AdminDashboard() {
     const t = (type || "").trim();
     const n = (name || "").toLowerCase();
 
+    if (t === "Efectivo y equivalentes de efectivo") {
+      return { category: "ACTIVO", accountType: "Efectivo" };
+    }
+
     for (const [cat, subTypes] of Object.entries(ACCOUNT_CATEGORIES)) {
       if (subTypes.includes(t)) {
         return { category: cat, accountType: t };
@@ -3197,7 +3213,7 @@ export default function AdminDashboard() {
     const upper = t.toUpperCase();
     if (upper === "ASSET" || upper === "ACTIVO") {
       if (n.includes("cash") || n.includes("checking") || n.includes("banco") || n.includes("caja")) {
-        return { category: "ACTIVO", accountType: "Efectivo y equivalentes de efectivo" };
+        return { category: "ACTIVO", accountType: "Efectivo" };
       }
       if (n.includes("receivable") || n.includes("cobrar") || n.includes("cliente")) {
         return { category: "ACTIVO", accountType: "Cuentas por cobrar (C/C)" };
@@ -3519,7 +3535,7 @@ ${accountRowsHtml(equity)}
     setNewAccountForm({
       code: acc.code || "",
       name: acc.name || "",
-      type: acc.type || "Efectivo y equivalentes de efectivo",
+      type: acc.type === "Efectivo y equivalentes de efectivo" ? "Efectivo" : (acc.type || "Efectivo"),
       detailType: getDetailType(acc.type, acc.name) || "Banco",
       isSubAccount: false,
       parentAccountId: "",
@@ -3618,7 +3634,7 @@ ${accountRowsHtml(equity)}
             setNewAccountForm({
               code: "",
               name: "",
-              type: "Efectivo y equivalentes de efectivo",
+              type: "Efectivo",
               detailType: "Banco",
               isSubAccount: false,
               parentAccountId: "",
@@ -3636,7 +3652,7 @@ ${accountRowsHtml(equity)}
             setNewAccountForm({
               code: "",
               name: "",
-              type: "Efectivo y equivalentes de efectivo",
+              type: "Efectivo",
               detailType: "Banco",
               isSubAccount: false,
               parentAccountId: "",
@@ -4463,7 +4479,7 @@ ${accountRowsHtml(equity)}
                   {currentView === "antiguedad-saldos" && "Reportes / Antigüedad de Saldos Clientes"}
                   {currentView === "antiguedad-saldos-proveedores" && "Reportes / Antigüedad de Saldos Proveedores"}
                   {currentView === "estado-cuenta-cliente" && "Clientes / Estado de Cuenta Individual"}
-                  {currentView === "retenciones-isv" && "Compras / Comprobantes de Retención SAR"}
+                  {currentView === "retenciones-isv" && "Comprobantes de Retención SAR"}
                   {currentView === "pos" && "Terminal Punto de Venta (POS)"}
                   {currentView === "configuracion" && "Configuración del Sistema"}
                 </span>
@@ -5022,7 +5038,7 @@ ${accountRowsHtml(equity)}
                 setNewAccountForm({
                   code: "",
                   name: "",
-                  type: "Efectivo y equivalentes de efectivo",
+                  type: "Efectivo",
                   detailType: "Banco",
                   isSubAccount: false,
                   parentAccountId: "",

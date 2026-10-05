@@ -8,7 +8,6 @@ import {
   Download,
   Printer,
   Search,
-  Plus,
   Filter,
   CheckCircle2,
   AlertCircle,
@@ -636,7 +635,6 @@ export default function TaxRetentionsModule({
               onClick={openCreateModal}
               className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
               <span>+ Emitir Retención</span>
             </button>
           </div>

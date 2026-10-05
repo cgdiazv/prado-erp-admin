@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { postSalesInvoiceEntry } from "@/lib/accounting";
+import { postSalesInvoiceEntry, postCustomerPaymentEntry } from "@/lib/accounting";
 import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(request: NextRequest) {
@@ -172,6 +172,81 @@ export async function POST(request: NextRequest) {
       }
     } catch (accountingErr: any) {
       console.error("Error creating accounting entry for invoice:", accountingErr);
+    }
+
+    // AUTOMATIC PAYMENT & CASH/BANK DEPOSIT (FOR PAID / CONTADO / POS SALES)
+    if (savedInvoice.status === "Pagada" || savedInvoice.status === "Cobrada") {
+      try {
+        const payMethod = body.paymentMethod || "Efectivo";
+        const methodUpper = String(payMethod).toUpperCase();
+        const isCash = methodUpper.includes("EFECTIVO") || methodUpper.includes("CASH");
+        const depositAccount = isCash ? "1000 - Caja General" : "1100 - Bancos Nacionales (Cuenta de Cheques)";
+
+        // 1. Record customer payment in Payment table
+        const paymentRecord = await prisma.payment.create({
+          data: {
+            companyId,
+            customerId: savedInvoice.customerId || null,
+            customerName: savedInvoice.customerName,
+            customerEmail: savedInvoice.customerEmail || null,
+            sendLater: false,
+            paymentDate: savedInvoice.invoiceDate,
+            paymentMethod: payMethod,
+            referenceNumber: `POS-${savedInvoice.invoiceNumber}`,
+            depositAccount,
+            amount: savedInvoice.total,
+            note: `Cobro automático POS / Venta al Contado Factura N.º ${savedInvoice.invoiceNumber}`,
+          },
+        });
+
+        // 2. Post customer payment to GL:
+        //    Débito: 1000 (Caja General) si es Efectivo, o 1100 (Bancos Nacionales) si es Tarjeta/Transferencia
+        //    Crédito: 1200 (Cuentas por Cobrar Clientes)
+        await postCustomerPaymentEntry({
+          id: paymentRecord.id,
+          companyId,
+          paymentDate: savedInvoice.invoiceDate,
+          customerName: savedInvoice.customerName,
+          amount: savedInvoice.total,
+          paymentMethod: payMethod,
+          referenceNumber: savedInvoice.invoiceNumber,
+          depositAccount,
+          currency: savedInvoice.currency,
+        });
+
+        // 3. If paid with Card or Transfer, synchronize BankAccount balance & create BankTransaction
+        if (!isCash) {
+          const companyBank = await prisma.bankAccount.findFirst({
+            where: { companyId },
+            orderBy: { createdAt: "asc" },
+          });
+
+          if (companyBank) {
+            await prisma.bankAccount.update({
+              where: { id: companyBank.id },
+              data: {
+                bookBalance: { increment: savedInvoice.total },
+                bankBalance: { increment: savedInvoice.total },
+              },
+            });
+
+            await prisma.bankTransaction.create({
+              data: {
+                bankAccountId: companyBank.id,
+                date: savedInvoice.invoiceDate,
+                description: `Cobro POS Factura ${savedInvoice.invoiceNumber} (${payMethod}) - ${savedInvoice.customerName}`,
+                payee: savedInvoice.customerName,
+                type: "deposit",
+                amount: savedInvoice.total,
+                suggestedAccount: "1100 - Bancos Nacionales",
+                status: "conciliado",
+              },
+            });
+          }
+        }
+      } catch (payPostingErr) {
+        console.error("Error posting automatic payment for POS/paid invoice:", payPostingErr);
+      }
     }
 
     // AUTOMATIC INVENTORY STOCK DEDUCTION

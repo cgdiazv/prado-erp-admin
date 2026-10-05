@@ -504,15 +504,17 @@ export default function POSModule({
       const saleDate = new Date();
 
       const invoicePayload = {
+        customerId: selectedCustomer.id !== "default" ? selectedCustomer.id : undefined,
         invoiceNumber: ticketNumber,
         customerName: selectedCustomer.name || "Consumidor Final",
         customerRtn: selectedCustomer.rtn || null,
         invoiceDate: saleDate.toISOString().split("T")[0],
         paymentTerms: paymentMethod === "CREDITO" ? "Crédito 15 días" : "Contado",
+        paymentMethod: paymentMethod === "CREDITO" ? "Crédito" : paymentMethod === "TARJETA" ? "Tarjeta" : paymentMethod === "TRANSFERENCIA" ? "Transferencia" : "Efectivo",
         subtotal: cartTotals.subtotal,
         isv15: cartTotals.isv15,
         total: cartTotals.total,
-        status: "Pagada",
+        status: paymentMethod === "CREDITO" ? "Pendiente" : "Pagada",
         lines: cart.map((c) => ({
           productId: c.productId,
           sku: c.sku,

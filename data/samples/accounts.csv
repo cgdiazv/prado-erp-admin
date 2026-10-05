@@ -1,6 +1,6 @@
 code,name,type,currency,isActive
 1000,Cash on Hand,Asset,USD,true
-1100,Operating Checking Account,Asset,USD,true
+1100,Bancos Nacionales (Cuenta de Cheques),Asset,USD,true
 1200,Accounts Receivable,Asset,USD,true
 1300,Inventory Asset,Asset,USD,true
 2000,Accounts Payable,Liability,USD,true
