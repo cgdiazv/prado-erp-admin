@@ -2644,6 +2644,8 @@ export default function AdminDashboard() {
             currency: inv.currency || "USD",
             paymentTerms: inv.paymentTerms,
             customerEmail: inv.customerEmail || "",
+            salesRepId: inv.salesRepId || "",
+            salesRepName: inv.salesRepName || "",
             lines: inv.lines || [],
           }))
         );
@@ -11798,6 +11800,7 @@ ${accountRowsHtml(equity)}
               setInvoicesList={setInvoicesList}
               customers={customers}
               inventory={inventory}
+              salesReps={salesReps}
               connectedBanks={connectedBanks}
               companySettings={companySettings}
               salesSettings={salesSettings}

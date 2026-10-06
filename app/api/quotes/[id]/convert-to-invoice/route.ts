@@ -46,6 +46,16 @@ export async function POST(
       );
     }
 
+    if (!quote.salesRepId && !quote.salesRepName) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No se puede facturar una cotización sin vendedor asignado. Edite la cotización y asigne un vendedor antes de facturarla.",
+        },
+        { status: 400 }
+      );
+    }
+
     // 2. Determinar el siguiente número de factura
     const existingInvoices = await prisma.salesInvoice.findMany({
       where: { companyId },
@@ -114,6 +124,8 @@ export async function POST(
         paymentTerms: quote.paymentTerms || "Neto 30 días",
         currency: quote.currency || "HNL",
         cai: companySettings?.cai !== "Ninguno indicado" ? companySettings?.cai : null,
+        salesRepId: quote.salesRepId || null,
+        salesRepName: quote.salesRepName || null,
         discount: quote.discount || 0,
         importeExento: quote.taxRate === 0 ? quote.subtotal - (quote.discount || 0) : 0,
         importeExonerado: 0,

@@ -21,6 +21,7 @@ export interface InvoicesModuleProps {
   setInvoicesList: React.Dispatch<React.SetStateAction<Invoice[]>>;
   customers: Customer[];
   inventory: InventoryItem[];
+  salesReps?: Array<{ id: string; name: string; code?: string }>;
   connectedBanks?: BankAccount[];
   companySettings: CompanySettings;
   salesSettings: any;
@@ -136,6 +137,7 @@ export function InvoicesModule({
   setInvoicesList,
   customers,
   inventory,
+  salesReps = [],
   connectedBanks = [],
   companySettings,
   salesSettings,
@@ -212,6 +214,7 @@ export function InvoicesModule({
   const [showPrintDownloadDropdown, setShowPrintDownloadDropdown] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [invoiceSuccessMsg, setInvoiceSuccessMsg] = useState("");
+  const [invoiceErrorMsg, setInvoiceErrorMsg] = useState("");
   const [sendingInvoiceEmail, setSendingInvoiceEmail] = useState(false);
 
   const [invoiceDesign, setInvoiceDesign] = useState<InvoiceDesign>({
@@ -235,6 +238,8 @@ export function InvoicesModule({
     deliveredTo: "",
     deliveryAddress: "",
     currency: "",
+    salesRepId: "",
+    salesRepName: "",
     discount: 0,
     importeExonerado: 0,
     importeExento: 0,
@@ -319,6 +324,8 @@ export function InvoicesModule({
         deliveredTo: editingInvoice.customer || "",
         deliveryAddress: custAddress,
         currency: editingInvoice.currency || effectiveCurrencySymbol,
+        salesRepId: (editingInvoice as any).salesRepId || (editingInvoice as any).salesRep?.id || "",
+        salesRepName: (editingInvoice as any).salesRepName || (editingInvoice as any).salesRep?.name || (editingInvoice as any).vendedor || "",
         status: editingInvoice.status || "Pendiente",
         discount: 0,
         importeExonerado: 0,
@@ -352,6 +359,8 @@ export function InvoicesModule({
         deliveredTo: "",
         deliveryAddress: "",
         currency: effectiveCurrencySymbol,
+        salesRepId: "",
+        salesRepName: "",
         status: "Pendiente",
         discount: 0,
         importeExonerado: 0,
@@ -422,7 +431,8 @@ export function InvoicesModule({
       (inv) =>
         inv.num.toLowerCase().includes(q) ||
         inv.customer.toLowerCase().includes(q) ||
-        (inv.customerEmail && inv.customerEmail.toLowerCase().includes(q))
+        (inv.customerEmail && inv.customerEmail.toLowerCase().includes(q)) ||
+        (inv.salesRepName && inv.salesRepName.toLowerCase().includes(q))
     );
   }, [invoicesList, searchQuery]);
 
@@ -548,6 +558,7 @@ export function InvoicesModule({
       customerEmail: previewInvoicePdf.customerEmail || matchedCust?.email || "",
       customerAddress: custAddress,
       customerRtn: custRtn,
+      salesRepName: (previewInvoicePdf as any).salesRepName || "",
       lines: invoiceLines,
       currencySymbol: currSymbol,
       subtotal,
@@ -691,6 +702,18 @@ export function InvoicesModule({
   };
 
   const handleSaveInvoiceRecord = async (closeAfter = false) => {
+    if (!invoiceForm.customerName || !invoiceForm.customerName.trim()) {
+      setInvoiceErrorMsg("Debe ingresar o seleccionar un cliente.");
+      setTimeout(() => setInvoiceErrorMsg(""), 5000);
+      return;
+    }
+
+    if (!invoiceForm.salesRepId && !invoiceForm.salesRepName) {
+      setInvoiceErrorMsg("Debe seleccionar un vendedor para emitir la factura.");
+      setTimeout(() => setInvoiceErrorMsg(""), 5000);
+      return;
+    }
+
     const finalTotal = invoiceTotal;
     setInvoicesList((prev) => {
       const exists = prev.some((i) => i.num === invoiceForm.invoiceNumber);
@@ -707,6 +730,8 @@ export function InvoicesModule({
                 total: finalTotal,
                 status: invoiceForm.status || i.status,
                 paymentTerms: invoiceForm.paymentTerms,
+                salesRepId: invoiceForm.salesRepId,
+                salesRepName: invoiceForm.salesRepName,
                 lines: [...invoiceForm.lines],
               }
             : i
@@ -723,6 +748,8 @@ export function InvoicesModule({
             total: finalTotal,
             status: invoiceForm.status || "Pendiente",
             paymentTerms: invoiceForm.paymentTerms,
+            salesRepId: invoiceForm.salesRepId,
+            salesRepName: invoiceForm.salesRepName,
             lines: [...invoiceForm.lines],
           },
           ...prev,
@@ -745,6 +772,8 @@ export function InvoicesModule({
           dueDate: invoiceForm.dueDate || "",
           paymentTerms: invoiceForm.paymentTerms,
           currency: invoiceForm.currency || "USD",
+          salesRepId: invoiceForm.salesRepId || undefined,
+          salesRepName: invoiceForm.salesRepName || undefined,
           cai: companySettings.cai,
           discount: invoiceDiscount,
           importeExento: invoiceExempt,
@@ -760,23 +789,29 @@ export function InvoicesModule({
         }),
       });
       const data = await res.json();
+      if (!data.success) {
+        setInvoiceErrorMsg(data.error || "Error al guardar la factura en el servidor.");
+        setTimeout(() => setInvoiceErrorMsg(""), 6000);
+        return;
+      }
+
       if (data.success && data.journalEntry) {
         setInvoiceSuccessMsg(`¡Factura guardada y contabilizada automáticamente en el Libro Diario (${data.journalEntry.entryNumber})!`);
         if (onRefreshAccounts) onRefreshAccounts();
       } else {
         setInvoiceSuccessMsg("¡Factura guardada correctamente!");
       }
+      setTimeout(() => {
+        setInvoiceSuccessMsg("");
+        if (closeAfter) {
+          onCloseInvoiceEditor();
+        }
+      }, 1500);
     } catch (apiErr) {
       console.error("Error saving invoice to API:", apiErr);
-      setInvoiceSuccessMsg("¡Factura guardada correctamente!");
+      setInvoiceErrorMsg("Error de conexión al guardar la factura.");
+      setTimeout(() => setInvoiceErrorMsg(""), 5000);
     }
-
-    setTimeout(() => {
-      setInvoiceSuccessMsg("");
-      if (closeAfter) {
-        onCloseInvoiceEditor();
-      }
-    }, 1500);
   };
 
 const formatFiscalMoney = (amount: number | null | undefined, forceShow = false) => {
@@ -899,6 +934,12 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
   };
 
   const handleSendInvoiceEmail = async () => {
+    if (!invoiceForm.salesRepId && !invoiceForm.salesRepName) {
+      setInvoiceErrorMsg("Debe seleccionar un vendedor para la factura antes de enviarla.");
+      setTimeout(() => setInvoiceErrorMsg(""), 5000);
+      return;
+    }
+
     const targetEmail = invoiceForm.customerEmail || companySettings.email || "";
     // Solo enviar el mensaje predeterminado si el usuario lo personalizó
     const defaultMsg = String(salesSettings?.mensajePredeterminado || "");
@@ -1117,6 +1158,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                         <th className="py-3 px-4">N.º Factura</th>
                         <th className="py-3 px-4">Fecha</th>
                         <th className="py-3 px-4">Cliente</th>
+                        <th className="py-3 px-4">Vendedor</th>
                         <th className="py-3 px-4">Vencimiento</th>
                         <th className="py-3 px-4 text-right">Monto Total</th>
                         <th className="py-3 px-4 text-center">Estado</th>
@@ -1125,7 +1167,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-mono">
                       {loading ? (
-                        <TableRowsSkeleton rows={6} cols={7} />
+                        <TableRowsSkeleton rows={6} cols={8} />
                       ) : (
                         filteredInvoices.map((fact) => (
                           <tr key={fact.num} className="hover:bg-slate-50 transition">
@@ -1149,6 +1191,16 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               >
                                 {fact.customer}
                               </button>
+                            </td>
+                            <td className="py-3.5 px-4 font-sans text-xs text-slate-700">
+                              {fact.salesRepName ? (
+                                <span className="inline-flex items-center gap-1 font-medium text-slate-800">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                  {fact.salesRepName}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 italic">Sin asignar</span>
+                              )}
                             </td>
                             <td className="py-3.5 px-4 font-sans text-slate-500">{fact.due}</td>
                             <td className="py-3.5 px-4 text-right font-bold text-slate-900">
@@ -1881,6 +1933,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                         </div>
                       )}
 
+                      {/* Error Banner */}
+                      {invoiceErrorMsg && (
+                        <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center justify-between shadow-xs">
+                          <span className="font-bold">⚠️ {invoiceErrorMsg}</span>
+                        </div>
+                      )}
+
                       {/* HEADER ROW OF INVOICE SHEET */}
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-100 pb-6">
                         {/* Company Info */}
@@ -2040,6 +2099,41 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 Vía Recibir Pago
                               </span>
                             </div>
+                          </div>
+
+                          <div className="col-span-2">
+                            <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                              <span>
+                                Vendedor Asignado <span className="text-red-500 font-bold">*</span>
+                              </span>
+                              {!invoiceForm.salesRepId && !invoiceForm.salesRepName && (
+                                <span className="text-[10px] text-amber-600 font-medium">Obligatorio</span>
+                              )}
+                            </label>
+                            <select
+                              value={invoiceForm.salesRepId || ""}
+                              onChange={(e) => {
+                                const selectedId = e.target.value;
+                                const rep = salesReps.find((r) => r.id === selectedId);
+                                setInvoiceForm({
+                                  ...invoiceForm,
+                                  salesRepId: selectedId,
+                                  salesRepName: rep ? rep.name : "",
+                                });
+                              }}
+                              className={`w-full px-3 py-1.5 rounded-xl bg-white border text-slate-900 text-xs focus:outline-none focus:border-[#1b426e] cursor-pointer ${
+                                !invoiceForm.salesRepId && !invoiceForm.salesRepName
+                                  ? "border-amber-400 bg-amber-50/20"
+                                  : "border-slate-300"
+                              }`}
+                            >
+                              <option value="">-- Seleccionar Vendedor (Obligatorio) --</option>
+                              {salesReps.map((r) => (
+                                <option key={r.id} value={r.id}>
+                                  {r.name} {r.code ? `(${r.code})` : ""}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           <div>

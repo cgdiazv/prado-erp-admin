@@ -176,6 +176,8 @@ export type Invoice = {
   customerEmail?: string;
   customerRtn?: string;
   customerAddress?: string;
+  salesRepId?: string | null;
+  salesRepName?: string | null;
   lines?: InvoiceLine[];
 };
 
@@ -189,6 +191,8 @@ export type InvoiceFormData = {
   deliveredTo: string;
   deliveryAddress: string;
   currency: string;
+  salesRepId?: string;
+  salesRepName?: string;
   discount: number;
   importeExonerado: number;
   importeExento: number;

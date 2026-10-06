@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
       paymentTerms = "Neto 30 días",
       currency = "USD",
       cai,
+      salesRepId,
+      salesRepName,
       discount = 0,
       importeExento = 0,
       importeExonerado = 0,
@@ -55,6 +57,13 @@ export async function POST(request: NextRequest) {
     if (!invoiceNumber || !customerName || total <= 0) {
       return NextResponse.json(
         { success: false, error: "Número de factura, cliente y total válido son requeridos." },
+        { status: 400 }
+      );
+    }
+
+    if (!salesRepId && !salesRepName) {
+      return NextResponse.json(
+        { success: false, error: "Debe seleccionar un vendedor para emitir la factura." },
         { status: 400 }
       );
     }
@@ -84,6 +93,8 @@ export async function POST(request: NextRequest) {
           paymentTerms,
           currency,
           cai: cai || null,
+          salesRepId: salesRepId || null,
+          salesRepName: salesRepName || null,
           discount: Number(discount) || 0,
           importeExento: Number(importeExento) || 0,
           importeExonerado: Number(importeExonerado) || 0,
@@ -122,6 +133,8 @@ export async function POST(request: NextRequest) {
           paymentTerms,
           currency,
           cai: cai || null,
+          salesRepId: salesRepId || null,
+          salesRepName: salesRepName || null,
           discount: Number(discount) || 0,
           importeExento: Number(importeExento) || 0,
           importeExonerado: Number(importeExonerado) || 0,

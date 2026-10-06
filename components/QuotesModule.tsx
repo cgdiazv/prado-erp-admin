@@ -503,6 +503,10 @@ export default function QuotesModule({
       setErrorAlert("Debe ingresar o seleccionar un cliente.");
       return false;
     }
+    if (!formData.salesRepId && !formData.salesRepName) {
+      setErrorAlert("Debe seleccionar un vendedor para la cotización.");
+      return false;
+    }
     const hasValidLine = formData.lines.some(
       (l) => l.productName.trim() && l.quantity > 0 && l.rate > 0
     );
@@ -552,6 +556,11 @@ export default function QuotesModule({
   const handleReviewAndSendQuote = async () => {
     if (!formData.customerName.trim()) {
       setErrorAlert("Debe ingresar o seleccionar un cliente.");
+      setActiveEditorTab("Editar");
+      return;
+    }
+    if (!formData.salesRepId && !formData.salesRepName) {
+      setErrorAlert("Debe seleccionar un vendedor para la cotización.");
       setActiveEditorTab("Editar");
       return;
     }
@@ -676,6 +685,13 @@ export default function QuotesModule({
   // CONVERTIR A FACTURA CON CONTABILIZACIÓN AUTOMÁTICA
   const handleExecuteConvertToInvoice = async () => {
     if (!quoteToConvert) return;
+
+    if (!quoteToConvert.salesRepId && !quoteToConvert.salesRepName) {
+      setErrorAlert("No se puede facturar una cotización sin vendedor asignado. Por favor edite la cotización y asigne un vendedor antes de facturarla.");
+      setShowConvertConfirmModal(false);
+      return;
+    }
+
     setConverting(true);
     setErrorAlert(null);
 
@@ -716,6 +732,8 @@ export default function QuotesModule({
         due: quote.validUntil,
         paymentTerms: quote.paymentTerms,
         currency: quote.currency || effectiveCurrencyCode || "HNL",
+        salesRepId: quote.salesRepId || "",
+        salesRepName: quote.salesRepName || "",
         total: quote.total,
         status: "Pendiente",
         lines: quote.lines.map((l, i) => ({
@@ -1681,7 +1699,7 @@ export default function QuotesModule({
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                            Vendedor Asignado
+                            Vendedor Asignado <span className="text-red-500 font-bold">*</span>
                           </label>
                           <select
                             value={formData.salesRepId}
@@ -1693,9 +1711,11 @@ export default function QuotesModule({
                                 salesRepName: rep ? rep.name : "",
                               });
                             }}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
+                            className={`w-full px-3 py-2 text-xs bg-white border rounded-xl focus:border-[#1b426e] ${
+                              !formData.salesRepId ? "border-amber-400 bg-amber-50/20" : "border-slate-300"
+                            }`}
                           >
-                            <option value="">-- Sin asignar --</option>
+                            <option value="">-- Seleccionar Vendedor (Obligatorio) --</option>
                             {salesReps.map((r) => (
                               <option key={r.id} value={r.id}>
                                 {r.name}

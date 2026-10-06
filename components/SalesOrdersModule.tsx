@@ -729,6 +729,12 @@ export default function SalesOrdersModule({
 
   // Facturar pedido con 1 clic
   const handleConvertToInvoice = async (order: SalesOrder) => {
+    if (!order.salesRepId && !order.salesRepName) {
+      setErrorAlert("No se puede facturar un pedido sin vendedor asignado. Asigne un vendedor al pedido antes de facturarlo.");
+      setShowConvertModal(false);
+      return;
+    }
+
     try {
       setConverting(true);
       const res = await fetch(`/api/sales-orders/${order.id}/convert-to-invoice`, {
