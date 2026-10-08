@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Skeleton, TableRowsSkeleton, TableCardSkeleton } from "@/components/Skeleton";
-import { BookOpen, FileText, Layers, Scale, Search, RefreshCw, Download, Printer, CheckCircle, ArrowLeft, Eye, ExternalLink } from "lucide-react";
+import { BookOpen, FileText, Layers, Scale, Search, RefreshCw, Download, Printer, CheckCircle, ArrowLeft, Eye, ExternalLink, Pencil } from "lucide-react";
 
 interface Account {
   id: string;
@@ -341,7 +341,7 @@ export default function AccountingBooksModule({
                               : "bg-rose-50 text-rose-700 border border-rose-200"
                           }`}
                         >
-                          {({ Asset: "Activo", Liability: "Pasivo", Equity: "Patrimonio", Income: "Ingresos", Expense: "Gastos" } as Record<string, string>)[acc.type] ?? acc.type}
+                          {({ Asset: "Activo", Liability: "Pasivo", Equity: "Patrimonio", Income: "Ingresos", Expense: "Gastos", "Efectivo y equivalentes de efectivo": "Efectivo" } as Record<string, string>)[acc.type] ?? acc.type}
                         </span>
                       </td>
                       <td className="py-3 px-4 font-mono text-slate-600">{defaultCurrencyCode}</td>
@@ -361,9 +361,11 @@ export default function AccountingBooksModule({
                         <button
                           type="button"
                           onClick={() => onOpenEditAccount(acc)}
-                          className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer"
+                          className="p-1.5 text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                          title="Editar cuenta"
+                          aria-label="Editar cuenta"
                         >
-                          Editar
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                       </td>
                     </tr>
@@ -621,7 +623,7 @@ export default function AccountingBooksModule({
                       <span className="font-mono font-bold text-base text-slate-900">{acc.code}</span>
                       <h3 className="font-bold text-sm text-slate-800">{acc.name}</h3>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600">
-                        {acc.type}
+                        {acc.type === "Efectivo y equivalentes de efectivo" ? "Efectivo" : acc.type}
                       </span>
                     </div>
 
@@ -734,7 +736,7 @@ export default function AccountingBooksModule({
                       <tr key={row.code} className="hover:bg-slate-50/60 transition">
                         <td className="py-2.5 px-3 font-bold text-slate-800">{row.code}</td>
                         <td className="py-2.5 px-3 font-sans font-semibold text-slate-900">{row.name}</td>
-                        <td className="py-2.5 px-3 font-sans text-slate-500 text-[11px]">{row.type}</td>
+                        <td className="py-2.5 px-3 font-sans text-slate-500 text-[11px]">{row.type === "Efectivo y equivalentes de efectivo" ? "Efectivo" : row.type}</td>
                         <td className="py-2.5 px-3 text-right text-slate-800">
                           {row.totalDebit > 0 ? formatCurrency(row.totalDebit) : "—"}
                         </td>

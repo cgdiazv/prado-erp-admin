@@ -93,6 +93,8 @@ interface VendorPaymentsModuleProps {
   formatCurrency: (val: number, cur?: string) => string;
   companySettings?: any;
   initialVendorFilter?: string;
+  autoOpenCreate?: boolean;
+  onAutoOpenCreateConsumed?: () => void;
 }
 
 export default function VendorPaymentsModule({
@@ -100,6 +102,8 @@ export default function VendorPaymentsModule({
   formatCurrency,
   companySettings,
   initialVendorFilter,
+  autoOpenCreate,
+  onAutoOpenCreateConsumed,
 }: VendorPaymentsModuleProps) {
   // Lists & data state
   const [payments, setPayments] = useState<VendorPaymentRecord[]>([]);
@@ -117,8 +121,10 @@ export default function VendorPaymentsModule({
   const [dateFromFilter, setDateFromFilter] = useState("");
   const [dateToFilter, setDateToFilter] = useState("");
 
-  // New Payment Modal state
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  // New Payment Page state (Full page view mode like Crear Factura & Crear Cotización)
+  const [showCreatePage, setShowCreatePage] = useState(false);
+  const showCreateModal = showCreatePage;
+  const setShowCreateModal = setShowCreatePage;
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
   const [selectedVendorId, setSelectedVendorId] = useState("");
@@ -190,7 +196,16 @@ export default function VendorPaymentsModule({
     }
   }, [initialVendorFilter]);
 
-  // Load pending invoices for selected vendor in Create Modal
+  // Auto open create page if requested from parent
+  useEffect(() => {
+    if (autoOpenCreate) {
+      const targetVendor = initialVendorFilter && initialVendorFilter !== "ALL" ? initialVendorFilter : undefined;
+      handleOpenCreate(targetVendor);
+      onAutoOpenCreateConsumed?.();
+    }
+  }, [autoOpenCreate, initialVendorFilter]);
+
+  // Load pending invoices for selected vendor in Create Page
   const loadVendorPendingInvoices = async (vName: string) => {
     if (!vName) {
       setPendingInvoices([]);
@@ -236,6 +251,9 @@ export default function VendorPaymentsModule({
         }).filter((item: PendingInvoiceItem) => item.balanceDue > 0);
 
         setPendingInvoices(mapped);
+        if (mapped.length > 0 && mapped[0].currency) {
+          setPaymentCurrency(mapped[0].currency);
+        }
       }
     } catch (err) {
       console.error("Error loading pending invoices:", err);
@@ -244,20 +262,21 @@ export default function VendorPaymentsModule({
     }
   };
 
-  // Open Create Modal
-  const handleOpenCreateModal = (prefilledVendorName?: string) => {
+  // Open Create Page (Full page view mode)
+  const handleOpenCreate = (prefilledVendorName?: string) => {
     setCreateError("");
     setPaymentDate(new Date().toISOString().split("T")[0]);
     setPaymentMethod("Transferencia Bancaria");
     setReferenceNumber("");
     setPaymentNotes("");
-    setPaymentCurrency("USD");
     
     // Pick first bank account by default
     if (bankAccounts.length > 0) {
       setSelectedBankAccountId(bankAccounts[0].id);
+      setPaymentCurrency(bankAccounts[0].currency || "USD");
     } else {
       setSelectedBankAccountId("");
+      setPaymentCurrency("USD");
     }
 
     if (prefilledVendorName) {
@@ -271,8 +290,9 @@ export default function VendorPaymentsModule({
       setPendingInvoices([]);
     }
 
-    setShowCreateModal(true);
+    setShowCreatePage(true);
   };
+  const handleOpenCreateModal = handleOpenCreate;
 
   // Toggle select invoice
   const toggleSelectInvoice = (id: string) => {
@@ -377,7 +397,7 @@ export default function VendorPaymentsModule({
       setSuccessToast(`¡Pago ${data.data.paymentNumber} registrado con éxito! Asiento contable generado.`);
       setTimeout(() => setSuccessToast(""), 5000);
 
-      setShowCreateModal(false);
+      setShowCreatePage(false);
       await loadData();
 
       // Show voucher immediately
@@ -544,10 +564,9 @@ export default function VendorPaymentsModule({
 
             <button
               type="button"
-              onClick={() => handleOpenCreateModal()}
+              onClick={() => handleOpenCreate()}
               className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
               <span>+ Registrar Pago / Abono</span>
             </button>
           </div>
@@ -899,133 +918,243 @@ export default function VendorPaymentsModule({
         )}
       </div>
 
-      {/* ================= MODAL: REGISTRAR NUEVO PAGO A PROVEEDOR ================= */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-4xl w-full p-6 lg:p-8 space-y-6 my-8 animate-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">Registrar Pago a Proveedor</h2>
-                <p className="text-xs text-slate-500">
-                  Selecciona las facturas a cancelar o abonar y emite el comprobante de egreso bancario
-                </p>
-              </div>
+      {/* ================= PÁGINA COMPLETA: REGISTRAR PAGO A PROVEEDOR ================= */}
+      {showCreatePage && (
+        <div className="fixed inset-0 z-40 flex flex-col bg-slate-100 text-slate-800 animate-in fade-in duration-150 overflow-hidden print:static print:inset-auto print:bg-white print:overflow-visible print:block print:p-0">
+          
+          {/* TOP STICKY HEADER BAR (Consistent with Crear Factura & Crear Cotización) */}
+          <header className="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-2xs print:hidden shrink-0">
+            <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => setShowCreateModal(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                onClick={() => setShowCreatePage(false)}
+                className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
+              >
+                <ArrowLeft className="w-4 h-4 text-slate-500" />
+                <span>Regresar</span>
+              </button>
+
+              <div className="border-l border-slate-200 pl-4">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-bold text-slate-900">Registrar Pago a Proveedor</h1>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
+                    Cuentas por Pagar (AP)
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Emisión de comprobante de egreso bancario y cancelación/abono de facturas de compras
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCreatePage(false)}
+                disabled={creating}
+                className="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSavePayment}
+                disabled={creating || !selectedVendorName || totalAmountToPay <= 0}
+                className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creating ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Procesando pago...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Confirmar y Emitir Pago</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowCreatePage(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer ml-1"
+                title="Cerrar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+          </header>
 
-            {createError && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{createError}</span>
-              </div>
-            )}
+          {/* MAIN SCROLLABLE CONTENT WORKSPACE */}
+          <div className="flex-1 overflow-y-auto w-full print:hidden">
+            <div className="max-w-5xl mx-auto p-6 lg:p-8 space-y-6">
 
-            <div className="space-y-6">
-              {/* Row 1: Proveedor & Fecha */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Proveedor *
-                  </label>
-                  <select
-                    value={selectedVendorName}
-                    onChange={(e) => {
-                      const vName = e.target.value;
-                      setSelectedVendorName(vName);
-                      const found = vendors.find((v) => v.name === vName);
-                      setSelectedVendorId(found?.id || "");
-                      loadVendorPendingInvoices(vName);
-                    }}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] font-medium"
+              {createError && (
+                <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                    <span>{createError}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCreateError("")}
+                    className="text-rose-400 hover:text-rose-600 font-bold"
                   >
-                    <option value="">-- Selecciona un proveedor --</option>
-                    {vendors.map((v) => (
-                      <option key={v.id} value={v.name}>
-                        {v.name} {v.macolaCode ? `(${v.macolaCode})` : ""}
-                      </option>
-                    ))}
-                  </select>
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* CARD 1: DATOS GENERALES DEL PAGO / DESEMBOLSO */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center font-bold">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                        Datos del Comprobante de Egreso
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        {companySettings?.nombreLegal || companySettings?.nombre || "Comercializadora Prado"}
+                        {companySettings?.taxId ? ` • RTN: ${companySettings.taxId}` : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                    <span className="text-xs font-semibold text-slate-600">Moneda:</span>
+                    <select
+                      value={paymentCurrency}
+                      onChange={(e) => setPaymentCurrency(e.target.value)}
+                      className="px-2 py-1 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e]"
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="HNL">HNL (L)</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Fecha de Pago *
-                  </label>
-                  <input
-                    type="date"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Proveedor */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Proveedor *</span>
+                    </label>
+                    <select
+                      value={selectedVendorName}
+                      onChange={(e) => {
+                        const vName = e.target.value;
+                        setSelectedVendorName(vName);
+                        const found = vendors.find((v) => v.name === vName);
+                        setSelectedVendorId(found?.id || "");
+                        loadVendorPendingInvoices(vName);
+                      }}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] font-semibold text-slate-900 shadow-2xs"
+                    >
+                      <option value="">-- Selecciona un proveedor --</option>
+                      {vendors.map((v) => (
+                        <option key={v.id} value={v.name}>
+                          {v.name} {v.macolaCode ? `(${v.macolaCode})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Fecha de Pago */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Fecha de Pago *</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] text-slate-800 font-medium shadow-2xs"
+                    />
+                  </div>
+
+                  {/* Cuenta de Egreso (Banco / Caja) */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Cuenta de Egreso (Banco / Caja) *</span>
+                    </label>
+                    <select
+                      value={selectedBankAccountId}
+                      onChange={(e) => {
+                        const bId = e.target.value;
+                        setSelectedBankAccountId(bId);
+                        const foundBank = bankAccounts.find((b) => b.id === bId);
+                        if (foundBank?.currency) {
+                          setPaymentCurrency(foundBank.currency);
+                        }
+                      }}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] text-xs font-medium text-slate-800 shadow-2xs"
+                    >
+                      {bankAccounts.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name} ({b.accountNumber}) - Saldo: ${b.bookBalance.toLocaleString()} {b.currency}
+                        </option>
+                      ))}
+                      {bankAccounts.length === 0 && (
+                        <option value="">1100 - Bancos Nacionales (General)</option>
+                      )}
+                    </select>
+                  </div>
+
+                  {/* Método de Pago y Referencia */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Método de Pago *
+                      </label>
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] text-xs font-medium text-slate-800 shadow-2xs"
+                      >
+                        <option value="Transferencia Bancaria">Transferencia Bancaria (ACH)</option>
+                        <option value="Cheque">Cheque Corporativo</option>
+                        <option value="Efectivo">Efectivo / Caja Chica</option>
+                        <option value="Tarjeta de Crédito">Tarjeta de Crédito Empresarial</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        N° Referencia / Cheque
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej. TRF-88401 o CHQ-1049"
+                        value={referenceNumber}
+                        onChange={(e) => setReferenceNumber(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] text-slate-800 font-medium shadow-2xs"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Row 2: Cuenta bancaria, Método, Referencia */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Cuenta de Egreso (Banco / Caja) *
-                  </label>
-                  <select
-                    value={selectedBankAccountId}
-                    onChange={(e) => setSelectedBankAccountId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-xs"
-                  >
-                    {bankAccounts.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name} ({b.accountNumber}) - Saldo: ${b.bookBalance.toLocaleString()} {b.currency}
-                      </option>
-                    ))}
-                    {bankAccounts.length === 0 && (
-                      <option value="">1100 - Bancos Nacionales (General)</option>
-                    )}
-                  </select>
-                </div>
+              {/* CARD 2: FACTURAS PENDIENTES DE PAGO */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-[#1b426e]" />
+                      <span>Facturas Pendientes de Pago ({pendingInvoices.length})</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Selecciona las facturas a cancelar o ajusta el monto para registrar abonos parciales.
+                    </p>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Método de Pago *
-                  </label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-xs font-medium"
-                  >
-                    <option value="Transferencia Bancaria">Transferencia Bancaria (ACH)</option>
-                    <option value="Cheque">Cheque Corporativo</option>
-                    <option value="Efectivo">Efectivo / Caja Chica</option>
-                    <option value="Tarjeta de Crédito">Tarjeta de Crédito Empresarial</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    N° de Referencia / N° de Cheque
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ej. TRF-88401 o CHQ-1049"
-                    value={referenceNumber}
-                    onChange={(e) => setReferenceNumber(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e]"
-                  />
-                </div>
-              </div>
-
-              {/* PENDING INVOICES LIST FOR THIS VENDOR */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-[#1b426e]" />
-                    <span>Facturas Pendientes de Pago ({pendingInvoices.length})</span>
-                  </h3>
                   {pendingInvoices.length > 0 && (
                     <button
                       type="button"
@@ -1039,7 +1168,7 @@ export default function VendorPaymentsModule({
                           }))
                         );
                       }}
-                      className="text-[11px] font-bold text-[#1b426e] hover:underline cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-[#1b426e] transition cursor-pointer self-start sm:self-auto"
                     >
                       {pendingInvoices.every((i) => i.isSelected) ? "Deseleccionar todas" : "Seleccionar todas"}
                     </button>
@@ -1047,51 +1176,55 @@ export default function VendorPaymentsModule({
                 </div>
 
                 {loadingInvoices ? (
-                  <div className="space-y-2.5 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                  <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between">
-                        <div className="space-y-1.5">
-                          <Skeleton className="h-3.5 w-32 rounded" />
+                      <div key={i} className="p-4 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-36 rounded" />
                           <Skeleton className="h-3 w-48 rounded" />
                         </div>
-                        <Skeleton className="h-5 w-20 rounded" />
+                        <Skeleton className="h-6 w-24 rounded" />
                       </div>
                     ))}
                   </div>
                 ) : !selectedVendorName ? (
-                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500">
-                    Por favor selecciona un proveedor arriba para cargar sus facturas pendientes.
+                  <div className="py-12 px-6 text-center bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <Building2 className="w-8 h-8 text-slate-300 mx-auto" />
+                    <p className="font-semibold text-slate-700 text-xs">Ningún proveedor seleccionado</p>
+                    <p className="text-slate-400 text-xs">
+                      Por favor selecciona un proveedor en la parte superior para consultar sus facturas pendientes de pago.
+                    </p>
                   </div>
                 ) : pendingInvoices.length === 0 ? (
-                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500 space-y-1">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
-                    <p className="font-semibold text-slate-700">¡Este proveedor está completamente al día!</p>
-                    <p className="text-slate-400">No tiene facturas de compra pendientes de pago.</p>
+                  <div className="py-12 px-6 text-center bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+                    <p className="font-bold text-slate-800 text-xs">¡Este proveedor está completamente al día!</p>
+                    <p className="text-slate-500 text-xs">No tiene facturas de compra pendientes de pago registradas en el sistema.</p>
                   </div>
                 ) : (
-                  <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-72 overflow-y-auto">
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
                     <table className="w-full text-left text-xs border-collapse">
-                      <thead className="bg-slate-100 text-slate-600 font-semibold sticky top-0 z-10 text-[10px] uppercase">
+                      <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 text-[10px] uppercase tracking-wider">
                         <tr>
-                          <th className="py-2.5 px-3 w-10 text-center">Sel.</th>
-                          <th className="py-2.5 px-3">N° Factura</th>
-                          <th className="py-2.5 px-3">Fecha</th>
-                          <th className="py-2.5 px-3">Vencimiento</th>
-                          <th className="py-2.5 px-3 text-right">Total Factura</th>
-                          <th className="py-2.5 px-3 text-right">Saldo Pendiente</th>
-                          <th className="py-2.5 px-3 text-right w-36">Monto a Pagar</th>
+                          <th className="py-3 px-3.5 w-12 text-center">Sel.</th>
+                          <th className="py-3 px-3.5">N° Factura</th>
+                          <th className="py-3 px-3.5">Fecha Emisión</th>
+                          <th className="py-3 px-3.5">Vencimiento</th>
+                          <th className="py-3 px-3.5 text-right">Total Factura</th>
+                          <th className="py-3 px-3.5 text-right">Saldo Pendiente</th>
+                          <th className="py-3 px-3.5 text-right w-44">Monto a Pagar ({paymentCurrency})</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-slate-100 bg-white">
                         {pendingInvoices.map((inv) => {
                           const isOverdue = new Date(inv.dueDate) < new Date();
                           return (
                             <tr
                               key={inv.id}
-                              className={`transition cursor-pointer ${inv.isSelected ? "bg-[#fff7ed]/50" : "hover:bg-slate-50"}`}
+                              className={`transition cursor-pointer ${inv.isSelected ? "bg-[#fff7ed]/60" : "hover:bg-slate-50"}`}
                               onClick={() => toggleSelectInvoice(inv.id)}
                             >
-                              <td className="py-2 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                              <td className="py-3 px-3.5 text-center" onClick={(e) => e.stopPropagation()}>
                                 <input
                                   type="checkbox"
                                   checked={inv.isSelected}
@@ -1099,26 +1232,33 @@ export default function VendorPaymentsModule({
                                   className="w-4 h-4 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer"
                                 />
                               </td>
-                              <td className="py-2 px-3 font-mono font-bold text-slate-900">
+                              <td className="py-3 px-3.5 font-mono font-bold text-slate-900">
                                 {inv.invoiceNumber}
                               </td>
-                              <td className="py-2 px-3 text-slate-600 whitespace-nowrap">
+                              <td className="py-3 px-3.5 text-slate-600 whitespace-nowrap">
                                 {inv.issueDate}
                               </td>
-                              <td className="py-2 px-3 whitespace-nowrap">
-                                <span className={isOverdue ? "text-rose-600 font-semibold" : "text-slate-600"}>
-                                  {inv.dueDate} {isOverdue && "(Vencida)"}
-                                </span>
+                              <td className="py-3 px-3.5 whitespace-nowrap">
+                                {isOverdue ? (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{inv.dueDate} (Vencida)</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-600">{inv.dueDate}</span>
+                                )}
                               </td>
-                              <td className="py-2 px-3 text-right text-slate-600">
+                              <td className="py-3 px-3.5 text-right text-slate-600">
                                 {formatCurrency(inv.total, inv.currency)}
                               </td>
-                              <td className="py-2 px-3 text-right font-bold text-slate-900">
+                              <td className="py-3 px-3.5 text-right font-bold text-slate-900">
                                 {formatCurrency(inv.balanceDue, inv.currency)}
                               </td>
-                              <td className="py-2 px-3 text-right" onClick={(e) => e.stopPropagation()}>
-                                <div className="flex items-center justify-end gap-1">
-                                  <span className="text-slate-400 text-xs">$</span>
+                              <td className="py-3 px-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <span className="text-slate-400 font-bold text-xs">
+                                    {paymentCurrency === "USD" ? "$" : "L"}
+                                  </span>
                                   <input
                                     type="number"
                                     step="0.01"
@@ -1126,7 +1266,7 @@ export default function VendorPaymentsModule({
                                     max={inv.balanceDue}
                                     value={inv.amountToPay}
                                     onChange={(e) => updateInvoiceAmount(inv.id, parseFloat(e.target.value) || 0)}
-                                    className="w-24 px-2 py-1 text-right text-xs font-bold text-slate-900 rounded-lg border border-slate-300 focus:outline-none focus:border-[#1b426e]"
+                                    className="w-28 px-2.5 py-1.5 text-right text-xs font-bold text-slate-900 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1b426e] focus:border-[#1b426e] bg-white"
                                   />
                                 </div>
                               </td>
@@ -1139,87 +1279,89 @@ export default function VendorPaymentsModule({
                 )}
               </div>
 
-              {/* Observaciones */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Notas / Observaciones del Pago
+              {/* CARD 3: OBSERVACIONES / NOTAS */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  Notas / Observaciones del Pago (Visible en Comprobante de Egreso)
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Ej. Pago de factura correspondiente al lote de tintas flexográficas..."
+                  placeholder="Ej. Pago de factura correspondiente a adquisición de materias primas o insumos flexográficos..."
                   value={paymentNotes}
                   onChange={(e) => setPaymentNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e]"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] text-slate-800"
                 />
               </div>
 
-              {/* Tarjeta de Impacto Contable Proyectado */}
-              <div className="p-4 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-blue-900 space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-xs text-blue-800">
+              {/* CARD 4: TARJETA DE IMPACTO CONTABLE PROYECTADO */}
+              <div className="p-5 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-blue-900 space-y-2.5">
+                <div className="flex items-center gap-2 font-bold text-xs text-blue-900">
                   <BookOpen className="w-4 h-4 text-blue-600" />
-                  <span>Partida Doble Automática en Libros (al Confirmar)</span>
+                  <span>Partida Doble Automática en Libros (al Confirmar el Pago)</span>
                 </div>
                 <p className="text-[11px] text-blue-700">
-                  Al emitir este pago, el sistema generará de forma automática el asiento en el Libro Diario:
+                  Al emitir este pago, el sistema generará automáticamente el comprobante de egreso y el asiento contable en el Libro Diario:
                 </p>
-                <div className="space-y-1 font-mono text-[11px] bg-white p-2.5 rounded-xl border border-blue-100">
-                  <div className="flex justify-between text-slate-700">
-                    <span>[Débito] 2000 - CxP Proveedores</span>
-                    <span className="font-semibold text-emerald-700">+{formatCurrency(totalAmountToPay, paymentCurrency)}</span>
+                <div className="space-y-1.5 font-mono text-[11px] bg-white p-3 rounded-xl border border-blue-100 shadow-2xs">
+                  <div className="flex justify-between items-center text-slate-700">
+                    <span className="font-semibold text-slate-800">[Débito] 2000 - CxP Proveedores</span>
+                    <span className="font-bold text-emerald-700">+{formatCurrency(totalAmountToPay, paymentCurrency)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-700">
-                    <span>[Crédito] 1100 - Bancos</span>
-                    <span className="font-semibold text-slate-900">-{formatCurrency(totalAmountToPay, paymentCurrency)}</span>
+                  <div className="flex justify-between items-center text-slate-700 border-t border-slate-100 pt-1.5">
+                    <span className="font-semibold text-slate-800">[Crédito] 1100 - Bancos / Caja</span>
+                    <span className="font-bold text-slate-900">-{formatCurrency(totalAmountToPay, paymentCurrency)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Summary Bar */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* CARD 5: RESUMEN DE TOTALES Y BOTONES INFERIORES */}
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
-                  <span className="text-xs text-slate-500 font-medium">Facturas a abonar:</span>
-                  <div className="text-xs font-bold text-slate-800">
-                    {pendingInvoices.filter((i) => i.isSelected).length} seleccionadas
+                  <span className="text-xs text-slate-500 font-medium">Facturas a abonar / cancelar:</span>
+                  <div className="text-sm font-bold text-slate-800">
+                    {pendingInvoices.filter((i) => i.isSelected).length} seleccionadas de {pendingInvoices.length} disponibles
                   </div>
                 </div>
 
-                <div className="sm:text-right">
-                  <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Total a Pagar:</span>
-                  <div className="text-2xl font-black text-[#ea580c]">
-                    {formatCurrency(totalAmountToPay, paymentCurrency)}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                  <div className="sm:text-right">
+                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider block">Total a Pagar:</span>
+                    <div className="text-3xl font-black text-[#ea580c] tracking-tight">
+                      {formatCurrency(totalAmountToPay, paymentCurrency)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowCreatePage(false)}
+                      disabled={creating}
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSavePayment}
+                      disabled={creating || !selectedVendorName || totalAmountToPay <= 0}
+                      className="px-6 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {creating ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Procesando pago...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>Confirmar y Emitir Pago</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(false)}
-                disabled={creating}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSavePayment}
-                disabled={creating || totalAmountToPay <= 0}
-                className="px-5 py-2.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-xs disabled:opacity-50"
-              >
-                {creating ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Procesando pago...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Confirmar y Emitir Pago</span>
-                  </>
-                )}
-              </button>
             </div>
           </div>
         </div>

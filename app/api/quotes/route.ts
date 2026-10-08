@@ -121,6 +121,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!salesRepId && !salesRepName) {
+      return NextResponse.json(
+        { success: false, error: "Debe seleccionar un vendedor para la cotización." },
+        { status: 400 }
+      );
+    }
+
     // Calcular montos de forma precisa
     const calculatedLines = lines.map((l: any) => {
       const qty = Number(l.quantity) || 1;

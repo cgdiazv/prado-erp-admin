@@ -46,6 +46,16 @@ export async function POST(
       );
     }
 
+    if (!quote.salesRepId && !quote.salesRepName) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No se puede facturar una cotización sin vendedor asignado. Edite la cotización y asigne un vendedor antes de facturarla.",
+        },
+        { status: 400 }
+      );
+    }
+
     // 2. Determinar el siguiente número de factura
     const existingInvoices = await prisma.salesInvoice.findMany({
       where: { companyId },
@@ -112,16 +122,18 @@ export async function POST(
         invoiceDate: today,
         dueDate: dueDate,
         paymentTerms: quote.paymentTerms || "Neto 30 días",
-        currency: quote.currency || "USD",
+        currency: quote.currency || "HNL",
         cai: companySettings?.cai !== "Ninguno indicado" ? companySettings?.cai : null,
+        salesRepId: quote.salesRepId || null,
+        salesRepName: quote.salesRepName || null,
         discount: quote.discount || 0,
-        importeExento: 0,
+        importeExento: quote.taxRate === 0 ? quote.subtotal - (quote.discount || 0) : 0,
         importeExonerado: 0,
-        impGravado15: quote.subtotal - (quote.discount || 0),
-        impGravado18: 0,
+        impGravado15: quote.taxRate === 15 ? quote.subtotal - (quote.discount || 0) : (quote.taxRate !== 18 && quote.taxRate !== 0 ? quote.subtotal - (quote.discount || 0) : 0),
+        impGravado18: quote.taxRate === 18 ? quote.subtotal - (quote.discount || 0) : 0,
         subtotal: quote.subtotal,
-        isv15: quote.tax || 0,
-        isv18: 0,
+        isv15: quote.taxRate === 18 || quote.taxRate === 0 ? 0 : (quote.tax || 0),
+        isv18: quote.taxRate === 18 ? (quote.tax || 0) : 0,
         total: quote.total,
         status: "Emitida",
         lines: {

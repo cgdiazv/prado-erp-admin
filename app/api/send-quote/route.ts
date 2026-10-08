@@ -16,7 +16,9 @@ export async function POST(req: NextRequest) {
       paymentTerms = "Neto 30 días",
       lines = [],
       currency = "$",
+      currencyCode = "USD",
       subtotal = 0,
+      taxRate = 15,
       tax = 0,
       total = 0,
       notes = "",
@@ -114,7 +116,7 @@ export async function POST(req: NextRequest) {
                     <strong>Términos de pago:</strong> <span style="color: #0f172a;">${paymentTerms}</span>
                   </td>
                   <td width="50%" style="font-size: 12px; color: #64748b;" align="right">
-                    <strong>Moneda:</strong> <span style="color: #0f172a;">${currency === "$" ? "USD ($)" : "HNL (L)"}</span>
+                    <strong>Moneda:</strong> <span style="color: #0f172a;">${currencyCode} (${currency})</span>
                   </td>
                 </tr>
                 ${salesRepName ? `
@@ -156,13 +158,13 @@ export async function POST(req: NextRequest) {
                       </tr>
                       ${tax > 0 ? `
                       <tr>
-                        <td style="font-size: 12px; color: #475569; padding-top: 4px;">ISV (15%):</td>
+                        <td style="font-size: 12px; color: #475569; padding-top: 4px;">ISV (${taxRate}%):</td>
                         <td align="right" style="font-size: 12px; font-weight: 700; color: #0f172a; font-family: monospace; padding-top: 4px;">${currency} ${tax.toFixed(2)}</td>
                       </tr>
                       ` : ""}
                       <tr>
                         <td style="font-size: 14px; font-weight: 800; color: #0f172a; padding-top: 8px;">Total cotizado:</td>
-                        <td align="right" style="font-size: 18px; font-weight: 900; color: #1b426e; font-family: monospace; padding-top: 8px;">${currency} ${total.toFixed(2)} ${currency === "$" ? "USD" : "HNL"}</td>
+                        <td align="right" style="font-size: 18px; font-weight: 900; color: #1b426e; font-family: monospace; padding-top: 8px;">${currency} ${total.toFixed(2)} ${currencyCode}</td>
                       </tr>
                     </table>
                   </td>

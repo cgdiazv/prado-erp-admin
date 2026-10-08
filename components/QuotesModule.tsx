@@ -93,6 +93,7 @@ interface QuotesModuleProps {
     phone: string | null;
     address: string | null;
     currency: string;
+    rtn?: string | null;
   }>;
   inventory?: Array<{
     id: string;
@@ -160,6 +161,16 @@ export default function QuotesModule({
     };
   }, [defaultCurrencySymbol, defaultCurrencyCode]);
 
+  // Helper unificado para resolver símbolo de moneda dinámicamente
+  const getCurrencySymbol = (curr?: string | null): string => {
+    if (!curr) return effectiveCurrencySymbol || "$";
+    const c = curr.toUpperCase().trim();
+    if (c === "HNL" || c === "L" || c.includes("LEMPIRA")) return "L";
+    if (c === "EUR" || c === "€" || c.includes("EURO")) return "€";
+    if (c === "USD" || c === "$" || c.includes("DOLAR") || c.includes("DÓLAR")) return "$";
+    return effectiveCurrencySymbol || "$";
+  };
+
   const compName = companySettings?.nombreLegal || companySettings?.nombre || "EMPRESA";
   const compRtn = companySettings?.taxId ? `RTN: ${companySettings.taxId}` : "";
   const compAddress = companySettings?.direccion || "";
@@ -197,7 +208,7 @@ export default function QuotesModule({
     quoteDate: new Date().toISOString().split("T")[0],
     validUntil: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
     paymentTerms: "Neto 30 días",
-    currency: effectiveCurrencyCode || "USD",
+    currency: effectiveCurrencyCode || "HNL",
     salesRepId: "",
     salesRepName: "",
     notes: "Precios sujetos a confirmación de volumen y especificaciones de arte flexográfico.",
@@ -301,6 +312,11 @@ export default function QuotesModule({
     };
   }, [formData.lines, formData.discount, formData.taxRate]);
 
+  // Símbolo de moneda dinámico para el formulario actual
+  const formCurrencySymbol = useMemo(() => {
+    return getCurrencySymbol(formData.currency);
+  }, [formData.currency, effectiveCurrencySymbol]);
+
   // Manejar apertura de editor (Nuevo o Edición)
   const handleOpenCreate = () => {
     setFormData({
@@ -308,6 +324,7 @@ export default function QuotesModule({
       quoteNumber: nextQuoteNumber,
       quoteDate: new Date().toISOString().split("T")[0],
       validUntil: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+      currency: effectiveCurrencyCode || "HNL",
       lines: [
         {
           productName: "",
@@ -337,7 +354,7 @@ export default function QuotesModule({
       quoteDate: quote.quoteDate,
       validUntil: quote.validUntil,
       paymentTerms: quote.paymentTerms || "Neto 30 días",
-      currency: quote.currency || "USD",
+      currency: quote.currency || effectiveCurrencyCode || "HNL",
       salesRepId: quote.salesRepId || "",
       salesRepName: quote.salesRepName || "",
       notes: quote.notes || "",
@@ -377,10 +394,11 @@ export default function QuotesModule({
         ...prev,
         customerId: cust.id,
         customerName: cust.name,
+        customerRtn: (cust as any).rtn || prev.customerRtn || "",
         customerEmail: cust.email || "",
         customerPhone: cust.phone || "",
         customerAddress: cust.address || "",
-        currency: cust.currency || "USD",
+        currency: cust.currency || prev.currency || effectiveCurrencyCode || "HNL",
       }));
     } else {
       setFormData((prev) => ({
@@ -390,23 +408,53 @@ export default function QuotesModule({
     }
   };
 
-  // Selección de producto en línea
+  // Selección de producto en línea por SKU
   const handleProductSelect = (index: number, sku: string) => {
-    const prod = inventory.find((p) => p.sku === sku);
+    if (!sku) return;
+    const prod = inventory.find((p) => p.sku.toLowerCase() === sku.toLowerCase());
     if (prod) {
       setFormData((prev) => {
         const lines = [...prev.lines];
+        const qty = lines[index]?.quantity || 1;
+        const rate = prod.price || 0;
         lines[index] = {
           ...lines[index],
           sku: prod.sku,
           productName: prod.description,
-          description: `SKU: ${prod.sku} - ${prod.description}`,
-          rate: prod.price || 0,
-          amount: (lines[index].quantity || 1) * (prod.price || 0),
+          description: prod.description,
+          rate: rate,
+          amount: Math.round(qty * rate * 100) / 100,
         };
         return { ...prev, lines };
       });
     }
+  };
+
+  // Búsqueda y cambio reactivo por SKU
+  const handleSkuChange = (index: number, skuValue: string) => {
+    const cleanSku = skuValue.trim();
+    const prod = inventory.find((p) => p.sku.toLowerCase() === cleanSku.toLowerCase());
+    setFormData((prev) => {
+      const lines = [...prev.lines];
+      const qty = lines[index]?.quantity || 1;
+      if (prod) {
+        const rate = prod.price || 0;
+        lines[index] = {
+          ...lines[index],
+          sku: prod.sku,
+          productName: prod.description,
+          description: prod.description,
+          rate: rate,
+          amount: Math.round(qty * rate * 100) / 100,
+        };
+      } else {
+        lines[index] = {
+          ...lines[index],
+          sku: skuValue,
+        };
+      }
+      return { ...prev, lines };
+    });
   };
 
   // Actualizar línea
@@ -453,6 +501,10 @@ export default function QuotesModule({
   const handleSaveQuote = async (closeModal = true): Promise<boolean> => {
     if (!formData.customerName.trim()) {
       setErrorAlert("Debe ingresar o seleccionar un cliente.");
+      return false;
+    }
+    if (!formData.salesRepId && !formData.salesRepName) {
+      setErrorAlert("Debe seleccionar un vendedor para la cotización.");
       return false;
     }
     const hasValidLine = formData.lines.some(
@@ -507,6 +559,11 @@ export default function QuotesModule({
       setActiveEditorTab("Editar");
       return;
     }
+    if (!formData.salesRepId && !formData.salesRepName) {
+      setErrorAlert("Debe seleccionar un vendedor para la cotización.");
+      setActiveEditorTab("Editar");
+      return;
+    }
     const hasValidLine = formData.lines.some(
       (l) => l.productName.trim() && l.quantity > 0 && l.rate > 0
     );
@@ -532,8 +589,10 @@ export default function QuotesModule({
             validUntil: formData.validUntil,
             paymentTerms: formData.paymentTerms,
             lines: formData.lines,
-            currency: formData.currency === "HNL" ? "L" : "$",
+            currency: formCurrencySymbol,
+            currencyCode: formData.currency,
             subtotal: formCalculations.subtotal,
+            taxRate: formData.taxRate,
             tax: formCalculations.tax,
             total: formCalculations.total,
             notes: formData.notes,
@@ -563,7 +622,7 @@ export default function QuotesModule({
       });
       const data = await res.json();
       if (data.success) {
-        setSuccessAlert(`¡Cotización N.º ${formData.quoteNumber} enviada a ${targetEmail} (From: notifications@pradocommerce.com, Reply-To: ${companySettings?.email || targetEmail})!`);
+        setSuccessAlert(`¡Cotización N.º ${formData.quoteNumber} enviada exitosamente a ${targetEmail}!`);
         setShowEditorModal(false);
         fetchQuotes();
       } else {
@@ -626,6 +685,13 @@ export default function QuotesModule({
   // CONVERTIR A FACTURA CON CONTABILIZACIÓN AUTOMÁTICA
   const handleExecuteConvertToInvoice = async () => {
     if (!quoteToConvert) return;
+
+    if (!quoteToConvert.salesRepId && !quoteToConvert.salesRepName) {
+      setErrorAlert("No se puede facturar una cotización sin vendedor asignado. Por favor edite la cotización y asigne un vendedor antes de facturarla.");
+      setShowConvertConfirmModal(false);
+      return;
+    }
+
     setConverting(true);
     setErrorAlert(null);
 
@@ -665,6 +731,9 @@ export default function QuotesModule({
         date: new Date().toISOString().split("T")[0],
         due: quote.validUntil,
         paymentTerms: quote.paymentTerms,
+        currency: quote.currency || effectiveCurrencyCode || "HNL",
+        salesRepId: quote.salesRepId || "",
+        salesRepName: quote.salesRepName || "",
         total: quote.total,
         status: "Pendiente",
         lines: quote.lines.map((l, i) => ({
@@ -1249,7 +1318,7 @@ export default function QuotesModule({
 
                       {/* Total */}
                       <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                        {quote.currency === "HNL" || quote.currency === "L" ? "L" : quote.currency === "EUR" ? "€" : (quote.currency ? "$" : effectiveCurrencySymbol)}{" "}
+                        {getCurrencySymbol(quote.currency)}{" "}
                         {quote.total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
                         <span className="text-[10px] text-slate-400 font-normal">{quote.currency || effectiveCurrencyCode}</span>
                       </td>
@@ -1617,8 +1686,12 @@ export default function QuotesModule({
                             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                             className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
                           >
-                            <option value="USD">USD ($ - Dólar Estadounidense)</option>
                             <option value="HNL">HNL (L - Lempira Hondureño)</option>
+                            <option value="USD">USD ($ - Dólar Estadounidense)</option>
+                            <option value="EUR">EUR (€ - Euro)</option>
+                            {effectiveCurrencyCode && !["HNL", "USD", "EUR"].includes(effectiveCurrencyCode) && (
+                              <option value={effectiveCurrencyCode}>{effectiveCurrencyCode} ({effectiveCurrencySymbol})</option>
+                            )}
                           </select>
                         </div>
                       </div>
@@ -1626,7 +1699,7 @@ export default function QuotesModule({
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                            Vendedor Asignado
+                            Vendedor Asignado <span className="text-red-500 font-bold">*</span>
                           </label>
                           <select
                             value={formData.salesRepId}
@@ -1638,9 +1711,11 @@ export default function QuotesModule({
                                 salesRepName: rep ? rep.name : "",
                               });
                             }}
-                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:border-[#1b426e]"
+                            className={`w-full px-3 py-2 text-xs bg-white border rounded-xl focus:border-[#1b426e] ${
+                              !formData.salesRepId ? "border-amber-400 bg-amber-50/20" : "border-slate-300"
+                            }`}
                           >
-                            <option value="">-- Sin asignar --</option>
+                            <option value="">-- Seleccionar Vendedor (Obligatorio) --</option>
                             {salesReps.map((r) => (
                               <option key={r.id} value={r.id}>
                                 {r.name}
@@ -1673,6 +1748,9 @@ export default function QuotesModule({
                       <h3 className="text-sm font-bold text-slate-900">
                         Producto o servicio
                       </h3>
+                      <span className="text-[11px] text-slate-500">
+                        Búsqueda ágil por código o SKU de inventario
+                      </span>
                     </div>
 
                     <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-2xs">
@@ -1680,12 +1758,12 @@ export default function QuotesModule({
                         <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                           <tr>
                             <th className="p-3 w-8 text-center">#</th>
-                            <th className="p-3 min-w-[200px]">Producto / Catálogo</th>
-                            <th className="p-3 w-28">SKU</th>
-                            <th className="p-3 min-w-[220px]">Descripción</th>
+                            <th className="p-3 min-w-[210px]">Buscar por SKU / Código</th>
+                            <th className="p-3 min-w-[200px]">Producto / Descripción</th>
+                            <th className="p-3 min-w-[200px]">Especificaciones</th>
                             <th className="p-3 w-20 text-right">Cant.</th>
-                            <th className="p-3 w-28 text-right">Precio Unit.</th>
-                            <th className="p-3 w-28 text-right">Importe</th>
+                            <th className="p-3 w-28 text-right">Precio Unit. ({formCurrencySymbol})</th>
+                            <th className="p-3 w-28 text-right">Importe ({formCurrencySymbol})</th>
                             <th className="p-3 w-10 text-center"></th>
                           </tr>
                         </thead>
@@ -1694,46 +1772,66 @@ export default function QuotesModule({
                             <tr key={idx} className="hover:bg-slate-50/60 transition">
                               <td className="p-3 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</td>
 
+                              {/* Búsqueda prioritaria por SKU */}
+                              <td className="p-3">
+                                <div className="space-y-1">
+                                  <input
+                                    type="text"
+                                    list={`inventory-quote-sku-list-${idx}`}
+                                    placeholder="Escribir o buscar SKU..."
+                                    required
+                                    value={line.sku || ""}
+                                    onChange={(e) => handleSkuChange(idx, e.target.value)}
+                                    className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 font-mono font-semibold text-[#1b426e] focus:border-[#1b426e] bg-slate-50/70 focus:bg-white"
+                                  />
+                                  <datalist id={`inventory-quote-sku-list-${idx}`}>
+                                    {inventory.map((item) => (
+                                      <option key={item.id} value={item.sku}>
+                                        {item.sku} - {item.description} ({formCurrencySymbol} {item.price})
+                                      </option>
+                                    ))}
+                                  </datalist>
+                                  {inventory.length > 0 && (
+                                    <select
+                                      value={line.sku || ""}
+                                      onChange={(e) => handleProductSelect(idx, e.target.value)}
+                                      className="w-full px-2 py-0.5 text-[11px] text-slate-500 border border-slate-200 rounded-md bg-slate-50/80 cursor-pointer"
+                                    >
+                                      <option value="">-- Catálogo por SKU --</option>
+                                      {inventory.map((item) => (
+                                        <option key={item.id} value={item.sku}>
+                                          {item.sku} — {item.description.slice(0, 28)} ({formCurrencySymbol} {item.price})
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Producto / Nombre */}
                               <td className="p-3">
                                 <input
                                   type="text"
-                                  list={`inventory-quote-list-${idx}`}
-                                  placeholder="Buscar o escribir producto..."
+                                  placeholder="Nombre del producto o servicio..."
                                   required
                                   value={line.productName}
                                   onChange={(e) => handleLineChange(idx, "productName", e.target.value)}
-                                  className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:border-[#1b426e] mb-1"
+                                  className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-semibold text-slate-900 focus:border-[#1b426e]"
                                 />
-                                {inventory.length > 0 && (
-                                  <select
-                                    value={line.sku || ""}
-                                    onChange={(e) => handleProductSelect(idx, e.target.value)}
-                                    className="w-full px-2 py-0.5 text-[11px] text-slate-500 border border-slate-200 rounded-md bg-slate-50/80"
-                                  >
-                                    <option value="">-- Catálogo de Inventario --</option>
-                                    {inventory.map((item) => (
-                                      <option key={item.id} value={item.sku}>
-                                        {item.sku} - {item.description.slice(0, 32)} (${item.price})
-                                      </option>
-                                    ))}
-                                  </select>
-                                )}
                               </td>
 
-                              <td className="p-3 font-mono text-[11px] text-[#1b426e] font-semibold">
-                                {line.sku || "—"}
-                              </td>
-
+                              {/* Especificaciones */}
                               <td className="p-3">
                                 <input
                                   type="text"
-                                  placeholder="Especificaciones (tintas, sustrato, acabado)..."
+                                  placeholder="Especificaciones (tintas, acabado)..."
                                   value={line.description || ""}
                                   onChange={(e) => handleLineChange(idx, "description", e.target.value)}
                                   className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:border-[#1b426e]"
                                 />
                               </td>
 
+                              {/* Cantidad */}
                               <td className="p-3 text-right">
                                 <input
                                   type="number"
@@ -1745,6 +1843,7 @@ export default function QuotesModule({
                                 />
                               </td>
 
+                              {/* Precio Unitario */}
                               <td className="p-3 text-right">
                                 <input
                                   type="number"
@@ -1756,8 +1855,9 @@ export default function QuotesModule({
                                 />
                               </td>
 
+                              {/* Importe */}
                               <td className="p-3 text-right font-bold text-slate-900 font-mono">
-                                ${line.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formCurrencySymbol} {line.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </td>
 
                               <td className="p-3 text-center">
@@ -1827,15 +1927,15 @@ export default function QuotesModule({
                         <div className="space-y-1 font-mono text-[11px] bg-white p-2.5 rounded-xl border border-blue-100">
                           <div className="flex justify-between text-slate-700">
                             <span>[Débito] 1200 - CxC Clientes</span>
-                            <span className="font-semibold text-emerald-700">+${formCalculations.total.toFixed(2)}</span>
+                            <span className="font-semibold text-emerald-700">+{formCurrencySymbol}{formCalculations.total.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between text-slate-700">
                             <span>[Crédito] 4000 - Ingresos Ventas</span>
-                            <span className="font-semibold text-slate-900">-${formCalculations.taxableBase.toFixed(2)}</span>
+                            <span className="font-semibold text-slate-900">-{formCurrencySymbol}{formCalculations.taxableBase.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between text-slate-700">
                             <span>[Crédito] 2150 - Débito Fiscal ISV</span>
-                            <span className="font-semibold text-slate-900">-${formCalculations.tax.toFixed(2)}</span>
+                            <span className="font-semibold text-slate-900">-{formCurrencySymbol}{formCalculations.tax.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -1847,13 +1947,13 @@ export default function QuotesModule({
                         <div className="flex justify-between items-center text-slate-600">
                           <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Subtotal:</span>
                           <span className="font-mono font-bold text-slate-900 text-sm">
-                            ${formCalculations.subtotal.toFixed(2)}
+                            {formCurrencySymbol} {formCalculations.subtotal.toFixed(2)}
                           </span>
                         </div>
 
                         <div className="flex justify-between items-center text-slate-600">
                           <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">
-                            Descuento Comercial ($):
+                            Descuento Comercial ({formCurrencySymbol}):
                           </span>
                           <input
                             type="number"
@@ -1885,7 +1985,7 @@ export default function QuotesModule({
                             Total I.S.V. ({formData.taxRate}%):
                           </span>
                           <span className="font-mono font-medium text-slate-800">
-                            ${formCalculations.tax.toFixed(2)}
+                            {formCurrencySymbol} {formCalculations.tax.toFixed(2)}
                           </span>
                         </div>
 
@@ -1893,7 +1993,7 @@ export default function QuotesModule({
                           <div className="flex justify-between items-center py-2 px-3 bg-slate-200 border border-slate-300 text-slate-900 rounded-xl shadow-xs">
                             <span className="font-black text-xs uppercase tracking-wider text-slate-700">Total Cotización:</span>
                             <span className="font-mono font-black text-xl text-[#1b426e]">
-                              ${formCalculations.total.toFixed(2)} <span className="text-xs font-normal text-slate-600">{formData.currency}</span>
+                              {formCurrencySymbol} {formCalculations.total.toFixed(2)} <span className="text-xs font-normal text-slate-600">{formData.currency}</span>
                             </span>
                           </div>
                         </div>
@@ -1927,7 +2027,7 @@ export default function QuotesModule({
                       <div>
                         <span className="text-xs font-bold text-[#1b426e] block uppercase tracking-wider">Monto Total Cotizado</span>
                         <span className="text-2xl font-black text-slate-900">
-                          ${formCalculations.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {formData.currency}
+                          {formCurrencySymbol} {formCalculations.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {formData.currency}
                         </span>
                       </div>
                       <div className="text-right">
@@ -2007,8 +2107,8 @@ export default function QuotesModule({
                         <th className="py-2 px-2 w-12 text-center">Ítem</th>
                         <th className="py-2 px-2">Descripción</th>
                         <th className="py-2 px-2 w-20 text-center">Cantidad</th>
-                        <th className="py-2 px-2 w-24 text-right">Precio Unit.</th>
-                        <th className="py-2 px-2 w-28 text-right">Importe</th>
+                        <th className="py-2 px-2 w-24 text-right">Precio Unit. ({formCurrencySymbol})</th>
+                        <th className="py-2 px-2 w-28 text-right">Importe ({formCurrencySymbol})</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
@@ -2017,11 +2117,12 @@ export default function QuotesModule({
                           <td className="py-2.5 px-2 text-center text-slate-400">{i + 1}</td>
                           <td className="py-2.5 px-2">
                             <div className="font-bold text-slate-900">{l.productName || "Artículo"}</div>
+                            {l.sku && <div className="text-[#1b426e] font-mono text-[10px]">SKU: {l.sku}</div>}
                             {l.description && <div className="text-slate-500 text-[11px]">{l.description}</div>}
                           </td>
                           <td className="py-2.5 px-2 text-center font-medium">{l.quantity}</td>
-                          <td className="py-2.5 px-2 text-right">${(Number(l.rate) || 0).toFixed(2)}</td>
-                          <td className="py-2.5 px-2 text-right font-bold text-slate-900">${(Number(l.amount) || 0).toFixed(2)}</td>
+                          <td className="py-2.5 px-2 text-right">{formCurrencySymbol} {(Number(l.rate) || 0).toFixed(2)}</td>
+                          <td className="py-2.5 px-2 text-right font-bold text-slate-900">{formCurrencySymbol} {(Number(l.amount) || 0).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -2032,21 +2133,21 @@ export default function QuotesModule({
                     <div className="w-64 space-y-1.5 text-xs text-slate-700">
                       <div className="flex justify-between">
                         <span>Subtotal:</span>
-                        <span className="font-semibold">${formCalculations.subtotal.toFixed(2)}</span>
+                        <span className="font-semibold">{formCurrencySymbol} {formCalculations.subtotal.toFixed(2)}</span>
                       </div>
                       {formCalculations.taxableBase < formCalculations.subtotal && (
                         <div className="flex justify-between text-slate-500">
                           <span>Descuento:</span>
-                          <span>-${(Number(formData.discount) || 0).toFixed(2)}</span>
+                          <span>-{formCurrencySymbol} {(Number(formData.discount) || 0).toFixed(2)}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
                         <span>I.S.V. ({formData.taxRate}%):</span>
-                        <span className="font-semibold">${formCalculations.tax.toFixed(2)}</span>
+                        <span className="font-semibold">{formCurrencySymbol} {formCalculations.tax.toFixed(2)}</span>
                       </div>
                       <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
                         <span>Total General ({formData.currency}):</span>
-                        <span>${formCalculations.total.toFixed(2)}</span>
+                        <span>{formCurrencySymbol} {formCalculations.total.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -2117,8 +2218,8 @@ export default function QuotesModule({
                   <th className="py-2 px-2 w-12 text-center">Ítem</th>
                   <th className="py-2 px-2">Descripción</th>
                   <th className="py-2 px-2 w-20 text-center">Cantidad</th>
-                  <th className="py-2 px-2 w-24 text-right">Precio Unit.</th>
-                  <th className="py-2 px-2 w-28 text-right">Importe</th>
+                  <th className="py-2 px-2 w-24 text-right">Precio Unit. ({formCurrencySymbol})</th>
+                  <th className="py-2 px-2 w-28 text-right">Importe ({formCurrencySymbol})</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -2127,11 +2228,12 @@ export default function QuotesModule({
                     <td className="py-2.5 px-2 text-center text-slate-400">{i + 1}</td>
                     <td className="py-2.5 px-2">
                       <div className="font-bold text-slate-900">{l.productName || "Artículo"}</div>
+                      {l.sku && <div className="text-[#1b426e] font-mono text-[10px]">SKU: {l.sku}</div>}
                       {l.description && <div className="text-slate-500 text-[11px]">{l.description}</div>}
                     </td>
                     <td className="py-2.5 px-2 text-center font-medium">{l.quantity}</td>
-                    <td className="py-2.5 px-2 text-right">${(Number(l.rate) || 0).toFixed(2)}</td>
-                    <td className="py-2.5 px-2 text-right font-bold text-slate-900">${(Number(l.amount) || 0).toFixed(2)}</td>
+                    <td className="py-2.5 px-2 text-right">{formCurrencySymbol} {(Number(l.rate) || 0).toFixed(2)}</td>
+                    <td className="py-2.5 px-2 text-right font-bold text-slate-900">{formCurrencySymbol} {(Number(l.amount) || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2142,21 +2244,21 @@ export default function QuotesModule({
               <div className="w-64 space-y-1.5 text-xs text-slate-700">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span className="font-semibold">${formCalculations.subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">{formCurrencySymbol} {formCalculations.subtotal.toFixed(2)}</span>
                 </div>
                 {formCalculations.taxableBase < formCalculations.subtotal && (
                   <div className="flex justify-between text-slate-500">
                     <span>Descuento:</span>
-                    <span>-${(Number(formData.discount) || 0).toFixed(2)}</span>
+                    <span>-{formCurrencySymbol} {(Number(formData.discount) || 0).toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>I.S.V. ({formData.taxRate}%):</span>
-                  <span className="font-semibold">${formCalculations.tax.toFixed(2)}</span>
+                  <span className="font-semibold">{formCurrencySymbol} {formCalculations.tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
                   <span>Total General ({formData.currency}):</span>
-                  <span>${formCalculations.total.toFixed(2)}</span>
+                  <span>{formCurrencySymbol} {formCalculations.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -2294,7 +2396,7 @@ export default function QuotesModule({
                   {sendingQuoteEmail ? (
                     <>
                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Enviando por Resend...</span>
+                      <span>Enviando...</span>
                     </>
                   ) : (
                     <span>Revisar y enviar</span>
@@ -2531,8 +2633,8 @@ export default function QuotesModule({
                     <th className="py-2 px-2 w-12 text-center">Ítem</th>
                     <th className="py-2 px-2">Descripción</th>
                     <th className="py-2 px-2 w-20 text-center">Cantidad</th>
-                    <th className="py-2 px-2 w-24 text-right">Precio Unit.</th>
-                    <th className="py-2 px-2 w-28 text-right">Importe</th>
+                    <th className="py-2 px-2 w-24 text-right">Precio Unit. ({getCurrencySymbol(activePrintQuote.currency)})</th>
+                    <th className="py-2 px-2 w-28 text-right">Importe ({getCurrencySymbol(activePrintQuote.currency)})</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
@@ -2541,14 +2643,15 @@ export default function QuotesModule({
                       <td className="py-2.5 px-2 text-center text-slate-400">{i + 1}</td>
                       <td className="py-2.5 px-2">
                         <div className="font-bold text-slate-900">{l.productName}</div>
+                        {l.sku && <div className="text-[#1b426e] font-mono text-[10px]">SKU: {l.sku}</div>}
                         {l.description && <div className="text-slate-500 text-[11px]">{l.description}</div>}
                       </td>
                       <td className="py-2.5 px-2 text-center font-medium">{l.quantity}</td>
                       <td className="py-2.5 px-2 text-right">
-                        ${l.rate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {getCurrencySymbol(activePrintQuote.currency)} {l.rate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-2.5 px-2 text-right font-bold text-slate-900">
-                        ${l.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {getCurrencySymbol(activePrintQuote.currency)} {l.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   ))}
@@ -2560,21 +2663,21 @@ export default function QuotesModule({
                 <div className="w-64 space-y-1.5 text-xs text-slate-700">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span className="font-semibold">${activePrintQuote.subtotal.toFixed(2)}</span>
+                    <span className="font-semibold">{getCurrencySymbol(activePrintQuote.currency)} {activePrintQuote.subtotal.toFixed(2)}</span>
                   </div>
                   {activePrintQuote.discount > 0 && (
                     <div className="flex justify-between text-slate-500">
                       <span>Descuento Comercial:</span>
-                      <span>-${activePrintQuote.discount.toFixed(2)}</span>
+                      <span>-{getCurrencySymbol(activePrintQuote.currency)} {activePrintQuote.discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>I.S.V. ({activePrintQuote.taxRate || 15}%):</span>
-                    <span className="font-semibold">${activePrintQuote.tax.toFixed(2)}</span>
+                    <span className="font-semibold">{getCurrencySymbol(activePrintQuote.currency)} {activePrintQuote.tax.toFixed(2)}</span>
                   </div>
                   <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
                     <span>Total General ({activePrintQuote.currency}):</span>
-                    <span>${activePrintQuote.total.toFixed(2)}</span>
+                    <span>{getCurrencySymbol(activePrintQuote.currency)} {activePrintQuote.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

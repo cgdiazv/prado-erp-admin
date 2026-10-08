@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         companyId,
         code: glCode,
         name: glName,
-        type: "Efectivo y equivalentes de efectivo",
+        type: "Efectivo",
         currency: curr,
         balance: balanceVal,
         isActive: true,

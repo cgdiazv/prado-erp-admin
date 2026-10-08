@@ -13,7 +13,15 @@ export async function GET(
 
     const invoice = await db.purchaseInvoice.findFirst({
       where: { id, companyId },
-      include: { items: true },
+      include: {
+        items: true,
+        paymentLines: {
+          include: {
+            vendorPayment: true,
+          },
+        },
+        taxRetentions: true,
+      },
     });
 
     if (!invoice) {

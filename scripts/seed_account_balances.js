@@ -7,7 +7,7 @@ async function main() {
   const accountsToUpsert = [
     // Activos
     { code: '1000', name: 'Cash on Hand (Caja General)', type: 'Asset', currency: 'USD', balance: 2500.00 },
-    { code: '1100', name: 'Operating Checking Account (Banco Ficohsa)', type: 'Asset', currency: 'USD', balance: 18450.00 },
+    { code: '1100', name: 'Bancos Nacionales (Cuenta de Cheques)', type: 'Asset', currency: 'USD', balance: 18450.00 },
     { code: '1200', name: 'Accounts Receivable (Cuentas por Cobrar)', type: 'Asset', currency: 'USD', balance: 6320.00 },
     { code: '1300', name: 'Inventory Asset (Inventario de Mercancías)', type: 'Asset', currency: 'USD', balance: 12970.00 },
 

@@ -361,6 +361,17 @@ export async function postCustomerPaymentEntry(payment: {
   currency?: string;
 }) {
   const methodStr = payment.paymentMethod ? ` (${payment.paymentMethod}${payment.referenceNumber ? ` #${payment.referenceNumber}` : ""})` : "";
+  const methodUpper = (payment.paymentMethod || "").toUpperCase();
+  const depUpper = (payment.depositAccount || "").toUpperCase();
+
+  const isCash =
+    methodUpper.includes("EFECTIVO") ||
+    methodUpper.includes("CASH") ||
+    depUpper.includes("1000") ||
+    depUpper.includes("CAJA");
+
+  const targetCode = isCash ? "1000" : (payment.depositAccount?.startsWith("11") ? payment.depositAccount.slice(0, 4) : "1100");
+  const targetName = isCash ? "Caja General" : "Bancos Nacionales (Cuenta de Cheques)";
 
   return await createJournalEntry({
     companyId: payment.companyId,
@@ -371,8 +382,8 @@ export async function postCustomerPaymentEntry(payment: {
     currency: payment.currency || "USD",
     lines: [
       {
-        accountCode: "1100",
-        accountName: "Operating Checking Account (Banco Ficohsa)",
+        accountCode: targetCode,
+        accountName: targetName,
         description: `Depósito cobro ${payment.customerName}`,
         debit: Math.round(payment.amount * 100) / 100,
         credit: 0,

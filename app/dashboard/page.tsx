@@ -452,7 +452,7 @@ export default function AdminDashboard() {
   const [newAccountForm, setNewAccountForm] = useState({
     code: "",
     name: "",
-    type: "Efectivo y equivalentes de efectivo",
+    type: "Efectivo",
     detailType: "Banco",
     isSubAccount: false,
     parentAccountId: "",
@@ -2229,12 +2229,14 @@ export default function AdminDashboard() {
   const [customersAutoOpenCreate, setCustomersAutoOpenCreate] = useState(false);
   const [vendorsAutoOpenCreate, setVendorsAutoOpenCreate] = useState(false);
   const [inventoryAutoOpenCreate, setInventoryAutoOpenCreate] = useState(false);
+  const [vendorPaymentsAutoOpenCreate, setVendorPaymentsAutoOpenCreate] = useState(false);
 
   // Quick Actions Bar State & Config
   const quickActions = [
     { id: "crear-cotizacion", label: "Crear Cotización" },
     { id: "crear-factura", label: "Crear Factura de Venta" },
     { id: "registrar-pago", label: "Registrar Cobro a Cliente" },
+    { id: "pagar-proveedor", label: "Registrar Pago a Proveedor" },
     { id: "crear-factura-compra", label: "Registrar Factura de Compra" },
     { id: "crear-orden-compra", label: "Crear Orden de Compra" },
     { id: "crear-producto", label: "Crear Producto / Insumo" },
@@ -2342,8 +2344,11 @@ export default function AdminDashboard() {
 
   const [pagarProveedorVendorFilter, setPagarProveedorVendorFilter] = useState<string | null>(null);
   const openPagarProveedorView = (vendorFilter?: string | React.MouseEvent) => {
-    setPagarProveedorVendorFilter(typeof vendorFilter === "string" ? vendorFilter : null);
-    setCurrentView("pagar-proveedor");
+    const vName = typeof vendorFilter === "string" ? vendorFilter : null;
+    setPagarProveedorVendorFilter(vName);
+    setSelectedPaymentVendor(vName || "");
+    setVendorPaymentsAutoOpenCreate(true);
+    setCurrentView("pagos-proveedores");
   };
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
@@ -2644,6 +2649,8 @@ export default function AdminDashboard() {
             currency: inv.currency || "USD",
             paymentTerms: inv.paymentTerms,
             customerEmail: inv.customerEmail || "",
+            salesRepId: inv.salesRepId || "",
+            salesRepName: inv.salesRepName || "",
             lines: inv.lines || [],
           }))
         );
@@ -3066,7 +3073,7 @@ export default function AdminDashboard() {
   // Official Account Types and Subtypes Hierarchy
   const ACCOUNT_CATEGORIES: Record<string, string[]> = {
     ACTIVO: [
-      "Efectivo y equivalentes de efectivo",
+      "Efectivo",
       "Cuentas por cobrar (C/C)",
       "Activos corrientes",
       "Activos fijos",
@@ -3093,6 +3100,18 @@ export default function AdminDashboard() {
   };
 
   const DETAIL_TYPES_MAP: Record<string, string[]> = {
+    "Efectivo": [
+      "Ahorros",
+      "Alquileres de propiedad fiduciaria",
+      "Banco",
+      "Caja chica",
+      "Cuenta de anticipos de clientes",
+      "Dinero en efectivo",
+      "Dinero recibido sin depositar",
+      "Efectivo disponible",
+      "Efectivo",
+      "Mercado monetario",
+    ],
     "Efectivo y equivalentes de efectivo": [
       "Ahorros",
       "Alquileres de propiedad fiduciaria",
@@ -3102,7 +3121,7 @@ export default function AdminDashboard() {
       "Dinero en efectivo",
       "Dinero recibido sin depositar",
       "Efectivo disponible",
-      "Efectivo y equivalentes de efectivo",
+      "Efectivo",
       "Mercado monetario",
     ],
     "Cuentas por cobrar (C/C)": [
@@ -3188,6 +3207,10 @@ export default function AdminDashboard() {
     const t = (type || "").trim();
     const n = (name || "").toLowerCase();
 
+    if (t === "Efectivo y equivalentes de efectivo") {
+      return { category: "ACTIVO", accountType: "Efectivo" };
+    }
+
     for (const [cat, subTypes] of Object.entries(ACCOUNT_CATEGORIES)) {
       if (subTypes.includes(t)) {
         return { category: cat, accountType: t };
@@ -3197,7 +3220,7 @@ export default function AdminDashboard() {
     const upper = t.toUpperCase();
     if (upper === "ASSET" || upper === "ACTIVO") {
       if (n.includes("cash") || n.includes("checking") || n.includes("banco") || n.includes("caja")) {
-        return { category: "ACTIVO", accountType: "Efectivo y equivalentes de efectivo" };
+        return { category: "ACTIVO", accountType: "Efectivo" };
       }
       if (n.includes("receivable") || n.includes("cobrar") || n.includes("cliente")) {
         return { category: "ACTIVO", accountType: "Cuentas por cobrar (C/C)" };
@@ -3519,7 +3542,7 @@ ${accountRowsHtml(equity)}
     setNewAccountForm({
       code: acc.code || "",
       name: acc.name || "",
-      type: acc.type || "Efectivo y equivalentes de efectivo",
+      type: acc.type === "Efectivo y equivalentes de efectivo" ? "Efectivo" : (acc.type || "Efectivo"),
       detailType: getDetailType(acc.type, acc.name) || "Banco",
       isSubAccount: false,
       parentAccountId: "",
@@ -3618,7 +3641,7 @@ ${accountRowsHtml(equity)}
             setNewAccountForm({
               code: "",
               name: "",
-              type: "Efectivo y equivalentes de efectivo",
+              type: "Efectivo",
               detailType: "Banco",
               isSubAccount: false,
               parentAccountId: "",
@@ -3636,7 +3659,7 @@ ${accountRowsHtml(equity)}
             setNewAccountForm({
               code: "",
               name: "",
-              type: "Efectivo y equivalentes de efectivo",
+              type: "Efectivo",
               detailType: "Banco",
               isSubAccount: false,
               parentAccountId: "",
@@ -4445,8 +4468,8 @@ ${accountRowsHtml(equity)}
                   {currentView === "caja-chica" && "Contabilidad / Arqueo & Control de Caja Chica"}
                   {currentView === "conciliacion-bancaria" && "Contabilidad / Conciliación de Extracto Mensual"}
                   {currentView === "clientes" && "Directorio de Clientes"}
-                  {currentView === "cotizaciones" && "Ventas / Cotizaciones & Presupuestos"}
-                  {currentView === "pedidos-venta" && "Ventas / Pedidos de Venta (Sales Orders)"}
+                  {currentView === "cotizaciones" && "Cotizaciones"}
+                  {currentView === "pedidos-venta" && "Pedidos de Venta"}
                   {currentView === "lista-facturas" && "Gestión de Facturas"}
                   {currentView === "notas-credito-debito" && "Notas de Crédito / Débito"}
                   {currentView === "proveedores" && "Directorio de Proveedores"}
@@ -4463,7 +4486,7 @@ ${accountRowsHtml(equity)}
                   {currentView === "antiguedad-saldos" && "Reportes / Antigüedad de Saldos Clientes"}
                   {currentView === "antiguedad-saldos-proveedores" && "Reportes / Antigüedad de Saldos Proveedores"}
                   {currentView === "estado-cuenta-cliente" && "Clientes / Estado de Cuenta Individual"}
-                  {currentView === "retenciones-isv" && "Compras / Comprobantes de Retención SAR"}
+                  {currentView === "retenciones-isv" && "Comprobantes de Retención SAR"}
                   {currentView === "pos" && "Terminal Punto de Venta (POS)"}
                   {currentView === "configuracion" && "Configuración del Sistema"}
                 </span>
@@ -5022,7 +5045,7 @@ ${accountRowsHtml(equity)}
                 setNewAccountForm({
                   code: "",
                   name: "",
-                  type: "Efectivo y equivalentes de efectivo",
+                  type: "Efectivo",
                   detailType: "Banco",
                   isSubAccount: false,
                   parentAccountId: "",
@@ -6063,7 +6086,9 @@ ${accountRowsHtml(equity)}
               onBack={() => setCurrentView("proveedores")}
               formatCurrency={formatCurrency}
               companySettings={companySettings}
-              initialVendorFilter={selectedPaymentVendor}
+              initialVendorFilter={selectedPaymentVendor || pagarProveedorVendorFilter || ""}
+              autoOpenCreate={currentView === "pagar-proveedor" || vendorPaymentsAutoOpenCreate}
+              onAutoOpenCreateConsumed={() => setVendorPaymentsAutoOpenCreate(false)}
             />
           )}
 
@@ -11782,6 +11807,7 @@ ${accountRowsHtml(equity)}
               setInvoicesList={setInvoicesList}
               customers={customers}
               inventory={inventory}
+              salesReps={salesReps}
               connectedBanks={connectedBanks}
               companySettings={companySettings}
               salesSettings={salesSettings}
@@ -11847,10 +11873,9 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: EDITAR ORDEN DE COMPRA (PÁGINA COMPLETA COMO CREAR FACTURA) ================= */}
           {/* ================= VIEW: DEPÓSITO BANCARIO ================= */}
-          {/* CASH MOVEMENTS & BANKING WORKSPACES (Views: deposito-bancario, agregar-gasto, pagar-proveedor, recibir-pago) */}
+          {/* CASH MOVEMENTS & BANKING WORKSPACES (Views: deposito-bancario, agregar-gasto, recibir-pago) */}
           {(currentView === "deposito-bancario" ||
             currentView === "agregar-gasto" ||
-            currentView === "pagar-proveedor" ||
             currentView === "recibir-pago") && (
               <CashMovementsModule
                 currentView={currentView}
@@ -12663,7 +12688,7 @@ ${accountRowsHtml(equity)}
                       {(currentView === "clientes"
                         ? [
                           { id: "macolaCode", label: "Código" },
-                          { id: "name", label: "Nombre de Empresa / Cliente" },
+                          { id: "name", label: "Cliente" },
                           { id: "email", label: "Correo Electrónico" },
                           { id: "phone", label: "Teléfono" },
                           { id: "address", label: "Dirección" },

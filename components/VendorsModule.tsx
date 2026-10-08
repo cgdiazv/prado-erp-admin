@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
+  Edit3,
 } from "lucide-react";
 
 interface VendorsModuleProps {
@@ -20,7 +21,7 @@ interface VendorsModuleProps {
   onBack: () => void;
   onNavigateToAging: () => void;
   onNavigateToPayments: () => void;
-  onPayVendor: (vendorName: string) => void;
+  onPayVendor?: (vendorName: string) => void;
   loading?: boolean;
   autoOpenCreate?: boolean;
   onAutoOpenCreateConsumed?: () => void;
@@ -364,23 +365,18 @@ export default function VendorsModule({
                       <td className="p-3.5 text-slate-500">{v.phone || "—"}</td>
                       <td className="p-3.5 text-slate-500 truncate max-w-xs">{v.address || "—"}</td>
                       <td className="p-3.5 font-medium">{v.currency}</td>
-                      <td className="p-3.5 text-right space-x-1.5">
-                        <button
-                          type="button"
-                          onClick={() => onPayVendor(v.name)}
-                          className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-orange-100 text-[#ea580c] font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-[#ffedd5]"
-                          title="Pagar facturas de este proveedor"
-                        >
-                          <CreditCard className="w-3.5 h-3.5" />
-                          <span>Pagar</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditVendor(v)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
-                        >
-                          <span>Editar</span>
-                        </button>
+                      <td className="p-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditVendor(v)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 border border-transparent hover:border-slate-200 transition cursor-pointer inline-flex items-center justify-center"
+                            title="Editar proveedor"
+                            aria-label="Editar proveedor"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

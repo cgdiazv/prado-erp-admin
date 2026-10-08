@@ -46,6 +46,16 @@ export async function POST(
       );
     }
 
+    if (!order.salesRepId && !order.salesRepName) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No se puede facturar un pedido sin vendedor asignado. Asigne un vendedor al pedido antes de facturarlo.",
+        },
+        { status: 400 }
+      );
+    }
+
     // 2. Determinar el siguiente correlativo de factura
     const existingInvoices = await prisma.salesInvoice.findMany({
       where: { companyId },
@@ -110,6 +120,8 @@ export async function POST(
         paymentTerms: order.paymentTerms || "Neto 30 días",
         currency: order.currency || "USD",
         cai: companySettings?.cai !== "Ninguno indicado" ? companySettings?.cai : null,
+        salesRepId: order.salesRepId || null,
+        salesRepName: order.salesRepName || null,
         discount: order.discount || 0,
         importeExento: 0,
         importeExonerado: 0,

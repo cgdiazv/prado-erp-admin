@@ -224,6 +224,20 @@ export async function POST(request: NextRequest) {
             where: { id: inv.id },
             data: { paymentStatus: newStatus },
           });
+
+          if (newStatus === "PAGADA" && inv.purchaseOrderNumber) {
+            try {
+              await db.purchaseOrder.updateMany({
+                where: {
+                  orderNumber: inv.purchaseOrderNumber,
+                  companyId,
+                },
+                data: { status: "Pagada" },
+              });
+            } catch (poErr) {
+              console.warn("Could not update linked purchase order status to Pagada:", poErr);
+            }
+          }
         }
       }
     }

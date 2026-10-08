@@ -12,6 +12,12 @@ import {
   X,
   Pencil,
   Receipt,
+  Edit3,
+  Eye,
+  DollarSign,
+  Check,
+  Trash2,
+  Send,
 } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import { numberToWordsSpanish } from "@/components/InvoicesModule";
@@ -1452,24 +1458,24 @@ export function PurchasesModule({
                               </select>
                             </td>
                             <td className="py-3.5 px-4 text-right font-sans">
-                              <div className="flex items-center justify-end gap-1.5">
+                              <div className="flex items-center justify-end gap-1">
                                 <button
                                   type="button"
                                   onClick={() => handleOpenPOEditor(po)}
-                                  className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 font-semibold cursor-pointer transition text-[11px] flex items-center gap-1.5 shadow-2xs border border-slate-200/80"
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
                                   title="Editar orden en pantalla completa"
+                                  aria-label="Editar orden en pantalla completa"
                                 >
-                                  <Pencil className="w-3.5 h-3.5 text-slate-600" />
-                                  <span className="hidden sm:inline">Editar</span>
+                                  <Edit3 className="w-4 h-4" />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleCreatePurchaseInvoiceFromPO(po)}
-                                  className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 font-semibold cursor-pointer transition text-[11px] border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs"
+                                  className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer inline-flex items-center justify-center"
                                   title="Convertir esta orden en Factura de Compra"
+                                  aria-label="Convertir en Factura de Compra"
                                 >
-                                  <Receipt className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span className="hidden sm:inline">Facturar</span>
+                                  <Receipt className="w-4 h-4" />
                                 </button>
                                 <button
                                   type="button"
@@ -1477,11 +1483,11 @@ export function PurchasesModule({
                                     handleOpenPOEditor(po);
                                     setTimeout(() => window.print(), 300);
                                   }}
-                                  className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-900 font-semibold cursor-pointer transition text-[11px] border border-blue-200/80 flex items-center gap-1.5 shadow-2xs"
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
                                   title="Imprimir documento / Ver PDF"
+                                  aria-label="Imprimir documento / Ver PDF"
                                 >
-                                  <Printer className="w-3.5 h-3.5 text-blue-600" />
-                                  <span className="hidden sm:inline">PDF</span>
+                                  <Printer className="w-4 h-4" />
                                 </button>
                               </div>
                             </td>
@@ -1714,26 +1720,31 @@ export function PurchasesModule({
                                   <span>STOCK INGRESADO</span>
                                 </span>
                               </td>
-                              <td className="py-3.5 px-4 text-right space-x-1.5">
-                                {inv.paymentStatus !== "PAGADA" && (
+                              <td className="py-3.5 px-4 text-right font-sans">
+                                <div className="flex items-center justify-end gap-1">
+                                  {inv.paymentStatus !== "PAGADA" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (onPayVendor) onPayVendor(inv.vendorName);
+                                      }}
+                                      className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer inline-flex items-center justify-center"
+                                      title="Registrar abono o cancelación de esta factura"
+                                      aria-label="Registrar abono o cancelación"
+                                    >
+                                      <DollarSign className="w-4 h-4" />
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      if (onPayVendor) onPayVendor(inv.vendorName);
-                                    }}
-                                    className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-orange-100 text-[#ea580c] font-semibold cursor-pointer transition text-[11px] border border-[#ffedd5]"
-                                    title="Registrar abono o cancelación de esta factura"
+                                    onClick={() => setSelectedDetailPurchaseInvoice(inv)}
+                                    className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                    title="Ver detalle de factura de compra"
+                                    aria-label="Ver detalle de factura de compra"
                                   >
-                                    Pagar / Abonar
+                                    <Eye className="w-4 h-4" />
                                   </button>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedDetailPurchaseInvoice(inv)}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
-                                >
-                                  Ver Detalle
-                                </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1983,61 +1994,74 @@ export function PurchasesModule({
                                 {vr.status}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
-                              <button
-                                type="button"
-                                onClick={() => setVendorReturnDetailModal(vr)}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer transition text-[11px] border border-slate-200"
-                              >
-                                Ver Detalle
-                              </button>
-
-                              {vr.status === "BORRADOR" && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleVendorReturnStatusChange(vr, "APROBADA")}
-                                    className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold cursor-pointer transition text-[11px] border border-blue-200"
-                                  >
-                                    Aprobar
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => openEditVendorReturn(vr)}
-                                    className="px-2.5 py-1 rounded-lg bg-[#fff7ed] hover:bg-orange-100 text-[#1b426e] font-semibold cursor-pointer transition text-[11px] border border-orange-200"
-                                  >
-                                    Editar
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteVendorReturn(vr)}
-                                    className="px-2 py-1 rounded-lg hover:bg-rose-50 text-rose-600 font-semibold cursor-pointer transition text-[11px]"
-                                    title="Eliminar borrador"
-                                  >
-                                    ✕
-                                  </button>
-                                </>
-                              )}
-
-                              {vr.status === "APROBADA" && (
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-sans">
+                              <div className="flex items-center justify-end gap-1">
                                 <button
                                   type="button"
-                                  onClick={() => handleVendorReturnStatusChange(vr, "ENVIADA")}
-                                  className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold cursor-pointer transition text-[11px] border border-purple-200"
+                                  onClick={() => setVendorReturnDetailModal(vr)}
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                  title="Ver detalle de devolución"
+                                  aria-label="Ver detalle de devolución"
                                 >
-                                  Marcar Enviada
+                                  <Eye className="w-4 h-4" />
                                 </button>
-                              )}
 
-                              {vr.status === "ENVIADA" && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleVendorReturnStatusChange(vr, "COMPLETADA")}
-                                  className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold cursor-pointer transition text-[11px] border border-emerald-200"
-                                >
-                                  Completar
-                                </button>
-                              )}
+                                {vr.status === "BORRADOR" && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVendorReturnStatusChange(vr, "APROBADA")}
+                                      className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-900 border border-blue-200 transition cursor-pointer inline-flex items-center justify-center"
+                                      title="Aprobar devolución"
+                                      aria-label="Aprobar devolución"
+                                    >
+                                      <Check className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => openEditVendorReturn(vr)}
+                                      className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                      title="Editar devolución"
+                                      aria-label="Editar devolución"
+                                    >
+                                      <Edit3 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteVendorReturn(vr)}
+                                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                      title="Eliminar borrador"
+                                      aria-label="Eliminar borrador"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+
+                                {vr.status === "APROBADA" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleVendorReturnStatusChange(vr, "ENVIADA")}
+                                    className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 hover:text-purple-900 border border-purple-200 transition cursor-pointer inline-flex items-center justify-center"
+                                    title="Marcar como enviada"
+                                    aria-label="Marcar como enviada"
+                                  >
+                                    <Send className="w-4 h-4" />
+                                  </button>
+                                )}
+
+                                {vr.status === "ENVIADA" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleVendorReturnStatusChange(vr, "COMPLETADA")}
+                                    className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-900 border border-emerald-200 transition cursor-pointer inline-flex items-center justify-center"
+                                    title="Completar devolución"
+                                    aria-label="Completar devolución"
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
