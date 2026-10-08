@@ -25,6 +25,7 @@ export default function BillingModal({
   const [isExpired, setIsExpired] = useState(isExpiredOverride);
   const [isOpen, setIsOpen] = useState(isOpenOverride || isExpiredOverride);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   useEffect(() => {
     let expired = isExpiredOverride;
@@ -152,11 +153,52 @@ export default function BillingModal({
           </span>
         </label>
 
+        {/* Selector de ciclo de facturación Mensual / Anual */}
+        <div className="flex justify-center items-center my-3">
+          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200 w-full">
+            <button
+              type="button"
+              onClick={() => setIsAnnual(false)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
+                !isAnnual
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Mensual
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAnnual(true)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                isAnnual
+                  ? "bg-[#1b426e] text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <span>Pago Anual</span>
+              <span
+                className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase ${
+                  isAnnual ? "bg-emerald-400 text-slate-950" : "bg-emerald-100 text-emerald-800"
+                }`}
+              >
+                Ahorra
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Los 3 planes */}
         <div className="space-y-2.5 pt-1">
           {PLANS.map((plan) => {
-            const checkoutUrl = buildPlanCheckoutUrl(plan.paymentLink);
+            const targetLink = isAnnual ? (plan.annualPaymentLink || plan.paymentLink) : plan.paymentLink;
+            const checkoutUrl = buildPlanCheckoutUrl(targetLink);
             const isHighlighted = plan.highlighted;
+            const currentPrice = isAnnual ? plan.annualPrice : plan.price;
+            const formattedPrice = currentPrice.toLocaleString("en-US", {
+              minimumFractionDigits: currentPrice % 1 === 0 ? 0 : 2,
+              maximumFractionDigits: 2,
+            });
 
             return (
               <a
@@ -216,7 +258,7 @@ export default function BillingModal({
                           isHighlighted ? "text-white" : "text-slate-900"
                         }`}
                       >
-                        ${plan.price}
+                        ${formattedPrice}
                       </span>
                       <span
                         className={`text-[10px] ${
@@ -226,6 +268,15 @@ export default function BillingModal({
                         /mes
                       </span>
                     </div>
+                    {isAnnual && (
+                      <span
+                        className={`text-[9px] block ${
+                          isHighlighted ? "text-emerald-300" : "text-emerald-700 font-medium"
+                        }`}
+                      >
+                        ${Math.round(plan.annualPrice * 12)}/año
+                      </span>
+                    )}
                     <span
                       className={`text-[10px] font-semibold block mt-0.5 ${
                         isHighlighted ? "text-emerald-300" : "text-emerald-700"

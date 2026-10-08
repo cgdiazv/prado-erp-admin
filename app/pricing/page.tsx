@@ -15,6 +15,7 @@ interface MeUser {
 export default function PricingPage() {
   const [me, setMe] = useState<MeUser | null>(null);
   const [expired, setExpired] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -57,7 +58,7 @@ export default function PricingPage() {
           </div>
         )}
 
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-black tracking-tight text-slate-900">Planes y Precios</h1>
           <p className="text-sm text-slate-500 mt-2 max-w-xl mx-auto">
             Todos los planes incluyen <span className="font-semibold text-slate-700">{TRIAL_DAYS} días de prueba gratis</span>.
@@ -65,9 +66,49 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {/* Selector de ciclo de facturación Mensual / Anual */}
+        <div className="flex justify-center items-center mb-10">
+          <div className="bg-slate-200/80 p-1 rounded-2xl flex items-center gap-1 border border-slate-300/50">
+            <button
+              onClick={() => setIsAnnual(false)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                !isAnnual
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Pago Mensual
+            </button>
+            <button
+              onClick={() => setIsAnnual(true)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                isAnnual
+                  ? "bg-[#1b426e] text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>Pago Anual</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
+                  isAnnual ? "bg-emerald-400 text-slate-950" : "bg-emerald-100 text-emerald-800"
+                }`}
+              >
+                Ahorra
+              </span>
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {PLANS.map((plan) => {
-            const checkoutUrl = buildCheckoutUrl(plan.paymentLink);
+            const rawLink = isAnnual ? (plan.annualPaymentLink || plan.paymentLink) : plan.paymentLink;
+            const checkoutUrl = buildCheckoutUrl(rawLink);
+            const currentPrice = isAnnual ? plan.annualPrice : plan.price;
+            const formattedPrice = currentPrice.toLocaleString("en-US", {
+              minimumFractionDigits: currentPrice % 1 === 0 ? 0 : 2,
+              maximumFractionDigits: 2,
+            });
+
             return (
               <div
                 key={plan.id}
@@ -84,14 +125,25 @@ export default function PricingPage() {
                 <h2 className="text-lg font-extrabold text-slate-900">{plan.name}</h2>
                 <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{plan.description}</p>
 
-                <div className="mt-4 flex items-baseline gap-2">
-                  {plan.originalPrice && (
-                    <span className="text-lg font-bold text-slate-400 line-through">${plan.originalPrice}</span>
+                <div className="mt-4 flex flex-col">
+                  <div className="flex items-baseline gap-2">
+                    {plan.originalPrice && (
+                      <span className="text-lg font-bold text-slate-400 line-through">${plan.originalPrice}</span>
+                    )}
+                    <span className="text-4xl font-black text-slate-900">${formattedPrice}</span>
+                    <span className="text-xs text-slate-500 font-medium">USD / mes</span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Facturado ${Math.round(plan.annualPrice * 12)} USD / año
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-slate-400 mt-1">Facturado mensualmente</span>
                   )}
-                  <span className="text-4xl font-black text-slate-900">${plan.price}</span>
-                  <span className="text-xs text-slate-500 font-medium">USD / mes</span>
                 </div>
-                <p className="text-[11px] text-emerald-700 font-semibold mt-1">
+                <p className="text-[11px] text-emerald-700 font-semibold mt-2">
                   {TRIAL_DAYS} días gratis — sin tarjeta de crédito
                 </p>
 
@@ -114,7 +166,7 @@ export default function PricingPage() {
                           : "bg-white border border-[#1b426e] text-[#1b426e] hover:bg-slate-50"
                       }`}
                     >
-                      Suscribirse a {plan.name}
+                      Suscribirse a {plan.name} ({isAnnual ? "Anual" : "Mensual"})
                     </a>
                   ) : (
                     <button

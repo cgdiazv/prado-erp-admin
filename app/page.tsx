@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -161,6 +164,8 @@ const FEATURES = [
 ];
 
 export default function MarketingHomePage() {
+  const [isAnnual, setIsAnnual] = useState(true);
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* ================= NAV ================= */}
@@ -356,51 +361,106 @@ export default function MarketingHomePage() {
       {/* ================= PRICING ================= */}
       <section id="precios" className="bg-slate-50 border-y border-slate-100">
         <div className="max-w-6xl mx-auto px-4 py-20">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-black tracking-tight text-slate-900">Planes simples y transparentes</h2>
             <p className="text-sm text-slate-500 mt-2">
               Todos incluyen {TRIAL_DAYS} días de prueba gratis. No se requiere tarjeta de crédito.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative bg-white rounded-2xl border p-6 flex flex-col shadow-sm ${plan.highlighted ? "border-[#1b426e] ring-2 ring-[#1b426e]/20 shadow-lg" : "border-slate-200"
-                  }`}
+
+          {/* Selector de ciclo de facturación Mensual / Anual */}
+          <div className="flex justify-center items-center mb-10">
+            <div className="bg-slate-200/80 p-1 rounded-2xl flex items-center gap-1 border border-slate-300/50">
+              <button
+                onClick={() => setIsAnnual(false)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  !isAnnual
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
               >
-                {plan.highlighted && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#1b426e] text-white text-[10px] font-bold uppercase tracking-wider">
-                    Más Popular
-                  </span>
-                )}
-                <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
-                <div className="mt-3 flex items-baseline gap-2">
-                  {plan.originalPrice && (
-                    <span className="text-lg font-bold text-slate-400 line-through">${plan.originalPrice}</span>
-                  )}
-                  <span className="text-4xl font-black text-slate-900">${plan.price}</span>
-                  <span className="text-xs text-slate-500 font-medium">USD / mes</span>
-                </div>
-                <ul className="mt-5 space-y-2.5 flex-1">
-                  {plan.features.slice(0, 5).map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-xs text-slate-700">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/signup"
-                  className={`mt-6 block text-center px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm ${plan.highlighted
-                    ? "bg-[#1b426e] hover:bg-[#143355] text-white"
-                    : "bg-white border border-[#1b426e] text-[#1b426e] hover:bg-slate-50"
-                    }`}
+                Pago Mensual
+              </button>
+              <button
+                onClick={() => setIsAnnual(true)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                  isAnnual
+                    ? "bg-[#1b426e] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <span>Pago Anual</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
+                    isAnnual ? "bg-emerald-400 text-slate-950" : "bg-emerald-100 text-emerald-800"
+                  }`}
                 >
-                  Probar {TRIAL_DAYS} días gratis
-                </Link>
-              </div>
-            ))}
+                  Ahorra
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PLANS.map((plan) => {
+              const currentPrice = isAnnual ? plan.annualPrice : plan.price;
+              const formattedPrice = currentPrice.toLocaleString("en-US", {
+                minimumFractionDigits: currentPrice % 1 === 0 ? 0 : 2,
+                maximumFractionDigits: 2,
+              });
+
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative bg-white rounded-2xl border p-6 flex flex-col shadow-sm ${
+                    plan.highlighted ? "border-[#1b426e] ring-2 ring-[#1b426e]/20 shadow-lg" : "border-slate-200"
+                  }`}
+                >
+                  {plan.highlighted && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#1b426e] text-white text-[10px] font-bold uppercase tracking-wider">
+                      Más Popular
+                    </span>
+                  )}
+                  <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
+                  <div className="mt-3 flex flex-col">
+                    <div className="flex items-baseline gap-2">
+                      {plan.originalPrice && (
+                        <span className="text-lg font-bold text-slate-400 line-through">${plan.originalPrice}</span>
+                      )}
+                      <span className="text-4xl font-black text-slate-900">${formattedPrice}</span>
+                      <span className="text-xs text-slate-500 font-medium">USD / mes</span>
+                    </div>
+                    {isAnnual ? (
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          Facturado ${Math.round(plan.annualPrice * 12)} USD / año
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-slate-400 mt-1">Facturado mensualmente</span>
+                    )}
+                  </div>
+                  <ul className="mt-5 space-y-2.5 flex-1">
+                    {plan.features.slice(0, 5).map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-xs text-slate-700">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/signup"
+                    className={`mt-6 block text-center px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm ${
+                      plan.highlighted
+                        ? "bg-[#1b426e] hover:bg-[#143355] text-white"
+                        : "bg-white border border-[#1b426e] text-[#1b426e] hover:bg-slate-50"
+                    }`}
+                  >
+                    Probar {TRIAL_DAYS} días gratis
+                  </Link>
+                </div>
+              );
+            })}
           </div>
           <p className="text-center text-xs text-slate-500 mt-8">
             ¿Ya venció su prueba?{" "}
