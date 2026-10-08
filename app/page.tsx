@@ -167,7 +167,7 @@ export default function MarketingHomePage() {
       <PublicNavbar />
 
       {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden min-h-[70vh] md:min-h-[78vh] flex items-center justify-center">
+      <section className="relative overflow-hidden min-h-[60vh] md:min-h-[68vh] flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -177,7 +177,7 @@ export default function MarketingHomePage() {
         />
         {/* Overlay para legibilidad del texto */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white" />
-        <div className="relative max-w-6xl mx-auto px-4 py-24 md:py-36 text-center w-full">
+        <div className="relative max-w-6xl mx-auto px-4 pt-12 pb-20 md:pt-16 md:pb-28 text-center w-full">
           <span className="inline-block px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold uppercase tracking-wider mb-6">
             {TRIAL_DAYS} días gratis — sin tarjeta de crédito
           </span>
