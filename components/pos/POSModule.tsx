@@ -97,55 +97,21 @@ export default function POSModule({
   isStandalone = false,
 }: POSModuleProps) {
   // ----------------------------------------------------
-  // Fullscreen state - Defaults to TRUE on mount
+  // ----------------------------------------------------
+  // Full-window state - Opens full size of the browser window (without device fullscreen)
   // ----------------------------------------------------
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(true);
 
   const toggleFullscreen = () => {
-    if (!isFullscreen) {
-      setIsFullscreen(true);
-      if (containerRef.current?.requestFullscreen && !document.fullscreenElement) {
-        containerRef.current.requestFullscreen().catch(() => {});
-      }
-    } else {
-      setIsFullscreen(false);
-      if (document.fullscreenElement && document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      }
-    }
+    setIsFullscreen((prev) => !prev);
   };
 
   useEffect(() => {
-    // Automatically go full screen on open
-    setIsFullscreen(true);
-
-    const tryNativeFullscreen = () => {
-      if (containerRef.current?.requestFullscreen && !document.fullscreenElement) {
-        containerRef.current.requestFullscreen().catch(() => {
-          // CSS fullscreen overlay acts as rock-solid fallback
-        });
-      }
-    };
-
-    tryNativeFullscreen();
-
-    // On user's first gesture, ensure native fullscreen if available
-    const handleFirstGesture = () => {
-      tryNativeFullscreen();
-      window.removeEventListener("click", handleFirstGesture);
-      window.removeEventListener("touchstart", handleFirstGesture);
-    };
-    window.addEventListener("click", handleFirstGesture, { once: true });
-    window.addEventListener("touchstart", handleFirstGesture, { once: true });
-
-    // Prevent tablet swipe down from closing or collapsing fullscreen:
-    // We intentionally DO NOT tie isFullscreen to document.fullscreenElement exit,
-    // so the POS interface remains 100% full-screen even if a tablet gesture is detected.
+    // Prevent mobile/tablet pull-to-refresh swipe down while using POS
     const preventOverscrollSwipe = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         const touch = e.touches[0];
-        // If swiping near top edge, prevent pull-to-refresh or swipe down to exit
         if (touch.clientY < 50) {
           e.preventDefault();
         }
@@ -158,8 +124,6 @@ export default function POSModule({
     }
 
     return () => {
-      window.removeEventListener("click", handleFirstGesture);
-      window.removeEventListener("touchstart", handleFirstGesture);
       if (container) {
         container.removeEventListener("touchmove", preventOverscrollSwipe);
       }
@@ -649,10 +613,10 @@ export default function POSModule({
       ref={containerRef}
       className={`flex flex-col bg-slate-100 overflow-hidden select-none overscroll-none transition-all duration-150 ${
         isFullscreen
-          ? "fixed inset-0 z-50 w-screen h-screen rounded-none border-0"
+          ? "fixed inset-0 z-50 w-full h-full rounded-none border-0"
           : isStandalone
-          ? "h-screen min-h-[640px] rounded-none border-0"
-          : "h-[calc(100vh-5rem)] min-h-[640px] rounded-2xl border border-slate-200 shadow-sm"
+          ? "w-full h-screen min-h-[640px] rounded-none border-0"
+          : "w-full h-[calc(100vh-5rem)] min-h-[640px] rounded-2xl border border-slate-200 shadow-sm"
       }`}
       style={{
         overscrollBehavior: "none",
@@ -781,7 +745,7 @@ export default function POSModule({
             type="button"
             onClick={toggleFullscreen}
             className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shrink-0"
-            title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+            title={isFullscreen ? "Restaurar vista en dashboard" : "Expandir a ventana completa"}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
