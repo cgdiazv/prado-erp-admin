@@ -24,7 +24,7 @@ model Account {
 
 model Customer {
   id         String   @id @default(cuid())
-  macolaCode String?  @unique // Macola tracking code
+  macolaCode String?  @unique // Tracking code
   name       String
   email      String?
   phone      String?
@@ -36,7 +36,7 @@ model Customer {
 
 model Vendor {
   id         String   @id @default(cuid())
-  macolaCode String?  @unique // Macola tracking code
+  macolaCode String?  @unique // Tracking code
   name       String
   email      String?
   phone      String?

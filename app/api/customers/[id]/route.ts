@@ -6,7 +6,7 @@ type RouteProps = {
   params: Promise<{ id: string }>;
 };
 
-// GET /api/customers/[id] - Fetch single customer by id or macolaCode for current company
+// GET /api/customers/[id] - Fetch single customer by id or code for current company
 export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const companyId = await resolveCompanyId(request);
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       });
       if (codeConflict) {
         return NextResponse.json(
-          { success: false, error: `Customer with Macola code '${macolaCode}' already exists` },
+          { success: false, error: `Customer with code '${macolaCode}' already exists` },
           { status: 409 }
         );
       }

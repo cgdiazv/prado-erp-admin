@@ -286,7 +286,7 @@ export default function VendorsModule({
             >
               <option value="todos">Todos los proveedores</option>
               <option value="activos">Proveedores activos</option>
-              <option value="macola">Sincronizados Macola</option>
+              <option value="macola">Con código asignado</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
           </div>

@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       });
       if (existing) {
         return NextResponse.json(
-          { success: false, error: `Customer with Macola code '${macolaCode}' already exists` },
+          { success: false, error: `Customer with code '${macolaCode}' already exists` },
           { status: 409 }
         );
       }

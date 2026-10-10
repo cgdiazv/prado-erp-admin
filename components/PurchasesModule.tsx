@@ -3452,25 +3452,25 @@ export function PurchasesModule({
                         )}
                       </div>
 
-                      {/* Section 3: Integración Macola / ERP */}
+                      {/* Section 3: Integración ERP */}
                       <div className="pt-4">
                         <button
                           type="button"
                           onClick={() =>
                             setActivePOOptionSection(
-                              activePOOptionSection === "macola" ? null : "macola"
+                              activePOOptionSection === "erp" ? null : "erp"
                             )
                           }
                           className="w-full font-bold text-xs text-slate-800 flex justify-between items-center cursor-pointer py-1 text-left"
                         >
-                          <span>Integración Macola ERP</span>
-                          <span className={`text-slate-400 transition-transform ${activePOOptionSection === "macola" ? "rotate-180" : ""}`}>▾</span>
+                          <span>Integración ERP</span>
+                          <span className={`text-slate-400 transition-transform ${activePOOptionSection === "erp" ? "rotate-180" : ""}`}>▾</span>
                         </button>
-                        {activePOOptionSection === "macola" && (
+                        {activePOOptionSection === "erp" && (
                           <div className="pt-3 space-y-3 text-xs text-slate-600 animate-in fade-in duration-150">
                             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1">
                               <p><strong>Estado Sync:</strong> <span className="text-emerald-700 font-bold">Lista para sincronizar</span></p>
-                              <p><strong>Módulo Macola:</strong> PO (Purchase Orders)</p>
+                              <p><strong>Módulo ERP:</strong> PO (Purchase Orders)</p>
                             </div>
 
                             <label className="block">

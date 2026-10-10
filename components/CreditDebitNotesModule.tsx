@@ -820,7 +820,7 @@ export default function CreditDebitNotesModule({
                   <h3 className="text-base font-bold text-slate-900">
                     {editingNoteId ? "Editar" : "Emitir"} {noteForm.type === "CREDIT" ? "Nota de Crédito" : "Nota de Débito"}
                   </h3>
-                  <p className="text-xs text-slate-500">Ajuste de saldo, devoluciones e intereses para Macola & SAR</p>
+                  <p className="text-xs text-slate-500">Ajuste de saldo, devoluciones e intereses para ERP & SAR</p>
                 </div>
               </div>
               <button
@@ -953,7 +953,7 @@ export default function CreditDebitNotesModule({
                     <option value="Ajuste por Error en Precio Unitario">Ajuste por Error en Precio Unitario</option>
                     <option value="Cargo por Flete Especial y Despacho">Cargo por Flete Especial y Despacho</option>
                     <option value="Intereses por Pago Fuera de Plazo (Mora)">Intereses por Pago Fuera de Plazo (Mora)</option>
-                    <option value="Otros Ajustes Contables SAR/Macola">Otros Ajustes Contables SAR/Macola</option>
+                    <option value="Otros Ajustes Contables SAR/ERP">Otros Ajustes Contables SAR/ERP</option>
                   </select>
                 </div>
 

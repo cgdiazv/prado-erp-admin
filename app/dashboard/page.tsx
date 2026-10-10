@@ -1423,7 +1423,7 @@ export default function AdminDashboard() {
       endpoint: "/api/customers",
       fields: [
         { key: "name", label: "Nombre / Razón Social", required: true, hint: "Ej: Textiles Búfalo S.A." },
-        { key: "macolaCode", label: "Código Macola / Cliente", required: false, hint: "Ej: CLI-001" },
+        { key: "macolaCode", label: "Código / Cliente", required: false, hint: "Ej: CLI-001" },
         { key: "rtn", label: "RTN / ID Fiscal", required: false, hint: "Ej: 08019012345678" },
         { key: "email", label: "Correo Electrónico", required: false, hint: "Ej: compras@bufalo.hn" },
         { key: "phone", label: "Teléfono", required: false, hint: "Ej: +504 2550-1122" },
@@ -4817,7 +4817,7 @@ ${accountRowsHtml(equity)}
                       <div className="mt-2">
                         <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{customers.length}</span>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-1">Con códigos de Macola</p>
+                      <p className="text-[11px] text-slate-400 mt-1">Cartera de clientes registrados</p>
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
                     </div>
 

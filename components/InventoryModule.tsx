@@ -405,7 +405,7 @@ export default function InventoryModule({
 
       if (filterType === "con-stock") return i.quantity > 0;
       if (filterType === "bajo-stock") return i.quantity <= 5;
-      if (filterType === "macola") return i.sku.startsWith("MAC-") || i.sku.length > 6;
+      if (filterType === "macola") return Boolean(i.sku && i.sku.trim() !== "");
 
       if (selectedCategory !== "todas") {
         if (selectedCategory === "sin-categoria") {
@@ -1186,7 +1186,7 @@ export default function InventoryModule({
                   <option value="todos">Todos los productos</option>
                   <option value="con-stock">Con inventario disponible</option>
                   <option value="bajo-stock">Bajo inventario / Alerta</option>
-                  <option value="macola">Sincronizados Macola</option>
+                  <option value="macola">Con código / SKU</option>
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
               </div>

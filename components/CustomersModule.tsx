@@ -156,12 +156,12 @@ export default function CustomersModule({
 
   const reportStats = useMemo(() => {
     const total = reportCustomers.length;
-    const withMacola = reportCustomers.filter((c) => Boolean(c.macolaCode && c.macolaCode.trim() !== "")).length;
+    const withCode = reportCustomers.filter((c) => Boolean(c.macolaCode && c.macolaCode.trim() !== "")).length;
     const withEmail = reportCustomers.filter((c) => Boolean(c.email && c.email.trim() !== "")).length;
     const withPhone = reportCustomers.filter((c) => Boolean(c.phone && c.phone.trim() !== "")).length;
     const usdCount = reportCustomers.filter((c) => c.currency === "USD").length;
     const hnlCount = reportCustomers.filter((c) => c.currency === "HNL").length;
-    return { total, withMacola, withEmail, withPhone, usdCount, hnlCount };
+    return { total, withCode, withEmail, withPhone, usdCount, hnlCount };
   }, [reportCustomers]);
 
   const handleExportCSV = (customersToExport: Customer[] = filteredCustomers) => {
@@ -389,7 +389,7 @@ export default function CustomersModule({
             >
               <option value="todos">Todos los clientes</option>
               <option value="activos">Clientes activos</option>
-              <option value="macola">Sincronizados Macola</option>
+              <option value="macola">Con código asignado</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
           </div>
@@ -949,7 +949,7 @@ export default function CustomersModule({
                     Todos los clientes ({customers.length})
                   </option>
                   <option value="macola">
-                    Solo sincronizados Macola
+                    Solo con código asignado
                   </option>
                   <option value="usd">Solo moneda USD</option>
                   <option value="hnl">Solo moneda HNL</option>
@@ -1071,7 +1071,7 @@ export default function CustomersModule({
                         {reportScope === "todos"
                           ? "Catálogo Completo"
                           : reportScope === "macola"
-                          ? "Sincronizados Macola"
+                          ? "Con Código Asignado"
                           : reportScope === "usd"
                           ? "Solo USD"
                           : reportScope === "hnl"
@@ -1094,8 +1094,8 @@ export default function CustomersModule({
                   <span className="text-xl font-black text-slate-900 font-mono mt-0.5 block">{reportStats.total}</span>
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Con Cód. Macola</span>
-                  <span className="text-xl font-black text-blue-700 font-mono mt-0.5 block">{reportStats.withMacola}</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Con Código</span>
+                  <span className="text-xl font-black text-blue-700 font-mono mt-0.5 block">{reportStats.withCode}</span>
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Con Teléfono</span>

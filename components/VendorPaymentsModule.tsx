@@ -825,7 +825,7 @@ export default function VendorPaymentsModule({
                         <div>{p.vendorName}</div>
                         {p.vendor?.macolaCode && (
                           <span className="text-[10px] text-slate-400 font-mono">
-                            Macola: {p.vendor.macolaCode}
+                            Código: {p.vendor.macolaCode}
                           </span>
                         )}
                       </td>

@@ -619,7 +619,7 @@ export default function VendorAgingReportModule({
                           )}
                         </td>
 
-                        {/* Vendor Name & Macola Code */}
+                        {/* Vendor Name & Code */}
                         <td className="py-3.5 px-4">
                           <div className="font-bold text-slate-900 flex items-center gap-2">
                             <span>{row.vendorName}</span>
