@@ -6,6 +6,7 @@ const CACHE_NAME = 'prado-erp-admin-v1';
 const APP_SHELL = [
   '/',
   '/dashboard',
+  '/pos',
 ];
 
 self.addEventListener('install', (event) => {

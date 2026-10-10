@@ -7,6 +7,13 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import LockedFeatureGate from "@/components/LockedFeatureGate";
 import { canAccessNav } from "@/lib/plans";
+import {
+  getLocalInventory,
+  getLocalCustomers,
+  getLocalSalesReps,
+  getLocalMeta,
+} from "@/lib/offline-db";
+import { offlineSync } from "@/lib/offline-sync";
 
 export default function POSPage() {
   const router = useRouter();
@@ -20,17 +27,86 @@ export default function POSPage() {
 
   const loadData = async () => {
     try {
+      // 1. Intentar cargar desde el servidor
       const [invRes, custRes, repRes, compRes, subRes] = await Promise.all([
-        fetch("/api/inventory").then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch("/api/customers").then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch("/api/sales-reps").then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch("/api/company").then((r) => r.json()).catch(() => ({ data: null })),
+        fetch("/api/inventory").then((r) => r.json()).catch(() => null),
+        fetch("/api/customers").then((r) => r.json()).catch(() => null),
+        fetch("/api/sales-reps").then((r) => r.json()).catch(() => null),
+        fetch("/api/company").then((r) => r.json()).catch(() => null),
         fetch("/api/billing/subscription").then((r) => r.json()).catch(() => null),
       ]);
 
+      let finalInventory = null;
+      let finalCustomers = null;
+      let finalSalesReps = null;
+      let finalCompanySettings = null;
+      let finalSubInfo = null;
+
+      if (invRes && invRes.data) {
+        finalInventory = invRes.data.map((item: any) => ({
+          ...item,
+          cost: Number(item.cost || 0),
+          price: Number(item.price || 0),
+          quantity: Number(item.quantity || 0),
+        }));
+      }
+
+      if (custRes && custRes.data) {
+        finalCustomers = custRes.data;
+      }
+
+      if (repRes && repRes.data) {
+        finalSalesReps = repRes.data;
+      }
+
+      if (compRes && compRes.data) {
+        finalCompanySettings = compRes.data;
+      }
+
       if (subRes && subRes.success) {
-        setSubInfo(subRes.data);
-        const allowed = canAccessNav(subRes.data?.plan, subRes.data?.subscriptionStatus, "pos");
+        finalSubInfo = subRes.data;
+      }
+
+      // 2. Si no hay internet o falló alguna petición, cargar respaldo desde IndexedDB local
+      if (!finalInventory || finalInventory.length === 0) {
+        const localInv = await getLocalInventory();
+        if (localInv && localInv.length > 0) {
+          finalInventory = localInv;
+        }
+      }
+
+      if (!finalCustomers || finalCustomers.length === 0) {
+        const localCust = await getLocalCustomers();
+        if (localCust && localCust.length > 0) {
+          finalCustomers = localCust;
+        }
+      }
+
+      if (!finalSalesReps || finalSalesReps.length === 0) {
+        const localReps = await getLocalSalesReps();
+        if (localReps && localReps.length > 0) {
+          finalSalesReps = localReps;
+        }
+      }
+
+      if (!finalCompanySettings) {
+        const localComp = await getLocalMeta("companySettings");
+        if (localComp) {
+          finalCompanySettings = localComp;
+        }
+      }
+
+      if (!finalSubInfo) {
+        const localSub = await getLocalMeta("subInfo");
+        if (localSub) {
+          finalSubInfo = localSub;
+        }
+      }
+
+      // Validar acceso por suscripción (permite si la sesión previa en caché era válida)
+      if (finalSubInfo) {
+        setSubInfo(finalSubInfo);
+        const allowed = canAccessNav(finalSubInfo?.plan, finalSubInfo?.subscriptionStatus, "pos");
         if (!allowed) {
           setIsLocked(true);
           setLoading(false);
@@ -38,30 +114,36 @@ export default function POSPage() {
         }
       }
 
-      if (invRes && invRes.data) {
-        setInventory(
-          invRes.data.map((item: any) => ({
-            ...item,
-            cost: Number(item.cost || 0),
-            price: Number(item.price || 0),
-            quantity: Number(item.quantity || 0),
-          }))
-        );
-      }
+      if (finalInventory) setInventory(finalInventory);
+      if (finalCustomers) setCustomers(finalCustomers);
+      if (finalSalesReps) setSalesReps(finalSalesReps);
+      if (finalCompanySettings) setCompanySettings(finalCompanySettings);
 
-      if (custRes && custRes.data) {
-        setCustomers(custRes.data);
-      }
-
-      if (repRes && repRes.data) {
-        setSalesReps(repRes.data);
-      }
-
-      if (compRes && compRes.data) {
-        setCompanySettings(compRes.data);
-      }
+      // 3. Guardar en caché local para futuros arranques sin internet
+      await offlineSync.cacheCatalogs({
+        inventory: finalInventory || [],
+        customers: finalCustomers || [],
+        salesReps: finalSalesReps || [],
+        companySettings: finalCompanySettings || undefined,
+        subInfo: finalSubInfo || undefined,
+      });
     } catch (err) {
-      console.error("Error loading POS initial data:", err);
+      console.error("Error loading POS data:", err);
+      // Fallback de emergencia a IndexedDB
+      try {
+        const [localInv, localCust, localReps, localComp] = await Promise.all([
+          getLocalInventory(),
+          getLocalCustomers(),
+          getLocalSalesReps(),
+          getLocalMeta("companySettings"),
+        ]);
+        if (localInv && localInv.length > 0) setInventory(localInv);
+        if (localCust && localCust.length > 0) setCustomers(localCust);
+        if (localReps && localReps.length > 0) setSalesReps(localReps);
+        if (localComp) setCompanySettings(localComp);
+      } catch (dbErr) {
+        console.error("IndexedDB fallback error:", dbErr);
+      }
     } finally {
       setLoading(false);
     }

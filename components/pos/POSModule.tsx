@@ -35,9 +35,15 @@ import {
   DollarSign,
   ChevronDown,
   UserCheck,
-  Settings
+  Settings,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  Database
 } from "lucide-react";
 import { InventoryItem, Customer, SalesRep, CompanySettings } from "@/types/dashboard";
+import { offlineSync } from "@/lib/offline-sync";
+import { getSyncQueue, clearSyncedTickets, OfflineSyncTicket } from "@/lib/offline-db";
 
 export interface CartItem {
   id: string; // unique cart line id
@@ -469,6 +475,43 @@ export default function POSModule({
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [completedSale, setCompletedSale] = useState<any | null>(null);
 
+  // Offline-First Network & Sync Queue States
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [showSyncQueueModal, setShowSyncQueueModal] = useState<boolean>(false);
+  const [syncQueueList, setSyncQueueList] = useState<OfflineSyncTicket[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = offlineSync.subscribe((state) => {
+      setIsOnline(state.isOnline);
+      setPendingSyncCount(state.pendingCount);
+      setIsSyncing(state.isSyncing);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleOpenSyncQueue = async () => {
+    const list = await getSyncQueue();
+    setSyncQueueList(list);
+    setShowSyncQueueModal(true);
+  };
+
+  const handleManualSyncNow = async () => {
+    const res = await offlineSync.syncNow();
+    const updated = await getSyncQueue();
+    setSyncQueueList(updated);
+    if (res.synced > 0 && onRefreshData) {
+      await onRefreshData();
+    }
+  };
+
+  const handleClearSyncedHistory = async () => {
+    await clearSyncedTickets();
+    const updated = await getSyncQueue();
+    setSyncQueueList(updated);
+  };
+
   // When opening checkout modal, default amount received to exact total
   const openCheckout = () => {
     if (cart.length === 0) return;
@@ -537,17 +580,13 @@ export default function POSModule({
         })),
       };
 
-      // Call API to record invoice & double-entry posting
-      const response = await fetch("/api/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(invoicePayload),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        console.error("Error creating POS invoice:", errData);
-      }
+      // Grabar la venta a través del gestor offline (intenta en línea; si falla o no hay internet, encola localmente en IndexedDB)
+      const saleResult = await offlineSync.recordSale(
+        ticketNumber,
+        invoicePayload,
+        selectedCustomer.name || "Consumidor Final",
+        cartTotals.total
+      );
 
       // Update local inventory state
       if (setInventory) {
@@ -564,6 +603,7 @@ export default function POSModule({
 
       const completed = {
         ticketNumber,
+        isOffline: saleResult.isOffline,
         date: saleDate.toLocaleString([], {
           year: "numeric",
           month: "2-digit",
@@ -647,6 +687,52 @@ export default function POSModule({
               <span className="truncate max-w-[150px]">{selectedSalesRep}</span>
               <ChevronDown className="w-3 h-3 text-slate-300 group-hover:text-white transition-transform" />
             </button>
+
+            {/* Indicador de Red / Offline */}
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
+                isOnline
+                  ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-200"
+                  : "bg-amber-500/30 border-amber-400 text-amber-200 animate-pulse"
+              }`}
+              title={isOnline ? "Conectado al servidor central" : "Sin conexión a internet: operando en modo local (offline)"}
+            >
+              {isOnline ? (
+                <>
+                  <Wifi className="w-3.5 h-3.5 text-emerald-300" />
+                  <span className="hidden xl:inline">En Línea</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Modo Offline</span>
+                </>
+              )}
+            </div>
+
+            {/* Botón de Cola de Sincronización */}
+            <button
+              type="button"
+              onClick={handleOpenSyncQueue}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
+                pendingSyncCount > 0
+                  ? "bg-amber-400/30 border-amber-300 text-amber-100 hover:bg-amber-400/40 shadow-xs"
+                  : "bg-white/10 border-white/15 text-slate-200 hover:bg-white/20"
+              }`}
+              title="Ver cola de sincronización offline"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-amber-300" : ""}`} />
+              <span className="hidden xl:inline">
+                {pendingSyncCount > 0
+                  ? `${pendingSyncCount} ${pendingSyncCount === 1 ? "pendiente" : "pendientes"}`
+                  : "Sincronizado"}
+              </span>
+              {pendingSyncCount > 0 && (
+                <span className="xl:hidden bg-amber-400 text-slate-900 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">
+                  {pendingSyncCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -701,6 +787,23 @@ export default function POSModule({
           </button>
         </div>
       </div>
+
+      {/* Banner de Operación Offline */}
+      {!isOnline && (
+        <div className="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs font-bold flex items-center justify-between shrink-0 shadow-inner">
+          <div className="flex items-center gap-2">
+            <WifiOff className="w-4 h-4 shrink-0 text-slate-950" />
+            <span>Operando sin internet: Las ventas se guardan localmente y se sincronizarán automáticamente al volver la conexión.</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleOpenSyncQueue}
+            className="text-[11px] font-mono bg-slate-900/15 hover:bg-slate-900/25 px-2 py-0.5 rounded cursor-pointer transition hidden sm:inline"
+          >
+            Memoria Local Activa ({pendingSyncCount} en cola)
+          </button>
+        </div>
+      )}
 
       {/* ================= 2. MAIN SPLIT BODY ================= */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
@@ -1289,12 +1392,32 @@ export default function POSModule({
                   </div>
                 </div>
 
+                {/* Offline Badge on Ticket */}
+                {completedSale.isOffline && (
+                  <div className="bg-amber-50 text-amber-900 border border-amber-300 p-2 rounded text-[9px] text-center font-bold">
+                    ⚡ MODO OFFLINE: Venta registrada localmente. Sincronización automática pendiente al volver la conexión.
+                  </div>
+                )}
+
                 {/* Footer */}
                 <div className="text-center text-[9px] text-slate-400 pt-2 border-t border-dashed border-slate-300">
                   ¡Gracias por su compra!
                 </div>
               </div>
             </div>
+
+            {/* Offline / Online Status Notice */}
+            {completedSale.isOffline ? (
+              <div className="mx-4 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-[11px] text-amber-800 font-medium">
+                <WifiOff className="w-4 h-4 shrink-0 text-amber-600" />
+                <span>Ticket guardado en memoria local. Se sincronizará automáticamente al volver el internet.</span>
+              </div>
+            ) : (
+              <div className="mx-4 mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-[11px] text-emerald-800 font-medium">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span>Venta confirmada y sincronizada en el servidor central.</span>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="p-3 bg-white flex items-center justify-between gap-2">
@@ -1640,6 +1763,132 @@ export default function POSModule({
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Guardar Cambios</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 7. OFFLINE SYNC QUEUE MODAL ================= */}
+      {showSyncQueueModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="p-4 bg-[#1b426e] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-white/10 text-white">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">Cola de Sincronización Offline</h3>
+                  <p className="text-[11px] text-slate-200">
+                    {syncQueueList.filter((t) => t.status === "PENDING" || t.status === "FAILED").length} ventas pendientes de subir a la nube
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSyncQueueModal(false)}
+                className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Network Banner */}
+            <div className={`px-4 py-2 flex items-center justify-between text-xs font-semibold ${
+              isOnline ? "bg-emerald-50 text-emerald-800 border-b border-emerald-100" : "bg-amber-50 text-amber-900 border-b border-amber-200"
+            }`}>
+              <div className="flex items-center gap-2">
+                {isOnline ? <Wifi className="w-4 h-4 text-emerald-600" /> : <WifiOff className="w-4 h-4 text-amber-600" />}
+                <span>{isOnline ? "Conexión a internet activa" : "Terminal desconectada de internet"}</span>
+              </div>
+              <span className="text-[11px] font-mono">
+                {isOnline ? "Auto-sync habilitado" : "Guardando en IndexedDB"}
+              </span>
+            </div>
+
+            {/* Ticket List Body */}
+            <div className="p-4 max-h-80 overflow-y-auto space-y-2.5">
+              {syncQueueList.length === 0 ? (
+                <div className="py-8 text-center text-slate-400 space-y-2">
+                  <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-500 opacity-80" />
+                  <p className="text-xs font-medium text-slate-600">No hay transacciones pendientes</p>
+                  <p className="text-[11px] text-slate-400">Todas las ventas de esta terminal están sincronizadas con la nube.</p>
+                </div>
+              ) : (
+                syncQueueList.map((ticket) => (
+                  <div
+                    key={ticket.id}
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 font-mono">{ticket.ticketNumber}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          ticket.status === "SYNCED"
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            : ticket.status === "SYNCING"
+                            ? "bg-blue-100 text-blue-800 border border-blue-200 animate-pulse"
+                            : ticket.status === "FAILED"
+                            ? "bg-rose-100 text-rose-800 border border-rose-200"
+                            : "bg-amber-100 text-amber-800 border border-amber-200"
+                        }`}>
+                          {ticket.status === "SYNCED"
+                            ? "Sincronizado"
+                            : ticket.status === "SYNCING"
+                            ? "Sincronizando..."
+                            : ticket.status === "FAILED"
+                            ? "Error"
+                            : "Pendiente"}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {ticket.customerName} • {new Date(ticket.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                      {ticket.lastError && (
+                        <div className="text-[10px] text-rose-600 font-medium truncate max-w-xs">
+                          {ticket.lastError}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-extrabold text-slate-900 font-mono">
+                        {formatCurrency(ticket.total)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={handleClearSyncedHistory}
+                disabled={!syncQueueList.some((t) => t.status === "SYNCED")}
+                className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+              >
+                Limpiar sincronizados
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSyncQueueModal(false)}
+                  className="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition cursor-pointer"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleManualSyncNow}
+                  disabled={isSyncing || !isOnline}
+                  className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#153457] disabled:opacity-50 text-xs font-bold text-white shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+                  <span>{isSyncing ? "Sincronizando..." : "Sincronizar Ahora"}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
