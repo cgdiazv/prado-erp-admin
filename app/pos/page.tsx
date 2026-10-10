@@ -5,6 +5,8 @@ import POSModule from "@/components/pos/POSModule";
 import { InventoryItem, Customer, SalesRep, CompanySettings } from "@/types/dashboard";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import LockedFeatureGate from "@/components/LockedFeatureGate";
+import { canAccessNav } from "@/lib/plans";
 
 export default function POSPage() {
   const router = useRouter();
@@ -12,16 +14,29 @@ export default function POSPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [salesReps, setSalesReps] = useState<SalesRep[]>([]);
   const [companySettings, setCompanySettings] = useState<CompanySettings | undefined>(undefined);
+  const [subInfo, setSubInfo] = useState<{ plan?: string; subscriptionStatus?: string } | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      const [invRes, custRes, repRes, compRes] = await Promise.all([
+      const [invRes, custRes, repRes, compRes, subRes] = await Promise.all([
         fetch("/api/inventory").then((r) => r.json()).catch(() => ({ data: [] })),
         fetch("/api/customers").then((r) => r.json()).catch(() => ({ data: [] })),
         fetch("/api/sales-reps").then((r) => r.json()).catch(() => ({ data: [] })),
         fetch("/api/company").then((r) => r.json()).catch(() => ({ data: null })),
+        fetch("/api/billing/subscription").then((r) => r.json()).catch(() => null),
       ]);
+
+      if (subRes && subRes.success) {
+        setSubInfo(subRes.data);
+        const allowed = canAccessNav(subRes.data?.plan, subRes.data?.subscriptionStatus, "pos");
+        if (!allowed) {
+          setIsLocked(true);
+          setLoading(false);
+          return;
+        }
+      }
 
       if (invRes && invRes.data) {
         setInventory(
@@ -62,6 +77,20 @@ export default function POSPage() {
         <Loader2 className="w-10 h-10 animate-spin text-amber-400 mb-4" />
         <h2 className="font-bold text-lg">Iniciando Terminal Punto de Venta...</h2>
         <p className="text-xs text-slate-400 mt-1">Cargando catálogo de inventario y configuración de caja</p>
+      </div>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
+        <LockedFeatureGate
+          requiredPlan="profesional"
+          featureName="Punto de Venta (POS)"
+          currentPlan={subInfo?.plan}
+          onUpgrade={() => router.push("/dashboard")}
+          onBack={() => router.push("/dashboard")}
+        />
       </div>
     );
   }

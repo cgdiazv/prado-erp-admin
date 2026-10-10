@@ -4069,12 +4069,17 @@ ${accountRowsHtml(equity)}
                 {/* 0. Punto de Venta (POS) */}
                 <button
                   onClick={() => setCurrentView("pos")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "pos"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "pos"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Punto de Venta (POS)</span>
+                  {isItemLocked("pos") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
 
                 {/* 1. Clientes */}

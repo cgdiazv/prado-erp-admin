@@ -46,6 +46,7 @@ export const PLANS: Plan[] = [
     features: [
       "Hasta 5 usuarios",
       "Todo lo del plan Básico",
+      "Punto de Venta (POS)",
       "Inventario y órdenes de compra",
       "Bancos y conciliación bancaria",
       "Caja chica y retenciones",
@@ -98,6 +99,7 @@ export function getUserLimit(planId: string | null | undefined, subscriptionStat
 export type PlanTier = "basico" | "profesional" | "empresarial";
 
 export type FeatureKey =
+  | "pos"                // Punto de Venta (POS)
   | "inventory"          // Catálogo de existencias, lotes, series
   | "purchase_orders"    // Órdenes de compra, facturas de compra, devoluciones, pagos prov.
   | "banking"            // Bancos, transacciones, depósitos, conciliación bancaria
@@ -109,6 +111,7 @@ export type FeatureKey =
   | "multi_currency";    // Multi-divisa avanzada
 
 export const FEATURE_MIN_PLAN: Record<FeatureKey, PlanTier> = {
+  pos: "profesional",
   inventory: "profesional",
   purchase_orders: "profesional",
   banking: "profesional",
@@ -121,6 +124,7 @@ export const FEATURE_MIN_PLAN: Record<FeatureKey, PlanTier> = {
 };
 
 export const FEATURE_TITLES: Record<FeatureKey, string> = {
+  pos: "Punto de Venta (POS)",
   inventory: "Inventario y Control de Stock",
   purchase_orders: "Órdenes de Compra y Facturas de Proveedores",
   banking: "Bancos y Conciliación Bancaria",
@@ -164,6 +168,9 @@ export function hasFeatureAccess(
  */
 export function getRequiredPlanForNav(navItem: string): { tier: PlanTier; featureName: string; featureKey: FeatureKey } | null {
   switch (navItem) {
+    case "pos":
+      return { tier: "profesional", featureName: "Punto de Venta (POS)", featureKey: "pos" };
+
     case "inventario":
     case "lotes":
     case "series":
