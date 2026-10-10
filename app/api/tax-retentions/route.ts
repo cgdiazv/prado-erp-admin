@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postTaxRetentionEntry } from "@/lib/accounting";
-import { resolveCompanyId } from "@/lib/tenant";
+import { resolveCompanyId, getTenantSession, requirePlanFeature } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   try {
@@ -50,8 +50,12 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const session = await getTenantSession(req);
+    const planGate = requirePlanFeature(session, "retentions");
+    if (planGate) return planGate;
+
     const db = prisma as any;
-    const companyId = await resolveCompanyId(req);
+    const companyId = session?.companyId || await resolveCompanyId(req);
     const body = await req.json();
 
     const {

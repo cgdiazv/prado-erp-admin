@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { FeatureKey, hasFeatureAccess, FEATURE_MIN_PLAN, FEATURE_TITLES } from "@/lib/plans";
 
 export interface SessionUser {
   id: string;
@@ -8,6 +9,8 @@ export interface SessionUser {
   role: string;
   companyId: string;
   companyName?: string;
+  plan?: string | null;
+  subscriptionStatus?: string | null;
 }
 
 /**
@@ -49,6 +52,8 @@ export async function getTenantSession(request?: Request | NextRequest): Promise
           select: {
             id: true,
             name: true,
+            plan: true,
+            subscriptionStatus: true,
           },
         },
       },
@@ -67,6 +72,8 @@ export async function getTenantSession(request?: Request | NextRequest): Promise
       role: user.role,
       companyId: resolvedCompanyId,
       companyName: user.company?.name || "Empresa Principal",
+      plan: user.company?.plan || null,
+      subscriptionStatus: user.company?.subscriptionStatus || null,
     };
   } catch (error) {
     console.error("[getTenantSession Error]:", error);
@@ -92,4 +99,29 @@ export function unauthorizedResponse() {
     { success: false, error: "No autorizado. Inicie sesión para continuar." },
     { status: 401 }
   );
+}
+
+/**
+ * Enforces plan tier access for backend API endpoints.
+ * Returns a 403 Forbidden response if the tenant's plan doesn't include the feature,
+ * or null if allowed.
+ */
+export function requirePlanFeature(session: SessionUser | null, feature: FeatureKey) {
+  if (!session) return unauthorizedResponse();
+  if (!hasFeatureAccess(session.plan, session.subscriptionStatus, feature)) {
+    const minTier = FEATURE_MIN_PLAN[feature];
+    const planDisplayName = minTier === "empresarial" ? "Empresarial" : "Profesional";
+    const featureName = FEATURE_TITLES[feature] || "esta funcionalidad";
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: `El módulo "${featureName}" requiere el Plan ${planDisplayName}. Actualice su suscripción para desbloquearlo.`,
+        upgradeRequired: true,
+        requiredPlan: minTier,
+      },
+      { status: 403 }
+    );
+  }
+  return null;
 }

@@ -48,16 +48,37 @@ export async function POST(request: NextRequest) {
           break;
         }
 
+        let rawPlan = (session.metadata?.plan || "").toLowerCase().trim();
+
+        // Fallback: si no vino en session.metadata, intentar obtenerlo de la suscripción
+        if (!rawPlan && session.subscription && typeof session.subscription === "string") {
+          try {
+            const stripeSub = await stripe.subscriptions.retrieve(session.subscription);
+            if (stripeSub.metadata?.plan) {
+              rawPlan = stripeSub.metadata.plan.toLowerCase().trim();
+            }
+          } catch (subErr) {
+            console.warn("[Stripe Webhook] Error recuperando metadata de suscripción:", subErr);
+          }
+        }
+
+        let planToSet: string | undefined = undefined;
+        if (rawPlan === "basico" || rawPlan === "profesional" || rawPlan === "empresarial") {
+          planToSet = rawPlan;
+        } else if (rawPlan === "enterprise") {
+          planToSet = "empresarial";
+        }
+
         await prisma.company.update({
           where: { id: resolvedCompanyId },
           data: {
             subscriptionStatus: "ACTIVE",
-            plan: session.metadata?.plan || undefined,
+            ...(planToSet ? { plan: planToSet } : {}),
             stripeCustomerId: typeof session.customer === "string" ? session.customer : undefined,
             stripeSubscriptionId: typeof session.subscription === "string" ? session.subscription : undefined,
           },
         });
-        console.log(`[Stripe Webhook] Suscripción activada para empresa ${resolvedCompanyId}`);
+        console.log(`[Stripe Webhook] Suscripción activada para empresa ${resolvedCompanyId} (plan: ${planToSet || "sin cambio"})`);
         break;
       }
 
@@ -65,10 +86,23 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
         const isActive = sub.status === "active" || sub.status === "trialing";
+
+        const rawSubPlan = (sub.metadata?.plan || "").toLowerCase().trim();
+        let planUpdate: string | undefined = undefined;
+        if (rawSubPlan === "basico" || rawSubPlan === "profesional" || rawSubPlan === "empresarial") {
+          planUpdate = rawSubPlan;
+        } else if (rawSubPlan === "enterprise") {
+          planUpdate = "empresarial";
+        }
+
         await prisma.company.updateMany({
           where: { stripeCustomerId: customerId },
-          data: { subscriptionStatus: isActive ? "ACTIVE" : "EXPIRED" },
+          data: {
+            subscriptionStatus: isActive ? "ACTIVE" : "EXPIRED",
+            ...(planUpdate ? { plan: planUpdate } : {}),
+          },
         });
+        console.log(`[Stripe Webhook] Suscripción actualizada para cliente ${customerId} (activo: ${isActive}, plan: ${planUpdate || "sin cambio"})`);
         break;
       }
 

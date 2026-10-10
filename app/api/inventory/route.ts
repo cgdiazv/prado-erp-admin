@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveCompanyId } from "@/lib/tenant";
+import { resolveCompanyId, getTenantSession, requirePlanFeature } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +83,11 @@ export async function GET(request: NextRequest) {
 // POST /api/inventory - Create a new inventory item for current company
 export async function POST(request: NextRequest) {
   try {
-    const companyId = await resolveCompanyId(request);
+    const session = await getTenantSession(request);
+    const planGate = requirePlanFeature(session, "inventory");
+    if (planGate) return planGate;
+
+    const companyId = session?.companyId || await resolveCompanyId(request);
     const body = await request.json();
     const { sku, description, quantity, cost, price, trackingType, imageUrl, category } = body;
 
@@ -153,7 +157,11 @@ export async function POST(request: NextRequest) {
 // DELETE /api/inventory - Bulk delete inventory items isolated by company
 export async function DELETE(request: NextRequest) {
   try {
-    const companyId = await resolveCompanyId(request);
+    const session = await getTenantSession(request);
+    const planGate = requirePlanFeature(session, "inventory");
+    if (planGate) return planGate;
+
+    const companyId = session?.companyId || await resolveCompanyId(request);
     const body = await request.json();
     const { ids } = body;
 

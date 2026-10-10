@@ -20,11 +20,14 @@ export async function GET(request: NextRequest) {
       },
     }).catch(() => null);
 
+    const status = company?.subscriptionStatus || "TRIAL";
+    const plan = company?.plan || (status === "TRIAL" ? null : "basico");
+
     return NextResponse.json({
       success: true,
       data: {
-        plan: company?.plan || "ENTERPRISE",
-        subscriptionStatus: company?.subscriptionStatus || "ACTIVE",
+        plan,
+        subscriptionStatus: status,
         trialEndsAt: company?.trialEndsAt || null,
         hasStripeSubscription: Boolean(company?.stripeSubscriptionId),
         companyId: session.companyId,

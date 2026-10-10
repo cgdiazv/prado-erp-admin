@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer, Database, ArrowUpDown, FileUp, FolderOpen, HelpCircle, Receipt, Check, Trash2 } from "lucide-react";
 import CajaChicaModule from "@/components/CajaChicaModule";
-import { getPlan } from "@/lib/plans";
+import { getPlan, canAccessNav, getRequiredPlanForNav } from "@/lib/plans";
+import LockedFeatureGate from "@/components/LockedFeatureGate";
 import AccountingBooksModule from "@/components/AccountingBooksModule";
 import CustomerAgingReportModule from "@/components/CustomerAgingReportModule";
 import CustomerStatementModule from "@/components/CustomerStatementModule";
@@ -1239,6 +1240,16 @@ export default function AdminDashboard() {
       })
       .catch(() => {});
   }, []);
+
+  const isItemLocked = (nav: NavItem) =>
+    !canAccessNav(subscriptionInfo?.plan, subscriptionInfo?.subscriptionStatus, nav);
+
+  const currentViewAccess = useMemo(() => {
+    const req = getRequiredPlanForNav(currentView);
+    if (!req) return { isLocked: false, req: null };
+    const allowed = canAccessNav(subscriptionInfo?.plan, subscriptionInfo?.subscriptionStatus, currentView);
+    return { isLocked: !allowed, req };
+  }, [currentView, subscriptionInfo?.plan, subscriptionInfo?.subscriptionStatus]);
 
   const handleCancelSubscription = async () => {
     if (!cancelSubReason) {
@@ -3972,12 +3983,17 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("transacciones")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "transacciones"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "transacciones"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  Transacciones bancarias
+                  <span>Transacciones bancarias</span>
+                  {isItemLocked("transacciones") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
                 <button
                   onClick={() => setCurrentView("conciliacion-bancaria")}
@@ -3987,16 +4003,27 @@ ${accountRowsHtml(equity)}
                     }`}
                 >
                   <span>Conciliación extractos</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">NIIF</span>
+                  {isItemLocked("conciliacion-bancaria") ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">NIIF</span>
+                  )}
                 </button>
                 <button
                   onClick={() => setCurrentView("caja-chica")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "caja-chica"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "caja-chica"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  Caja Chica &amp; Arqueos
+                  <span>Caja Chica &amp; Arqueos</span>
+                  {isItemLocked("caja-chica") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
               </div>
             )}
@@ -4100,12 +4127,17 @@ ${accountRowsHtml(equity)}
                 {/* 3. Notas de Crédito & Débito */}
                 <button
                   onClick={() => setCurrentView("notas-credito-debito")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "notas-credito-debito"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "notas-credito-debito"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Notas Crédito / Débito</span>
+                  {isItemLocked("notas-credito-debito") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                      EMP
+                    </span>
+                  )}
                 </button>
 
                 {/* 4. Vendedores */}
@@ -4116,7 +4148,14 @@ ${accountRowsHtml(equity)}
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  <span>Vendedores</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>Vendedores</span>
+                    {isItemLocked("vendedores") && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                        EMP
+                      </span>
+                    )}
+                  </span>
                   <span className="text-[10px] text-slate-400 font-normal">
                     {salesReps.length}
                   </span>
@@ -4125,23 +4164,33 @@ ${accountRowsHtml(equity)}
                 {/* 5. Comisiones */}
                 <button
                   onClick={() => setCurrentView("comisiones")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "comisiones"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "comisiones"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Comisiones</span>
+                  {isItemLocked("comisiones") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                      EMP
+                    </span>
+                  )}
                 </button>
 
                 {/* 6. Antigüedad de Saldos */}
                 <button
                   onClick={() => setCurrentView("antiguedad-saldos")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "antiguedad-saldos"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "antiguedad-saldos"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Antigüedad de Saldos</span>
+                  {isItemLocked("antiguedad-saldos") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
               </div>
             )}
@@ -4213,23 +4262,33 @@ ${accountRowsHtml(equity)}
                 {/* 2. Órdenes de compra */}
                 <button
                   onClick={() => setCurrentView("lista-ordenes-compra")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "lista-ordenes-compra" || currentView === "orden-compra-editor"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "lista-ordenes-compra" || currentView === "orden-compra-editor"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Órdenes de compra</span>
+                  {isItemLocked("lista-ordenes-compra") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
 
                 {/* 3. Facturas de compra */}
                 <button
                   onClick={() => setCurrentView("factura-compra-lista")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "factura-compra-lista" || currentView === "factura-compra-editor"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "factura-compra-lista" || currentView === "factura-compra-editor"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Facturas de compra</span>
+                  {isItemLocked("factura-compra-lista") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
 
                 {/* 4. Pagos a Proveedores */}
@@ -4241,6 +4300,11 @@ ${accountRowsHtml(equity)}
                     }`}
                 >
                   <span>Pagos a Proveedores</span>
+                  {isItemLocked("pagos-proveedores") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
 
                 {/* 5. Devoluciones a proveedores */}
@@ -4251,7 +4315,14 @@ ${accountRowsHtml(equity)}
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  <span>Devoluciones a Prov.</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>Devoluciones a Prov.</span>
+                    {isItemLocked("devoluciones-proveedor") && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                        PRO
+                      </span>
+                    )}
+                  </span>
                   {vendorReturns.filter((r) => r.status === "BORRADOR").length > 0 && (
                     <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 rounded-full">
                       {vendorReturns.filter((r) => r.status === "BORRADOR").length}
@@ -4268,6 +4339,11 @@ ${accountRowsHtml(equity)}
                     }`}
                 >
                   <span>Antigüedad Proveedores</span>
+                  {isItemLocked("antiguedad-saldos-proveedores") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
 
                 {/* 6. Retenciones ISV / SAR */}
@@ -4279,6 +4355,11 @@ ${accountRowsHtml(equity)}
                     }`}
                 >
                   <span>Retenciones ISV / SAR</span>
+                  {isItemLocked("retenciones-isv") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
               </div>
             )}
@@ -4296,7 +4377,16 @@ ${accountRowsHtml(equity)}
             >
               <div className="flex items-center gap-3 truncate">
                 <Package className="w-4 h-4 shrink-0 text-slate-600" />
-                {!sidebarCollapsed && <span>Inventario ({inventory.length})</span>}
+                {!sidebarCollapsed && (
+                  <span className="flex items-center gap-1.5">
+                    <span>Inventario ({inventory.length})</span>
+                    {isItemLocked("inventario") && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                        PRO
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
               {!sidebarCollapsed && (
                 <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${inventarioOpen ? "rotate-180" : "rotate-0"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4309,12 +4399,17 @@ ${accountRowsHtml(equity)}
               <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
                 <button
                   onClick={() => setCurrentView("inventario")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "inventario"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "inventario"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Catálogo de Productos</span>
+                  {isItemLocked("inventario") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
                 <button
                   onClick={() => setCurrentView("lotes")}
@@ -4323,7 +4418,14 @@ ${accountRowsHtml(equity)}
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  <span>Control de Lotes</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>Control de Lotes</span>
+                    {isItemLocked("lotes") && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                        PRO
+                      </span>
+                    )}
+                  </span>
                   <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
                     {allLots.length}
                   </span>
@@ -4335,7 +4437,14 @@ ${accountRowsHtml(equity)}
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  <span>Números de Serie</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>Números de Serie</span>
+                    {isItemLocked("series") && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                        PRO
+                      </span>
+                    )}
+                  </span>
                   <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
                     {allSerials.length}
                   </span>
@@ -4637,8 +4746,18 @@ ${accountRowsHtml(equity)}
             onUpgradeClick={() => setShowBillingModal(true)}
           />
 
-          {/* ================= VIEW: DASHBOARD ================= */}
-          {currentView === "dashboard" && (
+          {currentViewAccess.isLocked && currentViewAccess.req ? (
+            <LockedFeatureGate
+              requiredPlan={currentViewAccess.req.tier}
+              featureName={currentViewAccess.req.featureName}
+              currentPlan={subscriptionInfo?.plan}
+              onUpgrade={() => setShowBillingModal(true)}
+              onBack={() => setCurrentView("dashboard")}
+            />
+          ) : (
+            <>
+              {/* ================= VIEW: DASHBOARD ================= */}
+              {currentView === "dashboard" && (
             <>
 
               {/* Metric Cards Row */}
@@ -11896,6 +12015,8 @@ ${accountRowsHtml(equity)}
                 onUpdatePOStatus={handleUpdatePOStatus}
               />
             )}
+            </>
+          )}
 
         </main>
       </div>
