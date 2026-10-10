@@ -4110,12 +4110,17 @@ ${accountRowsHtml(equity)}
                 {/* 2.1 Pedidos de Venta */}
                 <button
                   onClick={() => setCurrentView("pedidos-venta")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "pedidos-venta"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "pedidos-venta"
                       ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   <span>Pedidos de Venta</span>
+                  {isItemLocked("pedidos-venta") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                      PRO
+                    </span>
+                  )}
                 </button>
 
                 {/* 3. Facturas */}

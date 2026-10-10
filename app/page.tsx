@@ -422,6 +422,7 @@ export default function MarketingHomePage() {
                     </span>
                   )}
                   <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
+                  <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{plan.description}</p>
                   <div className="mt-3 flex flex-col">
                     <div className="flex items-baseline gap-2">
                       {plan.originalPrice && (
@@ -441,7 +442,7 @@ export default function MarketingHomePage() {
                     )}
                   </div>
                   <ul className="mt-5 space-y-2.5 flex-1">
-                    {plan.features.slice(0, 5).map((f) => (
+                    {plan.features.slice(0, 6).map((f) => (
                       <li key={f} className="flex items-start gap-2 text-xs text-slate-700">
                         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{f}</span>

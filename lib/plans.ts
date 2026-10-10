@@ -23,7 +23,7 @@ export const PLANS: Plan[] = [
     price: 10,
     annualPrice: 8, // $8/mes = $96/año
     originalPrice: 29,
-    description: "Para emprendedores y negocios pequeños que inician su operación.",
+    description: "Para profesionales independientes y empresas de servicios que no requieren control de bodegas.",
     features: [
       "1 usuario",
       "Facturación y cotizaciones",
@@ -42,11 +42,12 @@ export const PLANS: Plan[] = [
     price: 29,
     annualPrice: 24, // $24/mes = $288/año
     originalPrice: 79,
-    description: "Para empresas en crecimiento que necesitan control contable completo.",
+    description: "Para comercios, retail y empresas que gestionan inventario, mostrador (POS) y compras.",
     features: [
       "Hasta 5 usuarios",
       "Todo lo del plan Básico",
       "Punto de Venta (POS)",
+      "Pedidos de venta y despachos",
       "Inventario y órdenes de compra",
       "Bancos y conciliación bancaria",
       "Caja chica y retenciones",
@@ -64,7 +65,7 @@ export const PLANS: Plan[] = [
     price: 49,
     annualPrice: 40, // $40/mes = $480/año
     originalPrice: 179,
-    description: "Para operaciones con múltiples áreas y alto volumen transaccional.",
+    description: "Para empresas con múltiples vendedores, multi-divisa y alto volumen transaccional.",
     features: [
       "Usuarios ilimitados",
       "Todo lo del plan Profesional",
@@ -100,6 +101,7 @@ export type PlanTier = "basico" | "profesional" | "empresarial";
 
 export type FeatureKey =
   | "pos"                // Punto de Venta (POS)
+  | "sales_orders"       // Pedidos de venta y despachos
   | "inventory"          // Catálogo de existencias, lotes, series
   | "purchase_orders"    // Órdenes de compra, facturas de compra, devoluciones, pagos prov.
   | "banking"            // Bancos, transacciones, depósitos, conciliación bancaria
@@ -112,6 +114,7 @@ export type FeatureKey =
 
 export const FEATURE_MIN_PLAN: Record<FeatureKey, PlanTier> = {
   pos: "profesional",
+  sales_orders: "profesional",
   inventory: "profesional",
   purchase_orders: "profesional",
   banking: "profesional",
@@ -125,6 +128,7 @@ export const FEATURE_MIN_PLAN: Record<FeatureKey, PlanTier> = {
 
 export const FEATURE_TITLES: Record<FeatureKey, string> = {
   pos: "Punto de Venta (POS)",
+  sales_orders: "Pedidos de Venta y Despachos",
   inventory: "Inventario y Control de Stock",
   purchase_orders: "Órdenes de Compra y Facturas de Proveedores",
   banking: "Bancos y Conciliación Bancaria",
@@ -170,6 +174,9 @@ export function getRequiredPlanForNav(navItem: string): { tier: PlanTier; featur
   switch (navItem) {
     case "pos":
       return { tier: "profesional", featureName: "Punto de Venta (POS)", featureKey: "pos" };
+
+    case "pedidos-venta":
+      return { tier: "profesional", featureName: "Pedidos de Venta y Despachos", featureKey: "sales_orders" };
 
     case "inventario":
     case "lotes":
