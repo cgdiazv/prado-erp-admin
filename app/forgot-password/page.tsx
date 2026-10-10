@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
-import logoImg from "@/public/logo.webp";
+import logoImg from "@/public/logo-prado-erp.webp";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import logoImg from "@/public/logo.webp";
+import logoImg from "@/public/logo-prado-erp.webp";
 
 export default function PublicNavbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);

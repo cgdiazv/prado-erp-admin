@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
   description: "Prado ERP - Enterprise Resource Planning & Administration System",
   icons: {
-    icon: "/logo.webp",
-    apple: "/logo.webp",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: {

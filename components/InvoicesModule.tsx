@@ -1373,7 +1373,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                       <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
                         <div className="space-y-1">
                           <img
-                            src={companyLogo || "/logo.webp"}
+                            src={companyLogo || "/logo-prado-erp.webp"}
                             alt={companySettings.nombre || "Logo"}
                             className="h-9 max-h-11 w-auto max-w-[150px] object-contain mb-1.5"
                           />
@@ -1581,7 +1581,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                 <div className="flex justify-between items-start border-b-2 pb-6 mb-6" style={{ borderColor: activeInvoiceColor }}>
                   <div className="space-y-1">
                     <img
-                      src={companyLogo || "/logo.webp"}
+                      src={companyLogo || "/logo-prado-erp.webp"}
                       alt={companySettings.nombre || "Logo"}
                       className="h-9 max-h-11 w-auto max-w-[150px] object-contain mb-1.5"
                     />
@@ -2664,7 +2664,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                           <div className="flex justify-between items-start border-b-2 pb-6" style={{ borderColor: activeInvoiceColor }}>
                             <div className="space-y-1">
                               <img
-                                src={companyLogo || "/logo.webp"}
+                                src={companyLogo || "/logo-prado-erp.webp"}
                                 alt={companySettings.nombre || "Logo"}
                                 className="h-9 max-h-11 w-auto max-w-[150px] object-contain mb-1.5"
                               />

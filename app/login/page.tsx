@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
-import logoImg from "@/public/logo.webp";
+import logoImg from "@/public/logo-prado-erp.webp";
 
 export default function LoginPage() {
   const router = useRouter();

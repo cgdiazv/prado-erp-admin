@@ -3897,7 +3897,7 @@ ${accountRowsHtml(equity)}
         <div className="h-16 px-4 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
-              <img src="/logo.webp" alt="Prado ERP" className="w-full h-full object-contain" />
+              <img src="/logo-prado-erp.webp" alt="Prado ERP" className="w-full h-full object-contain" />
             </div>
             {!sidebarCollapsed && (
               <div className="truncate">
