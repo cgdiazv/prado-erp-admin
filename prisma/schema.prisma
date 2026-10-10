@@ -80,6 +80,8 @@ model InventoryItem {
   updatedAt    DateTime     @updatedAt
   lots         ItemLot[]
   serials      ItemSerial[]
+  bomItems     BomItem[]
+  workOrderItems WorkOrderItem[]
 
   @@index([companyId])
 }
@@ -402,6 +404,8 @@ model Company {
   vendorPayments   VendorPayment[]
   purchaseOrders   PurchaseOrder[]
   productCategories ProductCategory[]
+  boms             Bom[]
+  workOrders       WorkOrder[]
 }
 
 model ProductCategory {
@@ -699,6 +703,7 @@ model SalesOrder {
   salesInvoice         SalesInvoice?    @relation(fields: [salesInvoiceId], references: [id], onDelete: SetNull)
   invoiceNumber        String?          // Reference to generated invoice e.g. "000-001-01-00036802"
   items                SalesOrderItem[]
+  workOrders           WorkOrder[]
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
 
@@ -879,3 +884,97 @@ model BankReconciliationItem {
   @@index([reconciliationId])
   @@index([isCleared])
 }
+
+model Bom {
+  id                  String        @id @default(cuid())
+  companyId           String?       @default("default")
+  company             Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  code                String        // e.g. "BOM-2026-0001"
+  name                String        // e.g. "Caja Corrugada 12x12x12"
+  description         String?
+  finishedProductSku  String?
+  finishedProductName String
+  outputQuantity      Float         @default(1)
+  outputUnit          String        @default("Unidades")
+  version             String        @default("1.0")
+  isActive            Boolean       @default(true)
+  notes               String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  items               BomItem[]
+  workOrders          WorkOrder[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model BomItem {
+  id               String         @id @default(cuid())
+  bomId            String
+  bom              Bom            @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  inventoryItemId  String?
+  inventoryItem    InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  sku              String
+  description      String
+  quantityRequired Float          @default(1)
+  unit             String         @default("Unidades")
+  estimatedCost    Float          @default(0)
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([bomId])
+}
+
+model WorkOrder {
+  id                String          @id @default(cuid())
+  companyId         String?         @default("default")
+  company           Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  orderNumber       String          // e.g. "OT-2026-0001"
+  bomId             String
+  bom               Bom             @relation(fields: [bomId], references: [id], onDelete: Restrict)
+  salesOrderId      String?
+  salesOrder        SalesOrder?     @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
+  salesOrderNumber  String?
+  customerName      String?
+  productSku        String?
+  productName       String
+  quantityPlanned   Float           @default(1)
+  quantityProduced  Float           @default(0)
+  unit              String          @default("Unidades")
+  startDate         String?         // e.g. "2026-10-10"
+  dueDate           String?         // e.g. "2026-10-18"
+  completionDate    String?
+  status            String          @default("PLANIFICADA") // "PLANIFICADA" | "EN_PROCESO" | "COMPLETADA" | "CANCELADA"
+  priority          String          @default("MEDIA") // "BAJA" | "MEDIA" | "ALTA" | "URGENTE"
+  warehouse         String          @default("Bodega Principal Zip Búfalo")
+  inventoryDeducted Boolean         @default(false)
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  items             WorkOrderItem[]
+
+  @@unique([companyId, orderNumber])
+  @@index([companyId])
+  @@index([status])
+}
+
+model WorkOrderItem {
+  id               String         @id @default(cuid())
+  workOrderId      String
+  workOrder        WorkOrder      @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  inventoryItemId  String?
+  inventoryItem    InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  sku              String
+  description      String
+  quantityRequired Float          @default(1)
+  quantityConsumed Float          @default(0)
+  unit             String         @default("Unidades")
+  unitCost         Float          @default(0)
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([workOrderId])
+}
+

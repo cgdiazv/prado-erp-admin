@@ -30,6 +30,7 @@ import TrialBanner from "@/components/TrialBanner";
 import BillingModal from "@/components/BillingModal";
 import { checkTrialExpiry } from "@/lib/trialCheck";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
+import ProductionModule from "@/components/ProductionModule";
 
 
 
@@ -217,7 +218,7 @@ type PurchaseInvoice = {
   createdAt?: string;
 };
 
-type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv" | "pos";
+type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv" | "pos" | "produccion" | "ordenes-trabajo" | "boms";
 
 
 
@@ -392,12 +393,15 @@ export default function AdminDashboard() {
   const [ventasOpen, setVentasOpen] = useState(false);
   const [comprasOpen, setComprasOpen] = useState(false);
   const [inventarioOpen, setInventarioOpen] = useState(false);
+  const [produccionOpen, setProduccionOpen] = useState(false);
+  const [productionPrefilledSalesOrder, setProductionPrefilledSalesOrder] = useState<any | null>(null);
 
-  const toggleSidebarSection = (section: "contabilidad" | "ventas" | "compras" | "inventario") => {
+  const toggleSidebarSection = (section: "contabilidad" | "ventas" | "compras" | "inventario" | "produccion") => {
     setContabilidadOpen(section === "contabilidad" ? !contabilidadOpen : false);
     setVentasOpen(section === "ventas" ? !ventasOpen : false);
     setComprasOpen(section === "compras" ? !comprasOpen : false);
     setInventarioOpen(section === "inventario" ? !inventarioOpen : false);
+    setProduccionOpen(section === "produccion" ? !produccionOpen : false);
   };
 
   // Credit & Debit Notes State
@@ -2250,6 +2254,7 @@ export default function AdminDashboard() {
     { id: "pagar-proveedor", label: "Registrar Pago a Proveedor" },
     { id: "crear-factura-compra", label: "Registrar Factura de Compra" },
     { id: "crear-orden-compra", label: "Crear Orden de Compra" },
+    { id: "crear-orden-trabajo", label: "Crear Orden de Trabajo (Producción)" },
     { id: "crear-producto", label: "Crear Producto / Insumo" },
     { id: "agregar-cliente", label: "Agregar Cliente" },
     { id: "agregar-proveedor", label: "Agregar Proveedor" },
@@ -2314,6 +2319,10 @@ export default function AdminDashboard() {
     }
     if (id === "crear-orden-compra") {
       openPurchaseOrderEditor();
+      return;
+    }
+    if (id === "crear-orden-trabajo") {
+      setCurrentView("ordenes-trabajo");
       return;
     }
     if (id === "agregar-proveedor") {
@@ -4463,6 +4472,78 @@ ${accountRowsHtml(equity)}
             )}
           </div>
 
+          {/* Producción Collapsible Group (Exclusivo Tier 3 - Empresarial) */}
+          <div className="pt-1">
+            <button
+              onClick={() => toggleSidebarSection("produccion")}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
+                currentView === "produccion" || currentView === "ordenes-trabajo" || currentView === "boms"
+                  ? "font-semibold text-slate-900"
+                  : ""
+              }`}
+            >
+              <div className="flex items-center gap-3 truncate">
+                <Factory className="w-4 h-4 shrink-0 text-slate-600" />
+                {!sidebarCollapsed && (
+                  <span className="flex items-center gap-1.5">
+                    <span>Producción</span>
+                    {isItemLocked("produccion") && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                        EMP
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+              {!sidebarCollapsed && (
+                <svg
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                    produccionOpen ? "rotate-180" : "rotate-0"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              )}
+            </button>
+
+            {produccionOpen && !sidebarCollapsed && (
+              <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
+                <button
+                  onClick={() => setCurrentView("ordenes-trabajo")}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
+                    currentView === "ordenes-trabajo" || currentView === "produccion"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>Órdenes de Trabajo</span>
+                  {isItemLocked("ordenes-trabajo") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                      EMP
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setCurrentView("boms")}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
+                    currentView === "boms"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>Listas de Materiales (BOM)</span>
+                  {isItemLocked("boms") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                      EMP
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
 
         </nav>
 
@@ -4608,6 +4689,8 @@ ${accountRowsHtml(equity)}
                   {currentView === "retenciones-isv" && "Comprobantes de Retención SAR"}
                   {currentView === "pos" && "Terminal Punto de Venta (POS)"}
                   {currentView === "configuracion" && "Configuración del Sistema"}
+                  {(currentView === "produccion" || currentView === "ordenes-trabajo") && "Producción / Órdenes de Trabajo"}
+                  {currentView === "boms" && "Producción / Listas de Materiales (BOM)"}
                 </span>
               </div>
             </div>
@@ -11922,6 +12005,27 @@ ${accountRowsHtml(equity)}
                 onOpenInvoiceEditor={(prefilled) => openInvoiceEditor(prefilled)}
                 onNavigateToInvoices={() => setCurrentView("lista-facturas")}
                 onNavigateToQuotes={() => setCurrentView("cotizaciones")}
+                onNavigateToProduction={(so) => {
+                  setProductionPrefilledSalesOrder(so);
+                  setCurrentView("ordenes-trabajo");
+                }}
+              />
+            </div>
+          )}
+
+          {/* ================= VIEW: PRODUCCIÓN (ÓRDENES DE TRABAJO Y BOMS) ================= */}
+          {(currentView === "produccion" || currentView === "ordenes-trabajo" || currentView === "boms") && (
+            <div className="animate-in fade-in duration-150 p-6">
+              <ProductionModule
+                inventory={inventory}
+                customers={customers}
+                warehouses={warehousesList}
+                defaultCurrencySymbol={defaultCurrencySymbol}
+                defaultCurrencyCode={defaultCurrencyCode}
+                onNavigateToDashboard={() => setCurrentView("dashboard")}
+                onNavigateToSalesOrders={() => setCurrentView("pedidos-venta")}
+                prefilledSalesOrder={productionPrefilledSalesOrder}
+                onClearPrefilledSalesOrder={() => setProductionPrefilledSalesOrder(null)}
               />
             </div>
           )}

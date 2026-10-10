@@ -110,7 +110,8 @@ export type FeatureKey =
   | "advanced_reports"   // Antigüedad de saldos clientes/proveedores, estado de cuenta
   | "commissions"        // Vendedores y comisiones
   | "credit_debit_notes" // Notas de crédito y débito
-  | "multi_currency";    // Multi-divisa avanzada
+  | "multi_currency"     // Multi-divisa avanzada
+  | "production";        // Producción, Órdenes de Trabajo y BOMs
 
 export const FEATURE_MIN_PLAN: Record<FeatureKey, PlanTier> = {
   pos: "profesional",
@@ -124,6 +125,7 @@ export const FEATURE_MIN_PLAN: Record<FeatureKey, PlanTier> = {
   commissions: "empresarial",
   credit_debit_notes: "empresarial",
   multi_currency: "empresarial",
+  production: "empresarial",
 };
 
 export const FEATURE_TITLES: Record<FeatureKey, string> = {
@@ -138,6 +140,7 @@ export const FEATURE_TITLES: Record<FeatureKey, string> = {
   commissions: "Vendedores y Comisiones",
   credit_debit_notes: "Notas de Crédito y Débito",
   multi_currency: "Multi-divisa Avanzada",
+  production: "Módulo de Producción (Órdenes de Trabajo y BOMs)",
 };
 
 /**
@@ -214,6 +217,11 @@ export function getRequiredPlanForNav(navItem: string): { tier: PlanTier; featur
 
     case "notas-credito-debito":
       return { tier: "empresarial", featureName: "Notas de Crédito y Débito", featureKey: "credit_debit_notes" };
+
+    case "produccion":
+    case "ordenes-trabajo":
+    case "boms":
+      return { tier: "empresarial", featureName: "Módulo de Producción (OT y BOMs)", featureKey: "production" };
 
     default:
       return null;

@@ -35,6 +35,7 @@ import {
   X,
   Eye,
   Download,
+  Factory,
 } from "lucide-react";
 
 export interface SalesOrderItem {
@@ -101,6 +102,7 @@ interface SalesOrdersModuleProps {
   onOpenInvoiceEditor?: (prefilledData: any) => void;
   onNavigateToInvoices?: () => void;
   onNavigateToQuotes?: () => void;
+  onNavigateToProduction?: (salesOrder: any) => void;
   customers?: Array<{
     id: string;
     name: string;
@@ -140,6 +142,7 @@ export default function SalesOrdersModule({
   onOpenInvoiceEditor,
   onNavigateToInvoices,
   onNavigateToQuotes,
+  onNavigateToProduction,
   customers = [],
   inventory = [],
   salesReps = [],
@@ -1191,6 +1194,19 @@ export default function SalesOrdersModule({
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
+
+                        {/* Botón Crear Orden de Trabajo en Producción */}
+                        {onNavigateToProduction && order.status !== "CANCELADO" && (
+                          <button
+                            type="button"
+                            onClick={() => onNavigateToProduction(order)}
+                            className="p-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-800 border border-orange-200 transition cursor-pointer"
+                            title="Crear Orden de Trabajo (Producción)"
+                            aria-label="Crear Orden de Trabajo"
+                          >
+                            <Factory className="w-3.5 h-3.5" />
+                          </button>
+                        )}
 
                         {/* Botón Facturar (Solo icono) */}
                         {order.status !== "FACTURADO" && order.status !== "CANCELADO" && (
