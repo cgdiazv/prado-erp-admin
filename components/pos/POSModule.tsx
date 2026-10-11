@@ -171,6 +171,7 @@ export default function POSModule({
   // Live Ticket / Cart State
   // ----------------------------------------------------
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [mobileActiveTab, setMobileActiveTab] = useState<"catalog" | "cart">("catalog");
   const [selectedCustomer, setSelectedCustomer] = useState<{
     id?: string;
     name: string;
@@ -624,34 +625,40 @@ export default function POSModule({
       }}
     >
       {/* ================= 1. TOP OPERATIONAL BAR ================= */}
-      <div className="bg-[#1b426e] text-white px-4 py-2.5 flex items-center justify-between gap-3 shadow-md z-10 shrink-0">
-        <div className="flex items-center gap-3">
-          {onNavigateBack && (
-            <button
-              type="button"
-              onClick={onNavigateBack}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
-              title="Volver al Dashboard"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
-          <div className="flex items-center gap-2.5">
-            <span className="font-bold text-sm tracking-wide whitespace-nowrap">
-              Punto de Venta (POS)
-            </span>
-            <button
-              type="button"
-              onClick={handleOpenShiftModal}
-              className="flex items-center gap-1.5 text-[11px] text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg transition cursor-pointer group whitespace-nowrap"
-              title="Haz clic para seleccionar otra caja u otro cajero"
-            >
-              <span className="font-semibold text-amber-300">{activeRegister}</span>
-              <span className="text-slate-400">•</span>
-              <span className="truncate max-w-[150px]">{selectedSalesRep}</span>
-              <ChevronDown className="w-3 h-3 text-slate-300 group-hover:text-white transition-transform" />
-            </button>
+      <div className="bg-[#1b426e] text-white shadow-md z-10 shrink-0">
+        {/* Row 1: Back, Title & Shift info, and Desktop controls */}
+        <div className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {onNavigateBack && (
+              <button
+                type="button"
+                onClick={onNavigateBack}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shrink-0"
+                title="Volver al Dashboard"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            )}
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
+                Punto de Venta (POS)
+              </span>
+              <button
+                type="button"
+                onClick={handleOpenShiftModal}
+                className="flex items-center gap-1.5 text-[11px] text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-1 rounded-lg transition cursor-pointer group whitespace-nowrap truncate max-w-[150px] sm:max-w-none"
+                title="Haz clic para seleccionar otra caja u otro cajero"
+              >
+                <span className="font-semibold text-amber-300 truncate">{activeRegister}</span>
+                <span className="text-slate-400 hidden xs:inline">•</span>
+                <span className="truncate max-w-[100px] sm:max-w-[150px] hidden xs:inline">{selectedSalesRep}</span>
+                <ChevronDown className="w-3 h-3 text-slate-300 group-hover:text-white transition-transform shrink-0" />
+              </button>
+            </div>
+          </div>
 
+          {/* Desktop Controls (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-2.5">
             {/* Indicador de Red / Offline */}
             <div
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
@@ -697,42 +704,102 @@ export default function POSModule({
                 </span>
               )}
             </button>
+
+            {/* Global Barcode Scanner Search Bar */}
+            <div className="relative w-64 md:w-80 lg:w-96 hidden sm:block">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Escanear código de barra o buscar producto..."
+                className="w-full bg-white/10 hover:bg-white/15 focus:bg-white text-slate-100 focus:text-slate-900 placeholder:text-slate-300 focus:placeholder:text-slate-400 text-xs rounded-xl pl-9 pr-8 py-2 transition outline-none border border-white/20 focus:border-white focus:ring-2 focus:ring-amber-400/50"
+              />
+              <ScanBarcode className="w-4 h-4 text-slate-300 absolute left-3 top-2.5 pointer-events-none" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-2.5 text-slate-300 hover:text-white cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Parked Tickets Button */}
+            <button
+              type="button"
+              onClick={() => setShowParkedModal(true)}
+              className="relative px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0"
+              title="Tickets en espera"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden md:inline">En Espera</span>
+              {parkedTickets.length > 0 && (
+                <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold flex items-center justify-center">
+                  {parkedTickets.length}
+                </span>
+              )}
+            </button>
+
+            {/* Fullscreen Button */}
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shrink-0"
+              title={isFullscreen ? "Restaurar vista en dashboard" : "Expandir a ventana completa"}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 
-        {/* Top Right Controls with Search Bar right next to En Espera */}
-        <div className="flex items-center gap-2.5">
-          {/* Global Barcode Scanner Search Bar */}
-          <div className="relative w-64 md:w-80 lg:w-96 hidden sm:block">
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Escanear código de barra o buscar producto..."
-              className="w-full bg-white/10 hover:bg-white/15 focus:bg-white text-slate-100 focus:text-slate-900 placeholder:text-slate-300 focus:placeholder:text-slate-400 text-xs rounded-xl pl-9 pr-8 py-2 transition outline-none border border-white/20 focus:border-white focus:ring-2 focus:ring-amber-400/50"
-            />
-            <ScanBarcode className="w-4 h-4 text-slate-300 absolute left-3 top-2.5 pointer-events-none" />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-2.5 text-slate-300 hover:text-white cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+        {/* Row 2 on Mobile: Dedicated operational buttons row (Wifi, Sync, En Espera, Fullscreen) */}
+        <div className="md:hidden border-t border-white/10 px-3 py-1.5 flex items-center justify-between gap-2 bg-[#143457]">
+          {/* Indicador de Red / Offline */}
+          <div
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
+              isOnline
+                ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-200"
+                : "bg-amber-500/30 border-amber-400 text-amber-200 animate-pulse"
+            }`}
+          >
+            {isOnline ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-300" />
+                <span>En Línea</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-300" />
+                <span>Offline</span>
+              </>
             )}
           </div>
 
-          {/* Parked Tickets Button */}
+          {/* Botón de Sincronización */}
+          <button
+            type="button"
+            onClick={handleOpenSyncQueue}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
+              pendingSyncCount > 0
+                ? "bg-amber-400/30 border-amber-300 text-amber-100"
+                : "bg-white/10 border-white/15 text-slate-200 hover:bg-white/20"
+            }`}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-amber-300" : ""}`} />
+            <span>{pendingSyncCount > 0 ? `${pendingSyncCount} pend.` : "Sync"}</span>
+          </button>
+
+          {/* Botón de Tickets en Espera */}
           <button
             type="button"
             onClick={() => setShowParkedModal(true)}
-            className="relative px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0"
-            title="Tickets en espera"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-slate-200 transition cursor-pointer"
           >
             <Clock className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden md:inline">En Espera</span>
+            <span>En Espera</span>
             {parkedTickets.length > 0 && (
               <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold flex items-center justify-center">
                 {parkedTickets.length}
@@ -740,12 +807,12 @@ export default function POSModule({
             )}
           </button>
 
-          {/* Fullscreen Button */}
+          {/* Botón de Pantalla Completa */}
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shrink-0"
-            title={isFullscreen ? "Restaurar vista en dashboard" : "Expandir a ventana completa"}
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+            title={isFullscreen ? "Restaurar vista" : "Expandir pantalla"}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
@@ -769,10 +836,47 @@ export default function POSModule({
         </div>
       )}
 
+      {/* Mobile Segmented Switcher: Catálogo vs Ticket */}
+      <div className="lg:hidden bg-slate-200/90 p-1.5 border-b border-slate-300 flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileActiveTab("catalog")}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+            mobileActiveTab === "catalog"
+              ? "bg-[#1b426e] text-white shadow-xs"
+              : "bg-white/90 text-slate-700 hover:bg-white"
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          <span>Catálogo ({filteredProducts.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileActiveTab("cart")}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+            mobileActiveTab === "cart"
+              ? "bg-[#1b426e] text-white shadow-xs"
+              : "bg-white/90 text-slate-700 hover:bg-white"
+          }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          <span>Ticket ({cartTotals.totalItems})</span>
+          {cartTotals.total > 0 && (
+            <span className="font-mono text-[10px] font-extrabold bg-emerald-500 text-white px-1.5 py-0.2 rounded-md">
+              {formatCurrency(cartTotals.total)}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* ================= 2. MAIN SPLIT BODY ================= */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* ================= LEFT: VISUAL PRODUCT CATALOG (60-65%) ================= */}
-        <div className="flex-1 flex flex-col bg-slate-50 border-r border-slate-200 overflow-hidden">
+        <div
+          className={`flex-1 flex flex-col bg-slate-50 border-r border-slate-200 overflow-hidden ${
+            mobileActiveTab === "catalog" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           {/* Mobile search bar if on small screen */}
           <div className="p-3 border-b border-slate-200 bg-white sm:hidden">
             <div className="relative">
@@ -896,10 +1000,34 @@ export default function POSModule({
               </div>
             )}
           </div>
+
+          {/* Floating Mobile Bar: Ver Ticket when items are in cart */}
+          {cart.length > 0 && (
+            <div className="lg:hidden p-2.5 bg-white border-t border-slate-200 shadow-md shrink-0">
+              <button
+                type="button"
+                onClick={() => setMobileActiveTab("cart")}
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-between shadow-md active:scale-98 transition cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Ver Ticket ({cartTotals.totalItems} {cartTotals.totalItems === 1 ? "artículo" : "artículos"})</span>
+                </div>
+                <div className="flex items-center gap-1 font-mono text-xs font-bold">
+                  <span>{formatCurrency(cartTotals.total)}</span>
+                  <span>→</span>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ================= RIGHT: LIVE TICKET / CART (35-40%) ================= */}
-        <div className="w-full lg:w-[420px] xl:w-[460px] bg-white flex flex-col h-full shadow-lg border-t lg:border-t-0 z-10">
+        <div
+          className={`w-full lg:w-[420px] xl:w-[460px] bg-white flex flex-col h-full shadow-lg border-t lg:border-t-0 z-10 ${
+            mobileActiveTab === "cart" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           {/* Cart Header & Customer Selector */}
           <div className="p-3.5 border-b border-slate-200 bg-slate-50/70 shrink-0">
             <div className="flex items-center justify-between mb-2">
@@ -910,15 +1038,25 @@ export default function POSModule({
                   ({cartTotals.totalItems} artículos)
                 </span>
               </div>
-              {cart.length > 0 && (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleClearCart}
-                  className="text-[11px] font-semibold text-rose-600 hover:text-rose-800 transition cursor-pointer"
+                  onClick={() => setMobileActiveTab("catalog")}
+                  className="lg:hidden text-[11px] font-semibold text-[#1b426e] hover:text-[#143457] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-md transition cursor-pointer flex items-center gap-1"
                 >
-                  Vaciar
+                  <ArrowLeft className="w-3 h-3" />
+                  <span>+ Artículos</span>
                 </button>
-              )}
+                {cart.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearCart}
+                    className="text-[11px] font-semibold text-rose-600 hover:text-rose-800 transition cursor-pointer"
+                  >
+                    Vaciar
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Customer Pill Button */}
@@ -959,6 +1097,14 @@ export default function POSModule({
                 <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">
                   Toca un artículo del catálogo o escanea con el lector de código
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setMobileActiveTab("catalog")}
+                  className="mt-3 lg:hidden px-4 py-2 bg-[#1b426e] hover:bg-[#153457] text-white text-xs font-semibold rounded-xl transition shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Package className="w-3.5 h-3.5" />
+                  <span>Ir al Catálogo de Productos</span>
+                </button>
               </div>
             ) : (
               cart.map((item) => (
