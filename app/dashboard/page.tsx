@@ -4648,7 +4648,7 @@ ${accountRowsHtml(equity)}
       {/* ===================== MAIN WORKSPACE ===================== */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="h-16 border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs shrink-0">
+        <header className="h-16 border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-20 px-4 sm:px-6 flex items-center justify-between shadow-xs shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
@@ -4832,7 +4832,7 @@ ${accountRowsHtml(equity)}
         </header>
 
         {/* Workspace Body */}
-        <main className="flex-1 p-6 lg:p-8 space-y-6 w-full">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 w-full">
           <TrialBanner
             trialEndsAt={subscriptionInfo?.trialEndsAt}
             subscriptionStatus={subscriptionInfo?.subscriptionStatus}
@@ -5911,7 +5911,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: CLIENTES ================= */}
           {currentView === "clientes" && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <CustomersModule
                 customers={customers}
                 loading={loading}
@@ -5927,7 +5927,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: PROVEEDORES ================= */}
           {currentView === "proveedores" && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <VendorsModule
                 vendors={vendors}
                 loading={loading}
@@ -5947,7 +5947,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: PUNTO DE VENTA (POS) ================= */}
           {currentView === "pos" && (
-            <div className="animate-in fade-in duration-150 p-3 lg:p-6">
+            <div className="animate-in fade-in duration-150">
               <POSModule
                 inventory={inventory}
                 setInventory={setInventory}
@@ -5966,7 +5966,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: INVENTARIO, LOTES Y SERIES ================= */}
           {(currentView === "inventario" || currentView === "lotes" || currentView === "series") && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <InventoryModule
                 inventory={inventory}
                 setInventory={setInventory}
@@ -6013,7 +6013,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: VENDEDORES & COMISIONES ================= */}
           {(currentView === "vendedores" || currentView === "comisiones") && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <CommissionsModule
                 salesReps={salesReps}
                 commissions={commissionRecords}
@@ -11957,7 +11957,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: COTIZACIONES ================= */}
           {currentView === "cotizaciones" && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <QuotesModule
                 companySettings={companySettings}
                 customers={customers}
@@ -11987,7 +11987,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: PEDIDOS DE VENTA (SALES ORDERS) ================= */}
           {currentView === "pedidos-venta" && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <SalesOrdersModule
                 customers={customers}
                 inventory={inventory}
@@ -12015,7 +12015,7 @@ ${accountRowsHtml(equity)}
 
           {/* ================= VIEW: PRODUCCIÓN (ÓRDENES DE TRABAJO Y BOMS) ================= */}
           {(currentView === "produccion" || currentView === "ordenes-trabajo" || currentView === "boms") && (
-            <div className="animate-in fade-in duration-150 p-6">
+            <div className="animate-in fade-in duration-150">
               <ProductionModule
                 inventory={inventory}
                 customers={customers}
