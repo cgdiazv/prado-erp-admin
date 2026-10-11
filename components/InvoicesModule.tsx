@@ -995,7 +995,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
 
   if (currentView === "lista-facturas") {
     return (
-            <div className="space-y-6 animate-in fade-in duration-150 p-6">
+            <div className="space-y-6 animate-in fade-in duration-150">
               {/* ================= SCREEN HEADER ================= */}
               <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
