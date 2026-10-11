@@ -14,6 +14,7 @@ import {
   XCircle,
   FileText,
   ExternalLink,
+  ChevronLeft,
   ChevronRight,
   Building2,
   DollarSign,
@@ -856,16 +857,14 @@ export default function SalesOrdersModule({
       )}
 
       {/* ================= SCREEN HEADER ================= */}
-      <div className="space-y-4 print:hidden">
+      <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onBack}
             className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
           >
-            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="w-4 h-4 text-slate-500" />
             <span>Regresar a Dashboard</span>
           </button>
           <span className="text-slate-300">/</span>
@@ -874,41 +873,25 @@ export default function SalesOrdersModule({
           <span className="text-xs font-bold text-slate-900">Historial de Pedidos de Venta</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900">
-                Historial de Pedidos de Venta
-              </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                Ciclo Comercial y Almacén
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Gestione las órdenes de venta confirmadas por clientes, controle el alistamiento en bodega (Picking & Packing) y facture con 1 clic.
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={fetchOrders}
+            disabled={refreshing}
+            className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#1b426e]" : ""}`} />
+            <span>Actualizar</span>
+          </button>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={fetchOrders}
-              disabled={refreshing}
-              className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#1b426e]" : ""}`} />
-              <span>Actualizar</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#e07116] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 transition cursor-pointer"
-            >
-              <span className="text-sm leading-none">+</span>
-              <span>Nuevo Pedido de Venta</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#e07116] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 transition cursor-pointer"
+          >
+            <span className="text-sm leading-none">+</span>
+            <span>Nuevo Pedido de Venta</span>
+          </button>
         </div>
       </div>
 
@@ -1107,31 +1090,31 @@ export default function SalesOrdersModule({
                   <tr key={order.id} className="hover:bg-slate-50/80 transition group">
                     {/* Pedido / O.C. Cliente */}
                     <td className="py-3.5 px-4 font-sans">
-                      <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                      <div className="flex flex-col items-start gap-1">
                         <button
                           type="button"
                           onClick={() => {
                             setSelectedOrder(order);
                             handleOpenEdit(order);
                           }}
-                          className="hover:underline text-left cursor-pointer hover:text-[#1b426e] transition font-bold"
+                          className="font-bold text-slate-900 hover:underline text-left cursor-pointer hover:text-[#1b426e] transition whitespace-nowrap"
                           title="Ver y editar pedido de venta"
                         >
                           {order.orderNumber}
                         </button>
                         {order.quoteNumber && (
-                          <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-medium">
+                          <span className="inline-block text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-medium whitespace-nowrap">
                             Cot: {order.quoteNumber}
                           </span>
                         )}
+                        {order.customerPoNumber ? (
+                          <span className="text-[11px] font-semibold text-orange-600 flex items-center gap-1">
+                            <span>O.C.:</span> {order.customerPoNumber}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic block">Sin O.C. cliente</span>
+                        )}
                       </div>
-                      {order.customerPoNumber ? (
-                        <span className="text-[11px] font-semibold text-orange-600 flex items-center gap-1 mt-0.5">
-                          <span>O.C.:</span> {order.customerPoNumber}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 italic block mt-0.5">Sin O.C. cliente</span>
-                      )}
                     </td>
 
                     {/* Cliente */}

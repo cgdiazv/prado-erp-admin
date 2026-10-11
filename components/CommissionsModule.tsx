@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  ArrowLeft,
+  ChevronLeft,
   Printer,
   X,
   Percent,
@@ -447,109 +447,124 @@ export default function CommissionsModule({
   return (
     <>
       <div className={`space-y-6 ${showReportModal ? "print:hidden" : ""}`}>
-      {/* Module Subtab Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3 print:hidden">
-        <div className="flex items-center gap-2">
+      {/* ================= SCREEN HEADER ================= */}
+      <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer mr-1"
-              title="Regresar al Dashboard"
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 text-slate-500" />
+              <span>Regresar a Dashboard</span>
             </button>
           )}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => handleTabChange("vendedores")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                activeTab === "vendedores"
-                  ? "bg-white text-[#1b426e] shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>Fuerza de Ventas ({localSalesReps.length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange("comisiones")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                activeTab === "comisiones"
-                  ? "bg-white text-[#1b426e] shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Liquidación de Comisiones ({localCommissions.length})</span>
-            </button>
-          </div>
+          <span className="text-slate-300">/</span>
+          <span className="text-xs font-semibold text-slate-500">Ventas</span>
+          <span className="text-slate-300">/</span>
+          <span className="text-xs font-bold text-slate-900">
+            {activeTab === "vendedores" ? "Fuerza de Ventas" : "Liquidación de Comisiones"}
+          </span>
         </div>
 
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setShowReportModal(true)}
-            className="px-4 py-2 rounded-full border border-[#1b426e] text-[#1b426e] hover:bg-[#fff7ed] text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
-            title="Generar e imprimir reporte formal de vendedores"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Generar reporte</span>
-          </button>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {activeTab === "vendedores" ? (
-            <button
-              type="button"
-              onClick={openCreateSalesRepModal}
-              className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Nuevo Vendedor</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => handleExportCSV(filteredSalesReps)}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Descargar catálogo en formato CSV"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Exportar CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowReportModal(true)}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Generar e imprimir reporte formal de vendedores"
+              >
+                <FileText className="w-3.5 h-3.5 text-slate-500" />
+                <span>Generar reporte</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openCreateSalesRepModal}
+                className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Nuevo Vendedor</span>
+              </button>
+            </>
           ) : (
-            <button
-              type="button"
-              onClick={openCreateCommissionModal}
-              className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Calcular Comisión</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  alert("Exportando reporte de comisiones...");
+                  window.print();
+                }}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Exportar Liquidaciones</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openCreateCommissionModal}
+                className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Calcular Comisión</span>
+              </button>
+            </>
           )}
         </div>
+      </div>
+
+      {/* Module Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-3 print:hidden overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => handleTabChange("vendedores")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
+            activeTab === "vendedores"
+              ? "bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5] shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Fuerza de Ventas</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-800 font-bold">
+            {localSalesReps.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange("comisiones")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
+            activeTab === "comisiones"
+              ? "bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5] shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          }`}
+        >
+          <DollarSign className="w-4 h-4 text-emerald-600" />
+          <span>Liquidación de Comisiones</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold">
+            {localCommissions.length}
+          </span>
+        </button>
       </div>
 
       {/* ================= VIEW: VENDEDORES ================= */}
       {activeTab === "vendedores" && (
         <div className="space-y-6 animate-in fade-in duration-150">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 print:hidden">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Fuerza de Ventas & Esquema de Zonas
-                </h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                  {localSalesReps.filter((r) => r.status === "ACTIVO").length} Activos
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Gestión de ejecutivos comerciales, cuotas mensuales, porcentaje de comisión y zonificación.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleExportCSV(filteredSalesReps)}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                title="Descargar catálogo en formato CSV"
-              >
-                <Download className="w-4 h-4 text-emerald-600" />
-                <span>Exportar Vendedores</span>
-              </button>
-            </div>
-          </div>
 
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -754,35 +769,6 @@ export default function CommissionsModule({
       {/* ================= VIEW: COMISIONES ================= */}
       {activeTab === "comisiones" && (
         <div className="space-y-6 animate-in fade-in duration-150">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 print:hidden">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Control & Liquidación de Comisiones
-                </h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Cálculo Automatizado
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Registro, liquidación y seguimiento de comisiones sobre ventas cobradas o facturadas por vendedor.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  alert("Exportando reporte de comisiones...");
-                  window.print();
-                }}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-              >
-                <Download className="w-4 h-4 text-emerald-600" />
-                <span>Exportar Liquidaciones</span>
-              </button>
-            </div>
-          </div>
 
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

@@ -15,6 +15,7 @@ import {
   Play,
   RotateCcw,
   Printer,
+  ChevronLeft,
   ChevronRight,
   Boxes,
   ArrowRight,
@@ -48,6 +49,9 @@ interface ProductionModuleProps {
   }>;
   defaultCurrencySymbol?: string;
   defaultCurrencyCode?: string;
+  currentView?: string;
+  initialTab?: "work-orders" | "boms";
+  onChangeTab?: (tab: "work-orders" | "boms") => void;
   onNavigateToDashboard?: () => void;
   onNavigateToSalesOrders?: () => void;
   prefilledSalesOrder?: {
@@ -69,13 +73,34 @@ export default function ProductionModule({
   warehouses = [],
   defaultCurrencySymbol = "$",
   defaultCurrencyCode = "USD",
+  currentView,
+  initialTab,
+  onChangeTab,
   onNavigateToDashboard,
   onNavigateToSalesOrders,
   prefilledSalesOrder,
   onClearPrefilledSalesOrder,
 }: ProductionModuleProps) {
   // Tabs: 'work-orders' | 'boms'
-  const [activeTab, setActiveTab] = useState<"work-orders" | "boms">("work-orders");
+  const [activeTab, setActiveTab] = useState<"work-orders" | "boms">(
+    currentView === "boms" || initialTab === "boms" ? "boms" : "work-orders"
+  );
+
+  useEffect(() => {
+    if (currentView === "boms") {
+      setActiveTab("boms");
+      setSearchQuery("");
+    } else if (currentView === "ordenes-trabajo") {
+      setActiveTab("work-orders");
+      setSearchQuery("");
+    }
+  }, [currentView]);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   // State: Data
   const [workOrders, setWorkOrders] = useState<any[]>([]);
@@ -774,91 +799,76 @@ export default function ProductionModule({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* ================= SCREEN HEADER ================= */}
-      <div className="space-y-3 sm:space-y-4 print:hidden">
+      <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-wrap whitespace-nowrap">
           <button
             type="button"
             onClick={onNavigateToDashboard}
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
+            className="font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer shrink-0"
           >
-            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="w-4 h-4 text-slate-500" />
             <span>Regresar a Dashboard</span>
           </button>
-          <span className="text-slate-300">/</span>
-          <span className="text-xs font-semibold text-slate-500">Producción</span>
-          <span className="text-slate-300">/</span>
-          <span className="text-xs font-bold text-slate-900">
+          <span className="text-slate-300 select-none">/</span>
+          <span className="font-semibold text-slate-500 shrink-0">Producción</span>
+          <span className="text-slate-300 select-none">/</span>
+          <span className="font-bold text-slate-900 shrink-0">
             {activeTab === "work-orders" ? "Órdenes de Producción" : "Listas de Materiales (BOM)"}
           </span>
         </div>
 
-        {/* Title row + Badge + Subtitle + Action buttons */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900">
-                {activeTab === "work-orders"
-                  ? "Órdenes de Producción (Fabricación)"
-                  : "Listas de Materiales (BOMs)"}
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Gestión de órdenes de trabajo, listas de materiales (BOM) y consumo automático de materias primas.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {/* Tab switcher */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("work-orders");
-                  setSearchQuery("");
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                  activeTab === "work-orders"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Boxes className="w-3.5 h-3.5 text-[#1b426e]" />
-                Órdenes ({workOrders.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("boms");
-                  setSearchQuery("");
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                  activeTab === "boms"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5 text-indigo-600" />
-                BOMs ({boms.length})
-              </button>
-            </div>
-
-            {/* Main Action Button matching exact screenshot styling */}
+        {/* Action buttons + Tab Switcher */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {/* Tab switcher */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
               type="button"
-              onClick={activeTab === "work-orders" ? openNewWorkOrderModal : openNewBomModal}
-              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+              onClick={() => {
+                setActiveTab("work-orders");
+                setSearchQuery("");
+                onChangeTab?.("work-orders");
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeTab === "work-orders"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
             >
-              <span className="text-sm leading-none">+</span>
-              <span>
-                {activeTab === "work-orders"
-                  ? "Crear Orden de Trabajo"
-                  : "Crear Lista de Materiales (BOM)"}
-              </span>
+              <Boxes className="w-3.5 h-3.5 text-[#1b426e]" />
+              Órdenes ({workOrders.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("boms");
+                setSearchQuery("");
+                onChangeTab?.("boms");
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeTab === "boms"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-indigo-600" />
+              BOMs ({boms.length})
             </button>
           </div>
+
+          {/* Main Action Button */}
+          <button
+            type="button"
+            onClick={activeTab === "work-orders" ? openNewWorkOrderModal : openNewBomModal}
+            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+          >
+            <span className="text-sm leading-none">+</span>
+            <span>
+              {activeTab === "work-orders"
+                ? "Crear Orden de Trabajo"
+                : "Crear Lista de Materiales (BOM)"}
+            </span>
+          </button>
         </div>
       </div>
 

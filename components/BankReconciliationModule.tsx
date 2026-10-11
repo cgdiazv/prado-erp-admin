@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   Lock,
   Plus,
-  ArrowLeft,
+  ChevronLeft,
   Calendar,
   Building2,
   Printer,
@@ -529,14 +529,14 @@ export default function BankReconciliationModule({
   return (
     <div className="space-y-6 animate-in fade-in duration-150 p-6">
       {/* ================= SCREEN HEADER ================= */}
-      <div className="space-y-4 print:hidden">
+      <div className="print:hidden flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onBack}
             className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
           >
-            <ArrowLeft className="w-4 h-4 text-slate-500" />
+            <ChevronLeft className="w-4 h-4 text-slate-500" />
             <span>Regresar a Dashboard</span>
           </button>
           <span className="text-slate-300">/</span>
@@ -545,52 +545,36 @@ export default function BankReconciliationModule({
           <span className="text-xs font-bold text-slate-900">Conciliación de Extracto Mensual</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900">
-                Conciliación y Cierre de Extractos Mensuales
-              </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                Auditoría Contable &amp; Bancos
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Cotejo formal de partidas en tránsito, comisiones, cheques y cuadre matemático contra estados de cuenta bancarios oficiales.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {currentRec && (
-              <button
-                type="button"
-                onClick={() => setShowReportModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200"
-              >
-                <Printer className="w-4 h-4 text-slate-600" />
-                <span>Cédula de Conciliación</span>
-              </button>
-            )}
-
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {currentRec && (
             <button
               type="button"
-              onClick={() => {
-                setNewRecForm({
-                  bankAccountId: selectedBankId || bankAccounts[0]?.id || "",
-                  period: new Date().toISOString().slice(0, 7),
-                  statementDate: new Date().toISOString().split("T")[0],
-                  statementBeginningBalance: currentRec?.statementEndingBalance || currentBank?.bankBalance || 0,
-                  statementEndingBalance: currentBank?.bankBalance || 0,
-                  notes: "",
-                });
-                setShowNewRecModal(true);
-              }}
-              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+              onClick={() => setShowReportModal(true)}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200"
             >
-              <Plus className="w-4 h-4" />
-              <span>Aperturar Nueva Conciliación</span>
+              <Printer className="w-4 h-4 text-slate-600" />
+              <span>Cédula de Conciliación</span>
             </button>
-          </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setNewRecForm({
+                bankAccountId: selectedBankId || bankAccounts[0]?.id || "",
+                period: new Date().toISOString().slice(0, 7),
+                statementDate: new Date().toISOString().split("T")[0],
+                statementBeginningBalance: currentRec?.statementEndingBalance || currentBank?.bankBalance || 0,
+                statementEndingBalance: currentBank?.bankBalance || 0,
+                notes: "",
+              });
+              setShowNewRecModal(true);
+            }}
+            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Aperturar Nueva Conciliación</span>
+          </button>
         </div>
       </div>
 
@@ -791,8 +775,19 @@ export default function BankReconciliationModule({
           )}
         </div>
 
-        {/* Right: Closing & Adjustments Actions */}
-        <div className="flex items-center gap-2">
+        {/* Right: Search & Actions */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Buscar por descripción, ref..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+          </div>
+
           {currentRec && currentRec.status !== "CERRADA" && (
             <>
               <button
@@ -917,8 +912,8 @@ export default function BankReconciliationModule({
       )}
 
       {/* ================= WORKBENCH NAVIGATION TABS ================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-        <div className="flex items-center gap-2">
+      <div className="border-b border-slate-200 pb-3">
+        <div className="flex items-center gap-2 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveTab("deposits")}
@@ -964,20 +959,6 @@ export default function BankReconciliationModule({
             <span>Historial de Cierres Mensuales</span>
           </button>
         </div>
-
-        {/* Search Input */}
-        {activeTab !== "history" && (
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="Buscar por descripción, ref..."
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#1b426e]"
-            />
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
-          </div>
-        )}
       </div>
 
       {/* ================= TAB CONTENT 1: DEPÓSITOS Y ABONOS ================= */}

@@ -4659,41 +4659,6 @@ ${accountRowsHtml(equity)}
               </svg>
             </button>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-base text-slate-900 capitalize">
-                  {currentView === "dashboard" && "Resumen Ejecutivo"}
-                  {currentView === "plan-cuentas" && "Contabilidad / Plan de Cuentas"}
-                  {currentView === "transacciones" && "Contabilidad / Transacciones Bancarias"}
-                  {currentView === "caja-chica" && "Contabilidad / Arqueo & Control de Caja Chica"}
-                  {currentView === "conciliacion-bancaria" && "Contabilidad / Conciliación de Extracto Mensual"}
-                  {currentView === "clientes" && "Directorio de Clientes"}
-                  {currentView === "cotizaciones" && "Cotizaciones"}
-                  {currentView === "pedidos-venta" && "Pedidos de Venta"}
-                  {currentView === "lista-facturas" && "Gestión de Facturas"}
-                  {currentView === "notas-credito-debito" && "Notas de Crédito / Débito"}
-                  {currentView === "proveedores" && "Directorio de Proveedores"}
-                  {currentView === "lista-ordenes-compra" && "Gestión de Órdenes de Compra"}
-                  {currentView === "factura-compra-lista" && "Facturas de Compra & Entradas"}
-                  {(currentView === "pagos-proveedores" || currentView === "pagar-proveedor") && "Cuentas por Pagar / Pagos a Proveedores"}
-                  {currentView === "devoluciones-proveedor" && "Devoluciones a Proveedores"}
-                  {currentView === "vendedores" && "Fuerza de Ventas"}
-                  {currentView === "comisiones" && "Control de Comisiones"}
-                  {currentView === "inventario" && "Control Maestro de Inventario"}
-                  {currentView === "lotes" && "Control de Lotes"}
-                  {currentView === "series" && "Control de Números de Serie"}
-                  {currentView === "reportes" && "Centro de Reportes"}
-                  {currentView === "antiguedad-saldos" && "Reportes / Antigüedad de Saldos Clientes"}
-                  {currentView === "antiguedad-saldos-proveedores" && "Reportes / Antigüedad de Saldos Proveedores"}
-                  {currentView === "estado-cuenta-cliente" && "Clientes / Estado de Cuenta Individual"}
-                  {currentView === "retenciones-isv" && "Comprobantes de Retención SAR"}
-                  {currentView === "pos" && "Terminal Punto de Venta (POS)"}
-                  {currentView === "configuracion" && "Configuración del Sistema"}
-                  {(currentView === "produccion" || currentView === "ordenes-trabajo") && "Producción / Órdenes de Trabajo"}
-                  {currentView === "boms" && "Producción / Listas de Materiales (BOM)"}
-                </span>
-              </div>
-            </div>
           </div>
 
           <div className="relative md:hidden" ref={mobileAccionesDropdownRef}>
@@ -5326,17 +5291,6 @@ ${accountRowsHtml(equity)}
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     <span>Reglas de automatización</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setCurrentView("conciliacion-bancaria")}
-                    className="px-3.5 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-                  >
-                    <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Cierre & Conciliación Extractos</span>
                   </button>
 
                   <button
@@ -12022,6 +11976,8 @@ ${accountRowsHtml(equity)}
                 warehouses={warehousesList}
                 defaultCurrencySymbol={defaultCurrencySymbol}
                 defaultCurrencyCode={defaultCurrencyCode}
+                currentView={currentView}
+                onChangeTab={(tab) => setCurrentView(tab === "boms" ? "boms" : "ordenes-trabajo")}
                 onNavigateToDashboard={() => setCurrentView("dashboard")}
                 onNavigateToSalesOrders={() => setCurrentView("pedidos-venta")}
                 prefilledSalesOrder={productionPrefilledSalesOrder}

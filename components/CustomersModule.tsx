@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Customer } from "@/types/dashboard";
 import { TableRowsSkeleton } from "@/components/Skeleton";
-import { FileText, Download, Printer, Settings, Plus, Search, ArrowLeft, ChevronDown, X, Building2, Users, CheckCircle2, Pencil } from "lucide-react";
+import { FileText, Download, Printer, Settings, Plus, Search, ChevronLeft, ChevronDown, X, Building2, Users, CheckCircle2, Pencil } from "lucide-react";
 
 interface CustomersModuleProps {
   customers: Customer[];
@@ -339,7 +339,7 @@ export default function CustomersModule({
           onClick={onBack}
           className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
         >
-          <ArrowLeft className="w-4 h-4 text-slate-500" />
+          <ChevronLeft className="w-4 h-4 text-slate-500" />
           <span>Regresar a Dashboard</span>
         </button>
 

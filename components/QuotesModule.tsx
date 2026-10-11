@@ -14,6 +14,7 @@ import {
   AlertCircle,
   XCircle,
   ArrowRight,
+  ChevronLeft,
   ExternalLink,
   ChevronRight,
   Building2,
@@ -1042,16 +1043,14 @@ export default function QuotesModule({
       )}
 
       {/* ================= SCREEN HEADER ================= */}
-      <div className="space-y-4 print:hidden">
+      <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onBack}
             className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
           >
-            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="w-4 h-4 text-slate-500" />
             <span>Regresar a Dashboard</span>
           </button>
           <span className="text-slate-300">/</span>
@@ -1060,50 +1059,34 @@ export default function QuotesModule({
           <span className="text-xs font-bold text-slate-900">Historial de Cotizaciones</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900">
-                Historial de Cotizaciones
-              </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                Ciclo Comercial de Ventas
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Gestiona, consulta, imprime y convierte cotizaciones a facturas con partida automática en el Libro Diario.
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={fetchQuotes}
+            disabled={refreshing}
+            className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${refreshing ? "animate-spin" : ""}`} />
+            <span>Actualizar</span>
+          </button>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={fetchQuotes}
-              disabled={refreshing}
-              className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${refreshing ? "animate-spin" : ""}`} />
-              <span>Actualizar</span>
-            </button>
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>Exportar CSV</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Exportar CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
-            >
-              <span className="text-sm leading-none">+</span>
-              <span>Crear cotización</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+          >
+            <span className="text-sm leading-none">+</span>
+            <span>Crear cotización</span>
+          </button>
         </div>
       </div>
 
@@ -1379,14 +1362,15 @@ export default function QuotesModule({
                             </button>
                           ) : (
                             <button
+                              type="button"
                               onClick={() => {
                                 if (onNavigateToInvoices) onNavigateToInvoices();
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition border border-blue-200 cursor-pointer"
+                              className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition cursor-pointer"
                               title="Ver en facturas"
+                              aria-label="Ver en facturas"
                             >
-                              <ExternalLink className="w-3 h-3" />
-                              Ver Fac.
+                              <ExternalLink className="w-4 h-4" />
                             </button>
                           )}
 

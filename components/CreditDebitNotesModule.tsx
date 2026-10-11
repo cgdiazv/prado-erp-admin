@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { CreditDebitNote, Customer, Vendor, CompanySettings } from "@/types/dashboard";
-import { CheckCircle2, FileText, Search, Printer, Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, FileText, Search, Printer, Pencil, Trash2, ChevronLeft } from "lucide-react";
 
 export interface CreditDebitNotesModuleProps {
   creditDebitNotes: CreditDebitNote[];
@@ -382,16 +382,14 @@ export default function CreditDebitNotesModule({
     <>
             <div className="space-y-5 print:hidden">
               {/* ================= SCREEN HEADER ================= */}
-              <div className="space-y-4 print:hidden">
+              <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={onNavigateToDashboard}
                     className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
                   >
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
                     <span>Regresar a Dashboard</span>
                   </button>
                   <span className="text-slate-300">/</span>
@@ -400,28 +398,15 @@ export default function CreditDebitNotesModule({
                   <span className="text-xs font-bold text-slate-900">Notas de Crédito y Débito</span>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-slate-900">
-                        Gestión de Notas de Crédito & Débito
-                      </h2>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Ajustes contables de saldo, devoluciones de mercadería, bonificaciones e intereses.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={openCreateNoteModal}
-                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
-                    >
-                      <span className="text-sm leading-none">+</span>
-                      <span>Nueva Nota de Crédito / Débito</span>
-                    </button>
-                  </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={openCreateNoteModal}
+                    className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+                  >
+                    <span className="text-sm leading-none">+</span>
+                    <span>Nueva Nota de Crédito / Débito</span>
+                  </button>
                 </div>
               </div>
 

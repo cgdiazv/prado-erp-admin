@@ -8,7 +8,7 @@ import {
   Printer,
   Plus,
   Search,
-  ArrowLeft,
+  ChevronLeft,
   ChevronDown,
   Clock,
   CreditCard,
@@ -225,7 +225,7 @@ export default function VendorsModule({
           onClick={onBack}
           className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
         >
-          <ArrowLeft className="w-4 h-4 text-slate-500" />
+          <ChevronLeft className="w-4 h-4 text-slate-500" />
           <span>Regresar a Dashboard</span>
         </button>
 

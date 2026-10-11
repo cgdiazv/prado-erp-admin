@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Edit3, Eye } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Edit3, Eye, ChevronLeft } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -997,16 +997,14 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
     return (
             <div className="space-y-6 animate-in fade-in duration-150 p-6">
               {/* ================= SCREEN HEADER ================= */}
-              <div className="space-y-4 print:hidden">
+              <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => onNavigateToDashboard()}
                     className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
                   >
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
                     <span>Regresar a Dashboard</span>
                   </button>
                   <span className="text-slate-300">/</span>
@@ -1015,31 +1013,15 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                   <span className="text-xs font-bold text-slate-900">Historial de Facturas</span>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-slate-900">
-                        Historial de Facturas Emitidas
-                      </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                        Facturación Fiscal (SAR)
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Gestiona, consulta, imprime y reenvía las facturas comerciales enviadas a tus clientes.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => onOpenInvoiceEditor()}
-                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
-                    >
-                      <span className="text-sm leading-none">+</span>
-                      <span>Crear factura</span>
-                    </button>
-                  </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onOpenInvoiceEditor()}
+                    className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+                  >
+                    <span className="text-sm leading-none">+</span>
+                    <span>Crear factura</span>
+                  </button>
                 </div>
               </div>
 

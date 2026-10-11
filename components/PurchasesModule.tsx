@@ -18,6 +18,7 @@ import {
   Check,
   Trash2,
   Send,
+  ChevronLeft,
 } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import { numberToWordsSpanish } from "@/components/InvoicesModule";
@@ -1229,51 +1230,33 @@ export function PurchasesModule({
   return (
     <>
           {currentView === "lista-ordenes-compra" && (
-            <div className="space-y-6 animate-in fade-in duration-150 p-6">
+            <div className="space-y-6 animate-in fade-in duration-150">
               {/* ================= SCREEN HEADER ================= */}
-              <div className="space-y-4 print:hidden">
-                <div className="flex items-center gap-3">
+              <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-wrap whitespace-nowrap">
                   <button
                     type="button"
                     onClick={onNavigateToDashboard}
-                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
+                    className="font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer shrink-0"
                   >
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
                     <span>Regresar a Dashboard</span>
                   </button>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-xs font-semibold text-slate-500">Compras</span>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-xs font-bold text-slate-900">Órdenes de Compra</span>
+                  <span className="text-slate-300 select-none">/</span>
+                  <span className="font-semibold text-slate-500 shrink-0">Compras</span>
+                  <span className="text-slate-300 select-none">/</span>
+                  <span className="font-bold text-slate-900 shrink-0">Órdenes de Compra</span>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-slate-900">
-                        Órdenes de Compra
-                      </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                        Gestión de Compras (PO)
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Control y trazabilidad de las compras de materia prima e insumos a proveedores.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenPOEditor()}
-                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
-                    >
-                      <span className="text-sm leading-none">+</span>
-                      <span>Crear orden de compra</span>
-                    </button>
-                  </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPOEditor()}
+                    className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+                  >
+                    <span className="text-sm leading-none">+</span>
+                    <span>Crear orden de compra</span>
+                  </button>
                 </div>
               </div>
 
@@ -1503,51 +1486,33 @@ export function PurchasesModule({
 
           {/* ================= VIEW: LISTA DE FACTURAS DE COMPRA ================= */}
           {currentView === "factura-compra-lista" && (
-            <div className="space-y-6 animate-in fade-in duration-150 p-6">
+            <div className="space-y-6 animate-in fade-in duration-150">
               {/* ================= SCREEN HEADER ================= */}
-              <div className="space-y-4 print:hidden">
-                <div className="flex items-center gap-3">
+              <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-wrap whitespace-nowrap">
                   <button
                     type="button"
                     onClick={onNavigateToDashboard}
-                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
+                    className="font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer shrink-0"
                   >
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
                     <span>Regresar a Dashboard</span>
                   </button>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-xs font-semibold text-slate-500">Compras</span>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-xs font-bold text-slate-900">Facturas de Compra</span>
+                  <span className="text-slate-300 select-none">/</span>
+                  <span className="font-semibold text-slate-500 shrink-0">Compras</span>
+                  <span className="text-slate-300 select-none">/</span>
+                  <span className="font-bold text-slate-900 shrink-0">Facturas de Compra</span>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-slate-900">
-                        Facturas de Compra (Entradas de Inventario)
-                      </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#fff7ed] text-[#1b426e] border border-[#ffedd5]">
-                        Entradas de Stock
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Registro de comprobantes fiscales de proveedores con incremento automático de existencias en almacén.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleOpenCreatePurchaseInvoice}
-                      className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
-                    >
-                      <span className="text-sm leading-none">+</span>
-                      <span>Registrar Factura de Compra</span>
-                    </button>
-                  </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleOpenCreatePurchaseInvoice}
+                    className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
+                  >
+                    <span className="text-sm leading-none">+</span>
+                    <span>Registrar Factura de Compra</span>
+                  </button>
                 </div>
               </div>
 
@@ -1767,35 +1732,28 @@ export function PurchasesModule({
           {/* ================= VIEW: DEVOLUCIONES A PROVEEDORES ================= */}
           {currentView === "devoluciones-proveedor" && (
             <div className="space-y-6 animate-in fade-in duration-150">
-              {/* Top Action Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
+              {/* ================= SCREEN HEADER ================= */}
+              <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-wrap whitespace-nowrap">
                   <button
                     type="button"
                     onClick={onNavigateToDashboard}
-                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
+                    className="font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer shrink-0"
                   >
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
                     <span>Regresar a Dashboard</span>
                   </button>
-                  <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span>Devoluciones a Proveedores</span>
-                    <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                      {vendorReturns.length} registros
-                    </span>
-                  </h1>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Gestión de notas de salida de mercancía por defectos, garantías, vencimientos o discrepancias.
-                  </p>
+                  <span className="text-slate-300 select-none">/</span>
+                  <span className="font-semibold text-slate-500 shrink-0">Compras</span>
+                  <span className="text-slate-300 select-none">/</span>
+                  <span className="font-bold text-slate-900 shrink-0">Devoluciones a Proveedores</span>
                 </div>
 
-                <div className="flex items-center gap-3 self-end sm:self-auto">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => window.print()}
-                    className="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer shadow-2xs flex items-center gap-1.5"
+                    className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer shadow-2xs flex items-center gap-1.5"
                   >
                     <Download className="w-3.5 h-3.5 text-slate-500" />
                     <span>Imprimir / Exportar</span>
@@ -1803,11 +1761,9 @@ export function PurchasesModule({
                   <button
                     type="button"
                     onClick={openNewVendorReturn}
-                    className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
+                    className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#1b426e]/20 cursor-pointer"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
+                    <span className="text-sm leading-none">+</span>
                     <span>Nueva Devolución</span>
                   </button>
                 </div>
