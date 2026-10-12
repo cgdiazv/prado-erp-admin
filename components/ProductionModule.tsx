@@ -1955,7 +1955,7 @@ export default function ProductionModule({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Cantidad Real Producida (Unidades a Ingresar)
+                    Cantidad Real Producida
                   </label>
                   <input
                     type="number"
