@@ -1362,338 +1362,484 @@ export default function ProductionModule({
         </div>
       )}
 
-      {/* ================= MODAL: NUEVA / EDITAR ORDEN DE TRABAJO ================= */}
+      {/* ================= PANTALLA COMPLETA: NUEVA / EDITAR ORDEN DE TRABAJO (ESTILO FACTURACIÓN) ================= */}
       {showWorkOrderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-3xl overflow-hidden my-8 animate-in fade-in zoom-in-95">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center">
+        <div className="fixed inset-0 z-40 flex flex-col bg-slate-100 text-slate-800 animate-in fade-in duration-150 overflow-hidden">
+          {/* TOP HEADER BAR */}
+          <header className="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-2xs shrink-0">
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowWorkOrderModal(false);
+                  setErrorMsg(null);
+                }}
+                className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer w-fit"
+              >
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+                <span>Regresar</span>
+              </button>
+              <div className="border-l border-slate-200 pl-4 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center shrink-0">
                   <Factory className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">
+                  <h1 className="text-base font-bold text-slate-900 leading-tight">
                     {editingWorkOrder ? `Editar Orden ${editingWorkOrder.orderNumber}` : "Nueva Orden de Trabajo"}
-                  </h3>
+                  </h1>
                   <p className="text-[11px] text-slate-500">
-                    Planifique la producción vinculando una lista de materiales (BOM).
+                    Planifique la producción y consumo de materias primas vinculando una lista de materiales (BOM).
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setShowWorkOrderModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition"
+                type="button"
+                onClick={() => {
+                  setShowWorkOrderModal(false);
+                  setErrorMsg(null);
+                }}
+                className="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                form="work-order-editor-form"
+                disabled={actionLoading}
+                className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowWorkOrderModal(false);
+                  setErrorMsg(null);
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer ml-1"
+                title="Cerrar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+          </header>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSaveWorkOrder} className="p-6 space-y-5">
-              {/* Mode Selector (Manual vs Sales Order) */}
-              {!editingWorkOrder && (
-                <div className="flex items-center gap-4 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+          {/* MAIN WORKSPACE */}
+          <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 shadow-xs max-w-5xl mx-auto space-y-6">
+              {/* Error Banner */}
+              {errorMsg && (
+                <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center justify-between shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span className="font-semibold">{errorMsg}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setErrorMsg(null)}
+                    className="text-rose-500 hover:text-rose-700 text-xs font-bold ml-2 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* SHEET HEADER */}
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-slate-100 pb-5">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200/60 inline-block mb-1.5">
+                    Orden de Producción
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
+                    {woOrderNumber || "OT-NUEVA"}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Módulo de Fabricación y Transformación • Prado ERP
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-400 font-semibold block uppercase tracking-wider">Prioridad</span>
+                    <span className={`text-xs font-black uppercase px-2 py-0.5 rounded ${
+                      woPriority === "URGENTE"
+                        ? "bg-rose-100 text-rose-700"
+                        : woPriority === "ALTA"
+                        ? "bg-amber-100 text-amber-700"
+                        : woPriority === "MEDIA"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {woPriority}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* FORM */}
+              <form id="work-order-editor-form" onSubmit={handleSaveWorkOrder} className="space-y-6">
+                {/* Mode Selector (Manual vs Sales Order) */}
+                {!editingWorkOrder && (
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <Package className="w-3.5 h-3.5 text-orange-600" />
+                        Origen de la Orden de Trabajo
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        Seleccione cómo desea originar los requerimientos de producción
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWoCreationMode("manual");
+                          setSelectedSalesOrderId("");
+                        }}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition cursor-pointer text-center border ${
+                          woCreationMode === "manual"
+                            ? "bg-white text-orange-700 border-orange-300 shadow-xs"
+                            : "bg-white/60 text-slate-600 border-slate-200 hover:bg-white"
+                        }`}
+                      >
+                        Creación Manual Directa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWoCreationMode("sales_order")}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition cursor-pointer text-center border ${
+                          woCreationMode === "sales_order"
+                            ? "bg-white text-orange-700 border-orange-300 shadow-xs"
+                            : "bg-white/60 text-slate-600 border-slate-200 hover:bg-white"
+                        }`}
+                      >
+                        Desde Pedido de Ventas (Sales Order)
+                      </button>
+                    </div>
+
+                    {/* Sales Order Picker */}
+                    {woCreationMode === "sales_order" && (
+                      <div className="pt-2 border-t border-slate-200/60">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Seleccionar Pedido de Venta Confirmado: <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                          value={selectedSalesOrderId}
+                          onChange={(e) => handleSelectSalesOrder(e.target.value)}
+                          className="w-full text-xs p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-medium text-slate-800"
+                          required
+                        >
+                          <option value="">-- Seleccione un Pedido de Venta --</option>
+                          {salesOrdersList.map((so) => (
+                            <option key={so.id} value={so.id}>
+                              {so.orderNumber} • {so.customerName} ({so.items?.length || 0} ítems)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* SECTION 1: Orden y Configuración */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <Hash className="w-3.5 h-3.5 text-slate-400" />
+                    1. Identificación y Parámetros de Producción
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Order Number */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        N° de Orden de Trabajo <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={woOrderNumber}
+                        onChange={(e) => setWoOrderNumber(e.target.value)}
+                        required
+                        className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold text-slate-800 focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+
+                    {/* BOM Selector */}
+                    <div className="lg:col-span-2">
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Lista de Materiales (BOM) <span className="text-rose-500">*</span>
+                      </label>
+                      <select
+                        value={selectedBomId}
+                        onChange={(e) => handleSelectBom(e.target.value)}
+                        required
+                        className="w-full text-xs p-2.5 bg-white border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-semibold text-slate-800 shadow-2xs"
+                      >
+                        <option value="">-- Seleccionar Lista de Materiales (BOM) --</option>
+                        {boms.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.code} • {b.name} ({b.finishedProductName})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Priority */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Prioridad
+                      </label>
+                      <select
+                        value={woPriority}
+                        onChange={(e) => setWoPriority(e.target.value)}
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-semibold text-slate-800"
+                      >
+                        <option value="BAJA">Baja</option>
+                        <option value="MEDIA">Media</option>
+                        <option value="ALTA">Alta</option>
+                        <option value="URGENTE">Urgente</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 2: Datos del Producto y Cliente */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <Boxes className="w-3.5 h-3.5 text-slate-400" />
+                    2. Producto a Fabricar y Destino
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Product Name */}
+                    <div className="lg:col-span-2">
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Producto a Fabricar <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={woProductName}
+                        onChange={(e) => setWoProductName(e.target.value)}
+                        placeholder="ej. Caja Corrugada 12x12x12"
+                        required
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-medium text-slate-900"
+                      />
+                    </div>
+
+                    {/* Product SKU */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        SKU Producto Terminado
+                      </label>
+                      <input
+                        type="text"
+                        value={woProductSku}
+                        onChange={(e) => setWoProductSku(e.target.value)}
+                        placeholder="ej. PROD-CAJA-001"
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg font-mono focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+
+                    {/* Quantity & Unit */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Cantidad a Producir <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min="0.01"
+                          step="any"
+                          value={woQuantityPlanned}
+                          onChange={(e) => setWoQuantityPlanned(Number(e.target.value))}
+                          required
+                          className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:ring-2 focus:ring-orange-500/20"
+                        />
+                        <input
+                          type="text"
+                          value={woUnit}
+                          onChange={(e) => setWoUnit(e.target.value)}
+                          placeholder="Unidades"
+                          className="w-24 text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 font-semibold text-center"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Customer Name */}
+                    <div className="lg:col-span-2">
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Cliente Destino (Opcional)
+                      </label>
+                      <input
+                        type="text"
+                        value={woCustomerName}
+                        onChange={(e) => setWoCustomerName(e.target.value)}
+                        placeholder="ej. Cervecería Hondureña"
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+
+                    {/* Warehouse */}
+                    <div className="lg:col-span-2">
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Almacén / Planta de Consumo
+                      </label>
+                      <select
+                        value={woWarehouse}
+                        onChange={(e) => setWoWarehouse(e.target.value)}
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-medium text-slate-800"
+                      >
+                        {warehouses.map((w) => (
+                          <option key={w.id} value={w.name}>
+                            {w.name}
+                          </option>
+                        ))}
+                        {warehouses.length === 0 && (
+                          <option value="Bodega Principal Zip Búfalo">Bodega Principal Zip Búfalo</option>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 3: Fechas y Cronograma */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    3. Fechas y Cronograma
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Start Date */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Fecha de Inicio
+                      </label>
+                      <input
+                        type="date"
+                        value={woStartDate}
+                        onChange={(e) => setWoStartDate(e.target.value)}
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+
+                    {/* Due Date */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Fecha de Entrega / Límite
+                      </label>
+                      <input
+                        type="date"
+                        value={woDueDate}
+                        onChange={(e) => setWoDueDate(e.target.value)}
+                        className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 4: Insumos según BOM (Component Breakdown) */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                    4. Insumos y Materias Primas Requeridas según BOM
+                  </h3>
+
+                  {selectedBomId && calculatedWorkOrderComponents.length > 0 ? (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+                      <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                          Insumos Requeridos ({calculatedWorkOrderComponents.length} materias primas)
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          Verificación en tiempo real de existencias en almacén
+                        </span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="bg-slate-50/70 text-slate-500 text-[10px] uppercase border-b border-slate-200">
+                              <th className="py-2.5 px-4">Materia Prima / SKU</th>
+                              <th className="py-2.5 px-4 text-right">Cant. Requerida</th>
+                              <th className="py-2.5 px-4 text-right">Stock Actual</th>
+                              <th className="py-2.5 px-4 text-center">Disponibilidad</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {calculatedWorkOrderComponents.map((it: any) => (
+                              <tr key={it.id || it.sku} className="hover:bg-slate-50/60 transition">
+                                <td className="py-2.5 px-4">
+                                  <span className="font-semibold text-slate-800">{it.sku}</span>
+                                  <span className="text-[10px] text-slate-400 block">{it.description}</span>
+                                </td>
+                                <td className="py-2.5 px-4 text-right font-mono font-bold text-slate-800">
+                                  {it.calculatedRequired.toFixed(2)} {it.unit}
+                                </td>
+                                <td className="py-2.5 px-4 text-right font-mono text-slate-600">
+                                  {it.availableStock.toFixed(2)} {it.unit}
+                                </td>
+                                <td className="py-2.5 px-4 text-center">
+                                  {it.isSufficient ? (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold">
+                                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                                      Disponible
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[9px] font-bold">
+                                      <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
+                                      Faltan {it.missing.toFixed(2)} {it.unit}
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-slate-50 border border-slate-200 border-dashed rounded-xl text-center text-xs text-slate-400">
+                      Seleccione una Lista de Materiales (BOM) arriba para calcular automáticamente el consumo de insumos y contrastarlo contra inventario en tiempo real.
+                    </div>
+                  )}
+                </div>
+
+                {/* SECTION 5: Notas */}
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold text-slate-600 uppercase">
+                    Notas / Instrucciones Especiales de Producción
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={woNotes}
+                    onChange={(e) => setWoNotes(e.target.value)}
+                    placeholder="Detalles sobre especificaciones técnicas, corte, troquel, embalaje especial, etc."
+                    className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
+                  />
+                </div>
+
+                {/* BOTTOM ACTION BUTTONS */}
+                <div className="pt-5 border-t border-slate-200 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => {
-                      setWoCreationMode("manual");
-                      setSelectedSalesOrderId("");
+                      setShowWorkOrderModal(false);
+                      setErrorMsg(null);
                     }}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-center ${
-                      woCreationMode === "manual" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-                    }`}
+                    className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-xs transition cursor-pointer"
                   >
-                    Creación Manual
+                    Cancelar
                   </button>
                   <button
-                    type="button"
-                    onClick={() => setWoCreationMode("sales_order")}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-center ${
-                      woCreationMode === "sales_order" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-                    }`}
+                    type="submit"
+                    disabled={actionLoading}
+                    className="px-6 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-2"
                   >
-                    Desde Pedido de Ventas (Sales Order)
+                    {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
                   </button>
                 </div>
-              )}
-
-              {/* If from Sales Order */}
-              {woCreationMode === "sales_order" && !editingWorkOrder && (
-                <div className="p-3 bg-orange-50/50 border border-orange-200 rounded-xl space-y-2">
-                  <label className="block text-xs font-bold text-slate-700">
-                    Seleccionar Pedido de Venta Confirmado:
-                  </label>
-                  <select
-                    value={selectedSalesOrderId}
-                    onChange={(e) => handleSelectSalesOrder(e.target.value)}
-                    className="w-full text-xs p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                    required
-                  >
-                    <option value="">-- Seleccione un Pedido de Venta --</option>
-                    {salesOrdersList.map((so) => (
-                      <option key={so.id} value={so.id}>
-                        {so.orderNumber} • {so.customerName} ({so.items?.length || 0} ítems)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Order Number */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    N° de Orden de Trabajo
-                  </label>
-                  <input
-                    type="text"
-                    value={woOrderNumber}
-                    onChange={(e) => setWoOrderNumber(e.target.value)}
-                    required
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  />
-                </div>
-
-                {/* BOM Selector (Required!) */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Lista de Materiales (BOM) <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={selectedBomId}
-                    onChange={(e) => handleSelectBom(e.target.value)}
-                    required
-                    className="w-full text-xs p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-medium text-slate-800"
-                  >
-                    <option value="">-- Seleccionar BOM requerida --</option>
-                    {boms.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.code} • {b.name} ({b.finishedProductName})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Product Name */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Producto a Fabricar
-                  </label>
-                  <input
-                    type="text"
-                    value={woProductName}
-                    onChange={(e) => setWoProductName(e.target.value)}
-                    placeholder="ej. Caja Corrugada 12x12x12"
-                    required
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  />
-                </div>
-
-                {/* Product SKU */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    SKU Producto Terminado
-                  </label>
-                  <input
-                    type="text"
-                    value={woProductSku}
-                    onChange={(e) => setWoProductSku(e.target.value)}
-                    placeholder="ej. PROD-CAJA-001"
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  />
-                </div>
-
-                {/* Quantity Planned */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Cantidad a Producir
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="0.01"
-                      step="any"
-                      value={woQuantityPlanned}
-                      onChange={(e) => setWoQuantityPlanned(Number(e.target.value))}
-                      required
-                      className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                    />
-                    <input
-                      type="text"
-                      value={woUnit}
-                      onChange={(e) => setWoUnit(e.target.value)}
-                      placeholder="Unidades"
-                      className="w-28 text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600"
-                    />
-                  </div>
-                </div>
-
-                {/* Customer Name */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Cliente Destino (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={woCustomerName}
-                    onChange={(e) => setWoCustomerName(e.target.value)}
-                    placeholder="ej. Cervecería Hondureña"
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  />
-                </div>
-
-                {/* Start Date */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Fecha de Inicio
-                  </label>
-                  <input
-                    type="date"
-                    value={woStartDate}
-                    onChange={(e) => setWoStartDate(e.target.value)}
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  />
-                </div>
-
-                {/* Due Date */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Fecha de Entrega / Límite
-                  </label>
-                  <input
-                    type="date"
-                    value={woDueDate}
-                    onChange={(e) => setWoDueDate(e.target.value)}
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  />
-                </div>
-
-                {/* Priority */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Prioridad</label>
-                  <select
-                    value={woPriority}
-                    onChange={(e) => setWoPriority(e.target.value)}
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  >
-                    <option value="BAJA">Baja</option>
-                    <option value="MEDIA">Media</option>
-                    <option value="ALTA">Alta</option>
-                    <option value="URGENTE">Urgente</option>
-                  </select>
-                </div>
-
-                {/* Warehouse */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                    Almacén / Planta de Consumo
-                  </label>
-                  <select
-                    value={woWarehouse}
-                    onChange={(e) => setWoWarehouse(e.target.value)}
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                  >
-                    {warehouses.map((w) => (
-                      <option key={w.id} value={w.name}>
-                        {w.name}
-                      </option>
-                    ))}
-                    {warehouses.length === 0 && (
-                      <option value="Bodega Principal Zip Búfalo">Bodega Principal Zip Búfalo</option>
-                    )}
-                  </select>
-                </div>
-              </div>
-
-              {/* Real-time Component Breakdown from selected BOM */}
-              {selectedBomId && calculatedWorkOrderComponents.length > 0 && (
-                <div className="border border-slate-200 rounded-xl overflow-hidden mt-4">
-                  <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-indigo-600" />
-                      Insumos Requeridos según BOM ({calculatedWorkOrderComponents.length})
-                    </span>
-                    <span className="text-[10px] text-slate-500">
-                      Verificación en tiempo real de existencias
-                    </span>
-                  </div>
-                  <div className="max-h-48 overflow-y-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead>
-                        <tr className="bg-slate-50/50 text-slate-500 text-[10px] uppercase border-b border-slate-100">
-                          <th className="py-2 px-3">Materia Prima / SKU</th>
-                          <th className="py-2 px-3 text-right">Cant. Requerida</th>
-                          <th className="py-2 px-3 text-right">Stock Actual</th>
-                          <th className="py-2 px-3 text-center">Disponibilidad</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {calculatedWorkOrderComponents.map((it: any) => (
-                          <tr key={it.id || it.sku} className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3">
-                              <span className="font-semibold text-slate-800">{it.sku}</span>
-                              <span className="text-[10px] text-slate-400 block">{it.description}</span>
-                            </td>
-                            <td className="py-2 px-3 text-right font-mono font-bold text-slate-800">
-                              {it.calculatedRequired.toFixed(2)} {it.unit}
-                            </td>
-                            <td className="py-2 px-3 text-right font-mono text-slate-600">
-                              {it.availableStock.toFixed(2)} {it.unit}
-                            </td>
-                            <td className="py-2 px-3 text-center">
-                              {it.isSufficient ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold">
-                                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                                  Disponible
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[9px] font-bold">
-                                  <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
-                                  Faltan {it.missing.toFixed(2)}
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Notes */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                  Notas / Instrucciones de Producción
-                </label>
-                <textarea
-                  rows={2}
-                  value={woNotes}
-                  onChange={(e) => setWoNotes(e.target.value)}
-                  placeholder="Detalles sobre especificaciones, lote de corte, troquel, etc."
-                  className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20"
-                />
-              </div>
-
-              {/* Modal Footer */}
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowWorkOrderModal(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="px-5 py-2 rounded-lg text-xs font-semibold bg-orange-600 hover:bg-orange-700 text-white transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}
