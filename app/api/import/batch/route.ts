@@ -118,6 +118,8 @@ export async function POST(request: NextRequest) {
         quantity: number;
         cost: number;
         price: number;
+        price2: number;
+        price3: number;
         trackingType: string;
         isUpdate: boolean;
       }> = [];
@@ -162,6 +164,8 @@ export async function POST(request: NextRequest) {
         const quantity = typeof it.quantity === "number" ? it.quantity : Number(String(it.quantity || "0").replace(/[^0-9.-]/g, "")) || 0;
         const cost = typeof it.cost === "number" ? it.cost : Number(String(it.cost || "0").replace(/[^0-9.-]/g, "")) || 0;
         const price = typeof it.price === "number" ? it.price : Number(String(it.price || "0").replace(/[^0-9.-]/g, "")) || 0;
+        const price2 = typeof it.price2 === "number" ? it.price2 : Number(String(it.price2 || "0").replace(/[^0-9.-]/g, "")) || 0;
+        const price3 = typeof it.price3 === "number" ? it.price3 : Number(String(it.price3 || "0").replace(/[^0-9.-]/g, "")) || 0;
         const trackingType = ["LOT", "SERIAL"].includes(String(it.trackingType || "").toUpperCase())
           ? String(it.trackingType).toUpperCase()
           : "NONE";
@@ -174,6 +178,8 @@ export async function POST(request: NextRequest) {
           quantity,
           cost,
           price,
+          price2,
+          price3,
           trackingType,
           isUpdate: Boolean(existingId),
         });
@@ -195,6 +201,8 @@ export async function POST(request: NextRequest) {
             quantity: c.quantity,
             cost: c.cost,
             price: c.price,
+            price2: c.price2,
+            price3: c.price3,
             trackingType: c.trackingType,
           })),
           skipDuplicates: true,
@@ -215,6 +223,8 @@ export async function POST(request: NextRequest) {
                 quantity: u.quantity,
                 cost: u.cost,
                 price: u.price,
+                price2: u.price2,
+                price3: u.price3,
                 trackingType: u.trackingType,
               },
             })

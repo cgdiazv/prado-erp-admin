@@ -62,7 +62,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       );
     }
 
-    const { sku, description, quantity, cost, price, trackingType, imageUrl, category } = body;
+    const { sku, description, quantity, cost, price, price2, price3, trackingType, imageUrl, category } = body;
 
     // Check SKU uniqueness if changing
     if (sku && sku !== existing.sku) {
@@ -103,6 +103,8 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
         ...(quantity !== undefined && { quantity: Number(quantity) }),
         ...(cost !== undefined && { cost: Number(cost) }),
         ...(price !== undefined && { price: Number(price) }),
+        ...(price2 !== undefined && { price2: price2 !== null ? Number(price2) : 0 }),
+        ...(price3 !== undefined && { price3: price3 !== null ? Number(price3) : 0 }),
         ...(trackingType !== undefined && { trackingType }),
         ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
         ...(itemCategory !== undefined && { category: itemCategory }),

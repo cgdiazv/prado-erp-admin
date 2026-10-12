@@ -101,6 +101,8 @@ interface QuotesModuleProps {
     sku: string;
     description: string;
     price: number;
+    price2?: number | null;
+    price3?: number | null;
     quantity: number;
   }>;
   salesReps?: Array<{
@@ -1771,7 +1773,7 @@ export default function QuotesModule({
                                   <datalist id={`inventory-quote-sku-list-${idx}`}>
                                     {inventory.map((item) => (
                                       <option key={item.id} value={item.sku}>
-                                        {item.sku} - {item.description} ({formCurrencySymbol} {item.price})
+                                        {item.sku} - {item.description} ({formCurrencySymbol} {item.price}{item.price2 ? ` | P2: ${item.price2}` : ""}{item.price3 ? ` | P3: ${item.price3}` : ""})
                                       </option>
                                     ))}
                                   </datalist>
@@ -1784,7 +1786,7 @@ export default function QuotesModule({
                                       <option value="">-- Catálogo por SKU --</option>
                                       {inventory.map((item) => (
                                         <option key={item.id} value={item.sku}>
-                                          {item.sku} — {item.description.slice(0, 28)} ({formCurrencySymbol} {item.price})
+                                          {item.sku} — {item.description.slice(0, 24)} (P1: {item.price}{item.price2 ? ` / P2: ${item.price2}` : ""}{item.price3 ? ` / P3: ${item.price3}` : ""})
                                         </option>
                                       ))}
                                     </select>
@@ -1837,6 +1839,42 @@ export default function QuotesModule({
                                   onChange={(e) => handleLineChange(idx, "rate", e.target.value)}
                                   className="w-24 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
                                 />
+                                {(() => {
+                                  const prod = inventory.find((p) => p.sku && p.sku.toLowerCase() === (line.sku || "").toLowerCase());
+                                  if (!prod || (!prod.price2 && !prod.price3)) return null;
+                                  return (
+                                    <div className="flex items-center justify-end gap-1 mt-1 text-[9px]">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleLineChange(idx, "rate", prod.price)}
+                                        className="px-1 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer"
+                                        title={`P1 General: ${formCurrencySymbol} ${prod.price}`}
+                                      >
+                                        P1
+                                      </button>
+                                      {prod.price2 && prod.price2 > 0 ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleLineChange(idx, "rate", prod.price2)}
+                                          className="px-1 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold cursor-pointer"
+                                          title={`P2 Mayorista: ${formCurrencySymbol} ${prod.price2}`}
+                                        >
+                                          P2
+                                        </button>
+                                      ) : null}
+                                      {prod.price3 && prod.price3 > 0 ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleLineChange(idx, "rate", prod.price3)}
+                                          className="px-1 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold cursor-pointer"
+                                          title={`P3 Especial: ${formCurrencySymbol} ${prod.price3}`}
+                                        >
+                                          P3
+                                        </button>
+                                      ) : null}
+                                    </div>
+                                  );
+                                })()}
                               </td>
 
                               {/* Importe */}

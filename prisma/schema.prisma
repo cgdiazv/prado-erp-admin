@@ -73,6 +73,8 @@ model InventoryItem {
   quantity     Float        @default(0)
   cost         Float        @default(0)
   price        Float        @default(0)
+  price2       Float?       @default(0)
+  price3       Float?       @default(0)
   trackingType String       @default("NONE") // "NONE" | "LOT" | "SERIAL"
   category     String?
   imageUrl     String?

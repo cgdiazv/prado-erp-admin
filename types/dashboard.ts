@@ -54,6 +54,8 @@ export type InventoryItem = {
   quantity: number;
   cost: number;
   price: number;
+  price2?: number | null;
+  price3?: number | null;
   trackingType?: string; // "NONE" | "LOT" | "SERIAL"
   category?: string | null;
   imageUrl?: string | null;

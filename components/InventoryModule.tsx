@@ -242,6 +242,8 @@ export default function InventoryModule({
     isSold: true,
     salesDescription: "",
     price: 0,
+    price2: 0,
+    price3: 0,
     incomeAccountId: "7000",
     isPurchased: false,
     purchaseDescription: "",
@@ -261,6 +263,8 @@ export default function InventoryModule({
     quantity: 0,
     cost: 0,
     price: 0,
+    price2: 0,
+    price3: 0,
     trackingType: "NONE",
     category: "",
     imageUrl: "",
@@ -845,6 +849,8 @@ export default function InventoryModule({
           quantity: newProductForm.type === "Servicio" ? 1 : 10,
           cost: newProductForm.cost || 0,
           price: newProductForm.price || 0,
+          price2: newProductForm.price2 || 0,
+          price3: newProductForm.price3 || 0,
           category: newProductForm.category || null,
           imageUrl: newProductForm.imageUrl || null,
         }),
@@ -880,6 +886,8 @@ export default function InventoryModule({
       quantity: prod.quantity,
       cost: prod.cost,
       price: prod.price,
+      price2: prod.price2 ?? 0,
+      price3: prod.price3 ?? 0,
       trackingType: prod.trackingType || "NONE",
       category: prod.category || "",
       imageUrl: prod.imageUrl || "",
@@ -1652,7 +1660,23 @@ export default function InventoryModule({
                               <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.cost)}</td>
                             )}
                             {visibleColumns.price && (
-                              <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.price)}</td>
+                              <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">
+                                <div className="text-slate-900 font-semibold">{formatCurrency(item.price)}</div>
+                                {(Boolean(item.price2 && item.price2 > 0) || Boolean(item.price3 && item.price3 > 0)) && (
+                                  <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-500 font-sans mt-0.5">
+                                    {item.price2 && item.price2 > 0 ? (
+                                      <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" title="Precio 2 (Mayorista)">
+                                        <span className="font-bold text-slate-500 mr-0.5">P2:</span>{formatCurrency(item.price2)}
+                                      </span>
+                                    ) : null}
+                                    {item.price3 && item.price3 > 0 ? (
+                                      <span className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200" title="Precio 3 (Especial)">
+                                        <span className="font-bold text-amber-600 mr-0.5">P3:</span>{formatCurrency(item.price3)}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                )}
+                              </td>
                             )}
                             {visibleColumns.inventoryValue && (
                               <td className="p-3.5 text-right font-mono text-slate-900 font-bold whitespace-nowrap">
@@ -2439,28 +2463,82 @@ export default function InventoryModule({
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Costo Unitario ({currencySymbol})</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={productForm.cost}
-                    onChange={(e) => setProductForm({ ...productForm, cost: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
-                  />
+              <div className="space-y-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-[#1b426e]" />
+                    Estructura de Precios y Márgenes
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-medium">Moneda: {currencySymbol}</span>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Precio de Venta ({currencySymbol})</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Costo Base</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={productForm.cost}
+                      onChange={(e) => setProductForm({ ...productForm, cost: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-[#1b426e]">Precio 1 (General)</label>
+                      {productForm.price > 0 && productForm.cost > 0 && (
+                        <span className="text-[10px] text-emerald-600 font-semibold font-mono">
+                          +{(((productForm.price - productForm.cost) / productForm.cost) * 100).toFixed(0)}%
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-blue-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-slate-700">Precio 2 (Mayorista)</label>
+                      {productForm.price2 > 0 && productForm.cost > 0 && (
+                        <span className="text-[10px] text-blue-600 font-semibold font-mono">
+                          +{(((productForm.price2 - productForm.cost) / productForm.cost) * 100).toFixed(0)}%
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={productForm.price2}
+                      onChange={(e) => setProductForm({ ...productForm, price2: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                      placeholder="Opcional"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-slate-700">Precio 3 (Especial)</label>
+                      {productForm.price3 > 0 && productForm.cost > 0 && (
+                        <span className="text-[10px] text-amber-600 font-semibold font-mono">
+                          +{(((productForm.price3 - productForm.cost) / productForm.cost) * 100).toFixed(0)}%
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={productForm.price3}
+                      onChange={(e) => setProductForm({ ...productForm, price3: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                      placeholder="Opcional"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -2769,15 +2847,44 @@ export default function InventoryModule({
                       <div className="space-y-3 pl-6 border-l-2 border-slate-200">
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">
-                            Precio de venta ({currencySymbol})
+                            Precio de venta base — P1 General ({currencySymbol}) *
                           </label>
                           <input
                             type="number"
                             step="0.01"
                             value={newProductForm.price}
                             onChange={(e) => setNewProductForm({ ...newProductForm, price: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-3.5 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
+                            className="w-full px-3.5 py-2 text-xs rounded-lg border border-blue-200 bg-white focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
                           />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5 pt-1">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                              Precio 2 — Mayorista ({currencySymbol})
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={newProductForm.price2}
+                              onChange={(e) => setNewProductForm({ ...newProductForm, price2: parseFloat(e.target.value) || 0 })}
+                              placeholder="Opcional"
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                              Precio 3 — Especial ({currencySymbol})
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={newProductForm.price3}
+                              onChange={(e) => setNewProductForm({ ...newProductForm, price3: parseFloat(e.target.value) || 0 })}
+                              placeholder="Opcional"
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                            />
+                          </div>
                         </div>
 
                         <div>

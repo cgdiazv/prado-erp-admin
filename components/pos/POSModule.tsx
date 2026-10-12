@@ -51,6 +51,7 @@ export interface CartItem {
   sku: string;
   description: string;
   price: number;
+  selectedTier?: "P1" | "P2" | "P3";
   quantity: number;
   taxRate: number; // 0.15 for ISV 15%, 0 for exempt
   trackingType?: string;
@@ -313,6 +314,20 @@ export default function POSModule({
 
   const handleClearCart = () => {
     setCart([]);
+  };
+
+  const handleSelectPriceTier = (cartId: string, tier: "P1" | "P2" | "P3") => {
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.id !== cartId) return item;
+        const prod = inventory.find((p) => p.id === item.productId);
+        if (!prod) return item;
+        let newPrice = prod.price;
+        if (tier === "P2" && prod.price2 && prod.price2 > 0) newPrice = prod.price2;
+        if (tier === "P3" && prod.price3 && prod.price3 > 0) newPrice = prod.price3;
+        return { ...item, price: newPrice, selectedTier: tier };
+      })
+    );
   };
 
   // ----------------------------------------------------
@@ -981,9 +996,16 @@ export default function POSModule({
 
                       {/* Bottom: Price & Category */}
                       <div className="mt-3 pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                        <span className="font-mono font-bold text-sm text-[#1b426e]">
-                          {formatCurrency(product.price)}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono font-bold text-sm text-[#1b426e]">
+                            {formatCurrency(product.price)}
+                          </span>
+                          {(Boolean(product.price2 && product.price2 > 0) || Boolean(product.price3 && product.price3 > 0)) && (
+                            <span className="text-[9px] font-semibold text-blue-700 bg-blue-50 px-1 py-0.5 rounded border border-blue-200" title="Cuenta con Precio Mayorista / Especial">
+                              P1-P{product.price3 ? "3" : "2"}
+                            </span>
+                          )}
+                        </div>
                         {product.trackingType === "SERIAL" ? (
                           <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-1 py-0.2 rounded">
                             Serie
@@ -1123,6 +1145,50 @@ export default function POSModule({
                         {formatCurrency(item.price * item.quantity)}
                       </span>
                     </div>
+                    {(() => {
+                      const prod = inventory.find((p) => p.id === item.productId);
+                      if (!prod || (!prod.price2 && !prod.price3)) return null;
+                      const currentTier = item.selectedTier || "P1";
+                      return (
+                        <div className="flex items-center gap-1 mt-1 text-[10px] font-sans">
+                          <span className="text-slate-400 font-medium">Nivel:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectPriceTier(item.id, "P1")}
+                            className={`px-1.5 py-0.5 rounded font-bold transition cursor-pointer ${
+                              currentTier === "P1" ? "bg-[#1b426e] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                            title={`P1 General: ${formatCurrency(prod.price)}`}
+                          >
+                            P1
+                          </button>
+                          {prod.price2 && prod.price2 > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectPriceTier(item.id, "P2")}
+                              className={`px-1.5 py-0.5 rounded font-bold transition cursor-pointer ${
+                                currentTier === "P2" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              }`}
+                              title={`P2 Mayorista: ${formatCurrency(prod.price2)}`}
+                            >
+                              P2
+                            </button>
+                          ) : null}
+                          {prod.price3 && prod.price3 > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectPriceTier(item.id, "P3")}
+                              className={`px-1.5 py-0.5 rounded font-bold transition cursor-pointer ${
+                                currentTier === "P3" ? "bg-amber-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              }`}
+                              title={`P3 Especial: ${formatCurrency(prod.price3)}`}
+                            >
+                              P3
+                            </button>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Quantity Steppers */}
