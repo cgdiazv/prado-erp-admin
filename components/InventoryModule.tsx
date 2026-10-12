@@ -1660,22 +1660,8 @@ export default function InventoryModule({
                               <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.cost)}</td>
                             )}
                             {visibleColumns.price && (
-                              <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">
-                                <div className="text-slate-900 font-semibold">{formatCurrency(item.price)}</div>
-                                {(Boolean(item.price2 && item.price2 > 0) || Boolean(item.price3 && item.price3 > 0)) && (
-                                  <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-500 font-sans mt-0.5">
-                                    {item.price2 && item.price2 > 0 ? (
-                                      <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" title="Precio 2 (Mayorista)">
-                                        <span className="font-bold text-slate-500 mr-0.5">P2:</span>{formatCurrency(item.price2)}
-                                      </span>
-                                    ) : null}
-                                    {item.price3 && item.price3 > 0 ? (
-                                      <span className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200" title="Precio 3 (Especial)">
-                                        <span className="font-bold text-amber-600 mr-0.5">P3:</span>{formatCurrency(item.price3)}
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                )}
+                              <td className="p-3.5 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
+                                {formatCurrency(item.price)}
                               </td>
                             )}
                             {visibleColumns.inventoryValue && (
@@ -2241,7 +2227,7 @@ export default function InventoryModule({
       {/* ================= MODAL: EDITAR PRODUCTO ================= */}
       {editingProduct && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">
@@ -2269,7 +2255,7 @@ export default function InventoryModule({
               </div>
             )}
 
-            <form onSubmit={handleSaveEditProduct} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveEditProduct} className="space-y-4 text-xs">
               <div className="flex items-center gap-3">
                 {productForm.imageUrl ? (
                   <div className="relative w-16 h-16 shrink-0">
@@ -2328,7 +2314,7 @@ export default function InventoryModule({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">SKU / Código</label>
                   <input
@@ -2351,116 +2337,118 @@ export default function InventoryModule({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block font-semibold text-slate-700">Categoría</label>
-                  {!quickCategoryInputEditProduct && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuickCategoryInputEditProduct(true);
-                        setNewCategoryName("");
-                        setCategoryError("");
-                      }}
-                      className="text-[11px] font-semibold text-[#1b426e] hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="w-3 h-3" />
-                      <span>Nueva categoría</span>
-                    </button>
-                  )}
-                </div>
-
-                {quickCategoryInputEditProduct ? (
-                  <div className="p-2.5 rounded-xl border border-[#1b426e]/30 bg-blue-50/50 space-y-2 animate-in fade-in duration-150">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-[#1b426e] flex items-center gap-1">
-                        <Plus className="w-3 h-3" /> Crear nueva categoría
-                      </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-slate-700">Categoría</label>
+                    {!quickCategoryInputEditProduct && (
                       <button
                         type="button"
                         onClick={() => {
-                          setQuickCategoryInputEditProduct(false);
+                          setQuickCategoryInputEditProduct(true);
                           setNewCategoryName("");
                           setCategoryError("");
                         }}
-                        className="text-slate-400 hover:text-slate-600 text-[11px] cursor-pointer"
+                        className="text-[11px] font-semibold text-[#1b426e] hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        Cancelar
+                        <Plus className="w-3 h-3" />
+                        <span>Nueva categoría</span>
                       </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        autoFocus
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleCreateCategory("edit");
-                          } else if (e.key === "Escape") {
-                            setQuickCategoryInputEditProduct(false);
-                          }
-                        }}
-                        placeholder="Nombre de la categoría (ej. Empaques)"
-                        className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
-                      />
-                      <button
-                        type="button"
-                        disabled={!newCategoryName.trim() || categorySaving}
-                        onClick={() => handleCreateCategory("edit")}
-                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white disabled:opacity-50 cursor-pointer shadow-xs shrink-0 flex items-center gap-1"
-                      >
-                        {categorySaving ? "Guardando..." : "Guardar"}
-                      </button>
-                    </div>
-                    {categoryError && (
-                      <p className="text-[11px] text-rose-600 font-semibold">{categoryError}</p>
                     )}
                   </div>
-                ) : (
-                  <select
-                    value={productForm.category}
-                    onChange={(e) => {
-                      if (e.target.value === "__NEW_CATEGORY__") {
-                        setQuickCategoryInputEditProduct(true);
-                        setNewCategoryName("");
-                        setCategoryError("");
-                      } else {
-                        setProductForm({ ...productForm, category: e.target.value });
-                      }
-                    }}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-800 cursor-pointer"
-                  >
-                    <option value="">Sin categoría</option>
-                    {productForm.category && !localCategories.includes(productForm.category) && (
-                      <option value={productForm.category}>{productForm.category}</option>
-                    )}
-                    {localCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                    <option value="__NEW_CATEGORY__" className="font-bold text-[#1b426e]">
-                      ➕ Crear nueva categoría...
-                    </option>
-                  </select>
-                )}
-              </div>
 
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Tipo de Rastreo de Inventario *
-                </label>
-                <select
-                  value={productForm.trackingType}
-                  onChange={(e) => setProductForm({ ...productForm, trackingType: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50/50 border border-amber-300 focus:outline-none focus:border-[#1b426e] text-slate-900 font-semibold cursor-pointer"
-                >
-                  <option value="NONE">Sin rastreo (Inventario Estándar)</option>
-                  <option value="LOT">Control por Lotes y Vencimientos</option>
-                  <option value="SERIAL">Control por Números de Serie</option>
-                </select>
+                  {quickCategoryInputEditProduct ? (
+                    <div className="p-2.5 rounded-xl border border-[#1b426e]/30 bg-blue-50/50 space-y-2 animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[#1b426e] flex items-center gap-1">
+                          <Plus className="w-3 h-3" /> Crear nueva categoría
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuickCategoryInputEditProduct(false);
+                            setNewCategoryName("");
+                            setCategoryError("");
+                          }}
+                          className="text-slate-400 hover:text-slate-600 text-[11px] cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          autoFocus
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleCreateCategory("edit");
+                            } else if (e.key === "Escape") {
+                              setQuickCategoryInputEditProduct(false);
+                            }
+                          }}
+                          placeholder="Nombre de la categoría (ej. Empaques)"
+                          className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
+                        />
+                        <button
+                          type="button"
+                          disabled={!newCategoryName.trim() || categorySaving}
+                          onClick={() => handleCreateCategory("edit")}
+                          className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white disabled:opacity-50 cursor-pointer shadow-xs shrink-0 flex items-center gap-1"
+                        >
+                          {categorySaving ? "Guardando..." : "Guardar"}
+                        </button>
+                      </div>
+                      {categoryError && (
+                        <p className="text-[11px] text-rose-600 font-semibold">{categoryError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <select
+                      value={productForm.category}
+                      onChange={(e) => {
+                        if (e.target.value === "__NEW_CATEGORY__") {
+                          setQuickCategoryInputEditProduct(true);
+                          setNewCategoryName("");
+                          setCategoryError("");
+                        } else {
+                          setProductForm({ ...productForm, category: e.target.value });
+                        }
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-800 cursor-pointer"
+                    >
+                      <option value="">Sin categoría</option>
+                      {productForm.category && !localCategories.includes(productForm.category) && (
+                        <option value={productForm.category}>{productForm.category}</option>
+                      )}
+                      {localCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                      <option value="__NEW_CATEGORY__" className="font-bold text-[#1b426e]">
+                        ➕ Crear nueva categoría...
+                      </option>
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">
+                    Tipo de Rastreo de Inventario *
+                  </label>
+                  <select
+                    value={productForm.trackingType}
+                    onChange={(e) => setProductForm({ ...productForm, trackingType: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50/50 border border-amber-300 focus:outline-none focus:border-[#1b426e] text-slate-900 font-semibold cursor-pointer"
+                  >
+                    <option value="NONE">Sin rastreo (Inventario Estándar)</option>
+                    <option value="LOT">Control por Lotes y Vencimientos</option>
+                    <option value="SERIAL">Control por Números de Serie</option>
+                  </select>
+                </div>
               </div>
 
               <div className="space-y-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-200">
@@ -2472,7 +2460,7 @@ export default function InventoryModule({
                   <span className="text-[11px] text-slate-500 font-medium">Moneda: {currencySymbol}</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Costo Base</label>
                     <input
@@ -2481,14 +2469,14 @@ export default function InventoryModule({
                       required
                       value={productForm.cost}
                       onChange={(e) => setProductForm({ ...productForm, cost: Number(e.target.value) })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono shadow-2xs"
                     />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-[#1b426e]">Precio 1 (General)</label>
+                    <div className="flex items-center justify-between mb-1 gap-1">
+                      <label className="text-xs font-bold text-[#1b426e] whitespace-nowrap">Precio 1 (General)</label>
                       {productForm.price > 0 && productForm.cost > 0 && (
-                        <span className="text-[10px] text-emerald-600 font-semibold font-mono">
+                        <span className="text-[10px] text-emerald-600 font-semibold font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
                           +{(((productForm.price - productForm.cost) / productForm.cost) * 100).toFixed(0)}%
                         </span>
                       )}
@@ -2499,15 +2487,15 @@ export default function InventoryModule({
                       required
                       value={productForm.price}
                       onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-blue-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-blue-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold shadow-2xs"
                       placeholder="0.00"
                     />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-slate-700">Precio 2 (Mayorista)</label>
+                    <div className="flex items-center justify-between mb-1 gap-1">
+                      <label className="text-xs font-bold text-slate-700 whitespace-nowrap">Precio 2 (Mayorista)</label>
                       {productForm.price2 > 0 && productForm.cost > 0 && (
-                        <span className="text-[10px] text-blue-600 font-semibold font-mono">
+                        <span className="text-[10px] text-blue-600 font-semibold font-mono bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 shrink-0">
                           +{(((productForm.price2 - productForm.cost) / productForm.cost) * 100).toFixed(0)}%
                         </span>
                       )}
@@ -2517,15 +2505,15 @@ export default function InventoryModule({
                       step="0.01"
                       value={productForm.price2}
                       onChange={(e) => setProductForm({ ...productForm, price2: Number(e.target.value) })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono shadow-2xs"
                       placeholder="Opcional"
                     />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-slate-700">Precio 3 (Especial)</label>
+                    <div className="flex items-center justify-between mb-1 gap-1">
+                      <label className="text-xs font-bold text-slate-700 whitespace-nowrap">Precio 3 (Especial)</label>
                       {productForm.price3 > 0 && productForm.cost > 0 && (
-                        <span className="text-[10px] text-amber-600 font-semibold font-mono">
+                        <span className="text-[10px] text-amber-600 font-semibold font-mono bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
                           +{(((productForm.price3 - productForm.cost) / productForm.cost) * 100).toFixed(0)}%
                         </span>
                       )}
@@ -2535,7 +2523,7 @@ export default function InventoryModule({
                       step="0.01"
                       value={productForm.price3}
                       onChange={(e) => setProductForm({ ...productForm, price3: Number(e.target.value) })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono shadow-2xs"
                       placeholder="Opcional"
                     />
                   </div>
