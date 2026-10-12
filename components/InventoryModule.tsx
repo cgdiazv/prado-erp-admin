@@ -42,6 +42,7 @@ interface InventoryModuleProps {
   onRefreshInventory?: () => Promise<void> | void;
   accounts?: Account[];
   productCategories?: string[];
+  onAddCategory?: (name: string) => Promise<boolean | any> | boolean | any;
   currentSubView?: "inventario" | "lotes" | "series";
   onChangeSubView?: (view: "inventario" | "lotes" | "series") => void;
   onBack?: () => void;
@@ -107,6 +108,7 @@ export default function InventoryModule({
   onRefreshInventory,
   accounts = [],
   productCategories = [],
+  onAddCategory,
   currentSubView = "inventario",
   onChangeSubView,
   onBack,
@@ -263,6 +265,72 @@ export default function InventoryModule({
     category: "",
     imageUrl: "",
   });
+
+  // Local product categories list for instant optimistic updates
+  const [localCategories, setLocalCategories] = useState<string[]>(productCategories);
+  useEffect(() => {
+    if (productCategories && productCategories.length > 0) {
+      setLocalCategories((prev) => {
+        const set = new Set([...prev, ...productCategories]);
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+      });
+    }
+  }, [productCategories]);
+
+  // Quick Category Creation State
+  const [quickCategoryInputNewProduct, setQuickCategoryInputNewProduct] = useState(false);
+  const [quickCategoryInputEditProduct, setQuickCategoryInputEditProduct] = useState(false);
+  const [showCatalogCategoryModal, setShowCatalogCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState("");
+
+  const handleCreateCategory = async (target: "new" | "edit" | "filter") => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      setCategoryError("El nombre no puede estar vacío");
+      return;
+    }
+    setCategorySaving(true);
+    setCategoryError("");
+    try {
+      if (onAddCategory) {
+        const ok = await onAddCategory(trimmed);
+        if (!ok) throw new Error("No se pudo guardar la categoría");
+      } else {
+        const res = await fetch("/api/product-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: trimmed }),
+        });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error || "Error al crear la categoría");
+      }
+
+      setLocalCategories((prev) => {
+        if (!prev.includes(trimmed)) {
+          return [...prev, trimmed].sort((a, b) => a.localeCompare(b));
+        }
+        return prev;
+      });
+
+      if (target === "new") {
+        setNewProductForm((prev) => ({ ...prev, category: trimmed }));
+        setQuickCategoryInputNewProduct(false);
+      } else if (target === "edit") {
+        setProductForm((prev) => ({ ...prev, category: trimmed }));
+        setQuickCategoryInputEditProduct(false);
+      } else if (target === "filter") {
+        setSelectedCategory(trimmed);
+      }
+
+      setNewCategoryName("");
+    } catch (err: any) {
+      setCategoryError(err.message || "Error al crear la categoría");
+    } finally {
+      setCategorySaving(false);
+    }
+  };
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
   const [modalSuccess, setModalSuccess] = useState("");
@@ -1194,16 +1262,27 @@ export default function InventoryModule({
               <div className="relative">
                 <select
                   value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value === "__NEW_CATEGORY__") {
+                      setShowCatalogCategoryModal(true);
+                      setNewCategoryName("");
+                      setCategoryError("");
+                    } else {
+                      setSelectedCategory(e.target.value);
+                    }
+                  }}
                   className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer pr-8 font-medium appearance-none"
                 >
                   <option value="todas">Todas las categorías</option>
                   <option value="sin-categoria">Sin categoría</option>
-                  {productCategories.map((cat) => (
+                  {localCategories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
                   ))}
+                  <option value="__NEW_CATEGORY__" className="font-bold text-[#1b426e]">
+                    ➕ Crear nueva categoría...
+                  </option>
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
               </div>
@@ -2249,23 +2328,100 @@ export default function InventoryModule({
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Categoría</label>
-                <select
-                  value={productForm.category}
-                  onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-800 cursor-pointer"
-                >
-                  <option value="">Sin categoría</option>
-                  {/* Preserve the current value even if it no longer exists in the list */}
-                  {productForm.category && !productCategories.includes(productForm.category) && (
-                    <option value={productForm.category}>{productForm.category}</option>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-semibold text-slate-700">Categoría</label>
+                  {!quickCategoryInputEditProduct && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickCategoryInputEditProduct(true);
+                        setNewCategoryName("");
+                        setCategoryError("");
+                      }}
+                      className="text-[11px] font-semibold text-[#1b426e] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Nueva categoría</span>
+                    </button>
                   )}
-                  {productCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                </div>
+
+                {quickCategoryInputEditProduct ? (
+                  <div className="p-2.5 rounded-xl border border-[#1b426e]/30 bg-blue-50/50 space-y-2 animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#1b426e] flex items-center gap-1">
+                        <Plus className="w-3 h-3" /> Crear nueva categoría
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuickCategoryInputEditProduct(false);
+                          setNewCategoryName("");
+                          setCategoryError("");
+                        }}
+                        className="text-slate-400 hover:text-slate-600 text-[11px] cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleCreateCategory("edit");
+                          } else if (e.key === "Escape") {
+                            setQuickCategoryInputEditProduct(false);
+                          }
+                        }}
+                        placeholder="Nombre de la categoría (ej. Empaques)"
+                        className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
+                      />
+                      <button
+                        type="button"
+                        disabled={!newCategoryName.trim() || categorySaving}
+                        onClick={() => handleCreateCategory("edit")}
+                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white disabled:opacity-50 cursor-pointer shadow-xs shrink-0 flex items-center gap-1"
+                      >
+                        {categorySaving ? "Guardando..." : "Guardar"}
+                      </button>
+                    </div>
+                    {categoryError && (
+                      <p className="text-[11px] text-rose-600 font-semibold">{categoryError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <select
+                    value={productForm.category}
+                    onChange={(e) => {
+                      if (e.target.value === "__NEW_CATEGORY__") {
+                        setQuickCategoryInputEditProduct(true);
+                        setNewCategoryName("");
+                        setCategoryError("");
+                      } else {
+                        setProductForm({ ...productForm, category: e.target.value });
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-800 cursor-pointer"
+                  >
+                    <option value="">Sin categoría</option>
+                    {productForm.category && !localCategories.includes(productForm.category) && (
+                      <option value={productForm.category}>{productForm.category}</option>
+                    )}
+                    {localCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                    <option value="__NEW_CATEGORY__" className="font-bold text-[#1b426e]">
+                      ➕ Crear nueva categoría...
                     </option>
-                  ))}
-                </select>
+                  </select>
+                )}
               </div>
 
               <div>
@@ -2431,23 +2587,96 @@ export default function InventoryModule({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Categoría</label>
-                      <select
-                        value={newProductForm.category}
-                        onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
-                      >
-                        <option value="">Sin categoría</option>
-                        {productCategories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-semibold text-slate-700">Categoría</label>
+                        {!quickCategoryInputNewProduct && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setQuickCategoryInputNewProduct(true);
+                              setNewCategoryName("");
+                              setCategoryError("");
+                            }}
+                            className="text-[11px] font-semibold text-[#1b426e] hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Nueva categoría</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {quickCategoryInputNewProduct ? (
+                        <div className="p-2.5 rounded-xl border border-[#1b426e]/30 bg-blue-50/50 space-y-2 animate-in fade-in duration-150">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-[#1b426e] flex items-center gap-1">
+                              <Plus className="w-3 h-3" /> Crear nueva categoría
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setQuickCategoryInputNewProduct(false);
+                                setNewCategoryName("");
+                                setCategoryError("");
+                              }}
+                              className="text-slate-400 hover:text-slate-600 text-[11px] cursor-pointer"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              autoFocus
+                              value={newCategoryName}
+                              onChange={(e) => setNewCategoryName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleCreateCategory("new");
+                                } else if (e.key === "Escape") {
+                                  setQuickCategoryInputNewProduct(false);
+                                }
+                              }}
+                              placeholder="Nombre de la categoría (ej. Empaques)"
+                              className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
+                            />
+                            <button
+                              type="button"
+                              disabled={!newCategoryName.trim() || categorySaving}
+                              onClick={() => handleCreateCategory("new")}
+                              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white disabled:opacity-50 cursor-pointer shadow-xs shrink-0 flex items-center gap-1"
+                            >
+                              {categorySaving ? "Guardando..." : "Guardar"}
+                            </button>
+                          </div>
+                          {categoryError && (
+                            <p className="text-[11px] text-rose-600 font-semibold">{categoryError}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <select
+                          value={newProductForm.category}
+                          onChange={(e) => {
+                            if (e.target.value === "__NEW_CATEGORY__") {
+                              setQuickCategoryInputNewProduct(true);
+                              setNewCategoryName("");
+                              setCategoryError("");
+                            } else {
+                              setNewProductForm({ ...newProductForm, category: e.target.value });
+                            }
+                          }}
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800 cursor-pointer"
+                        >
+                          <option value="">Sin categoría</option>
+                          {localCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                          <option value="__NEW_CATEGORY__" className="font-bold text-[#1b426e]">
+                            ➕ Crear nueva categoría...
                           </option>
-                        ))}
-                      </select>
-                      {productCategories.length === 0 && (
-                        <p className="mt-1 text-[11px] text-slate-400">
-                          No hay categorías registradas. Admínistralas en Configuración → Todas las listas → Categorías de productos.
-                        </p>
+                        </select>
                       )}
                     </div>
 
@@ -3770,6 +3999,74 @@ export default function InventoryModule({
                     <span>Eliminar {selectedItemIds.length} {selectedItemIds.length === 1 ? "artículo" : "artículos"}</span>
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Quick Category Modal from Catalog Filter Toolbar */}
+      {showCatalogCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity"
+            onClick={() => setShowCatalogCategoryModal(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <Tag className="w-4 h-4 text-[#1b426e]" />
+                <span>Nueva Categoría de Producto</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowCatalogCategoryModal(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">
+              Ingresa el nombre de la nueva categoría para organizar tus productos e insumos.
+            </p>
+            <div className="space-y-3">
+              <input
+                type="text"
+                autoFocus
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleCreateCategory("filter").then(() => setShowCatalogCategoryModal(false));
+                  } else if (e.key === "Escape") {
+                    setShowCatalogCategoryModal(false);
+                  }
+                }}
+                placeholder="Ej. Líquidos, Tapas, Cajas..."
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
+              />
+              {categoryError && (
+                <p className="text-[11px] text-rose-600 font-semibold">{categoryError}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowCatalogCategoryModal(false)}
+                className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={!newCategoryName.trim() || categorySaving}
+                onClick={async () => {
+                  await handleCreateCategory("filter");
+                  setShowCatalogCategoryModal(false);
+                }}
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white disabled:opacity-50 cursor-pointer shadow-xs"
+              >
+                {categorySaving ? "Guardando..." : "Guardar Categoría"}
               </button>
             </div>
           </div>

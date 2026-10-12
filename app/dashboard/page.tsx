@@ -5928,6 +5928,7 @@ ${accountRowsHtml(equity)}
                 onRefreshInventory={loadDashboardData}
                 accounts={accounts}
                 productCategories={productCategoriesList.map((c) => c.name)}
+                onAddCategory={handleAddProductCategory}
                 currentSubView={currentView}
                 onChangeSubView={(tab) => setCurrentView(tab)}
                 onBack={() => setCurrentView("dashboard")}
