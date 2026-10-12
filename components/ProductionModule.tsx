@@ -11,7 +11,6 @@ import {
   Clock,
   Trash2,
   Edit,
-  Eye,
   Play,
   RotateCcw,
   Printer,
@@ -1016,7 +1015,13 @@ export default function ProductionModule({
                           {/* Order Number & Priority */}
                           <td className="py-3 px-4">
                             <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                              <span>{wo.orderNumber}</span>
+                              <button
+                                onClick={() => setViewingWorkOrder(wo)}
+                                className="hover:text-indigo-600 hover:underline cursor-pointer text-left"
+                                title="Ver detalle de la orden"
+                              >
+                                {wo.orderNumber}
+                              </button>
                               <span
                                 className={`text-[9px] font-black px-1.5 py-0.2 rounded uppercase ${
                                   wo.priority === "URGENTE"
@@ -1134,15 +1139,6 @@ export default function ProductionModule({
 
                           {/* Actions */}
                           <td className="py-3 px-4 text-right space-x-1">
-                            {/* View detail */}
-                            <button
-                              onClick={() => setViewingWorkOrder(wo)}
-                              className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition cursor-pointer"
-                              title="Ver detalle de componentes"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-
                             {/* Start process */}
                             {isPlanned && (
                               <button
@@ -1158,11 +1154,10 @@ export default function ProductionModule({
                             {!isCompleted && !isCancelled && (
                               <button
                                 onClick={() => openCloseWorkOrderModal(wo)}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold transition cursor-pointer shadow-sm"
+                                className="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded transition cursor-pointer"
                                 title="Cerrar orden y rebajar inventario"
                               >
-                                <FileCheck className="w-3 h-3" />
-                                Cerrar Orden
+                                <FileCheck className="w-3.5 h-3.5" />
                               </button>
                             )}
 
