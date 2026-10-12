@@ -995,8 +995,6 @@ export default function ProductionModule({
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase text-[10px] tracking-wider">
                       <th className="py-3 px-4">N° Orden</th>
                       <th className="py-3 px-4">Producto a Fabricar</th>
-                      <th className="py-3 px-4">Lista de Materiales (BOM)</th>
-                      <th className="py-3 px-4">Origen / Cliente</th>
                       <th className="py-3 px-4">Fechas</th>
                       <th className="py-3 px-4">Estado</th>
                       <th className="py-3 px-4 text-center">Inventario</th>
@@ -1053,31 +1051,6 @@ export default function ProductionModule({
                             </div>
                           </td>
 
-                          {/* BOM */}
-                          <td className="py-3 px-4">
-                            <div className="font-medium text-indigo-700 flex items-center gap-1">
-                              <Layers className="w-3 h-3" />
-                              <span>{wo.bom?.name || "BOM"}</span>
-                            </div>
-                            <span className="text-[10px] text-slate-400">{wo.bom?.code}</span>
-                          </td>
-
-                          {/* Sales Order / Customer */}
-                          <td className="py-3 px-4">
-                            {wo.salesOrderNumber ? (
-                              <div className="font-semibold text-slate-800 flex items-center gap-1">
-                                <Package className="w-3 h-3 text-orange-500" />
-                                <span>{wo.salesOrderNumber}</span>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">Orden manual</span>
-                            )}
-                            {wo.customerName && (
-                              <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                                {wo.customerName}
-                              </div>
-                            )}
-                          </td>
 
                           {/* Dates */}
                           <td className="py-3 px-4">
