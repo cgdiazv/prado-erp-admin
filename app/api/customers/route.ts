@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
           OR: [
             { name: { contains: search, mode: "insensitive" } },
             { macolaCode: { contains: search, mode: "insensitive" } },
-            { rtn: { contains: search, mode: "insensitive" } },
             { email: { contains: search, mode: "insensitive" } },
           ],
         },
@@ -94,13 +93,21 @@ export async function POST(request: NextRequest) {
         companyId,
         name,
         macolaCode: macolaCode || null,
-        rtn: rtn || null,
         email: email || null,
         phone: phone || null,
         address: address || null,
         currency: currency || "USD",
       } as any,
     });
+
+    if (rtn) {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "Customer" SET "rtn" = $1 WHERE "id" = $2`,
+        rtn,
+        customer.id
+      ).catch((e: unknown) => console.error("Error setting customer rtn:", e));
+      (customer as any).rtn = rtn;
+    }
 
     return NextResponse.json({ success: true, data: customer }, { status: 201 });
   } catch (error: unknown) {

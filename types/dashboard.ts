@@ -17,6 +17,9 @@ export type Customer = {
   phone: string | null;
   address: string | null;
   currency: string;
+  salesRepId?: string | null;
+  salesRepName?: string | null;
+  zone?: string | null;
 };
 
 export type Vendor = {

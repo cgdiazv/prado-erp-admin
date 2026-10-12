@@ -21,6 +21,17 @@ import {
   Check
 } from "lucide-react";
 
+export const DEFAULT_SALES_ZONES = [
+  "San Pedro Sula / Zona Norte",
+  "Tegucigalpa / Zona Centro-Sur",
+  "La Ceiba / Zona Atlántida",
+  "Choluteca / Zona Sur",
+  "Occidente (Copán / Ocotepeque)",
+  "Comayagua / Zona Central",
+  "El Progreso / Yoro",
+  "Nacional / Cobertura Total",
+];
+
 interface CommissionsModuleProps {
   salesReps: SalesRep[];
   commissions: CommissionRecord[];
@@ -108,6 +119,86 @@ export default function CommissionsModule({
   // Vendedores filters & search
   const [vendedoresSearch, setVendedoresSearch] = useState("");
   const [vendedoresFilter, setVendedoresFilter] = useState<"TODOS" | "ACTIVOS" | "INACTIVOS">("TODOS");
+  const [vendedoresZoneFilter, setVendedoresZoneFilter] = useState("TODAS");
+
+  // Zones State & Quick Creation
+  const [customZones, setCustomZones] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("prado_sales_zones");
+        if (stored) return JSON.parse(stored);
+      } catch {
+        // ignore
+      }
+    }
+    return [];
+  });
+  const [quickZoneInput, setQuickZoneInput] = useState(false);
+  const [newZoneName, setNewZoneName] = useState("");
+  const [zoneSaving, setZoneSaving] = useState(false);
+  const [zoneError, setZoneError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/sales-zones")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setCustomZones((prev) => {
+            const set = new Set([...prev, ...res.data]);
+            return Array.from(set);
+          });
+        }
+      })
+      .catch(() => null);
+  }, []);
+
+  const availableZones = useMemo(() => {
+    const set = new Set<string>(DEFAULT_SALES_ZONES);
+    localSalesReps.forEach((r) => {
+      if (r.zone && r.zone.trim()) set.add(r.zone.trim());
+    });
+    customZones.forEach((z) => {
+      if (z && z.trim()) set.add(z.trim());
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [localSalesReps, customZones]);
+
+  const handleCreateZone = async () => {
+    const trimmed = newZoneName.trim();
+    if (!trimmed) {
+      setZoneError("El nombre de la zona no puede estar vacío");
+      return;
+    }
+    setZoneSaving(true);
+    setZoneError("");
+    try {
+      setCustomZones((prev) => {
+        const next = Array.from(new Set([...prev, trimmed]));
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("prado_sales_zones", JSON.stringify(next));
+          } catch {
+            // ignore
+          }
+        }
+        return next;
+      });
+
+      await fetch("/api/sales-zones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      }).catch(() => null);
+
+      setSalesRepForm((prev) => ({ ...prev, zone: trimmed }));
+      setQuickZoneInput(false);
+      setNewZoneName("");
+    } catch (err: any) {
+      setZoneError(err.message || "Error al crear la zona");
+    } finally {
+      setZoneSaving(false);
+    }
+  };
 
   // Comisiones filters & search
   const [comisionesSearch, setComisionesSearch] = useState("");
@@ -165,9 +256,13 @@ export default function CommissionsModule({
         (vendedoresFilter === "ACTIVOS" && r.status === "ACTIVO") ||
         (vendedoresFilter === "INACTIVOS" && r.status === "INACTIVO");
 
-      return matchesSearch && matchesFilter;
+      const matchesZone =
+        vendedoresZoneFilter === "TODAS" ||
+        r.zone === vendedoresZoneFilter;
+
+      return matchesSearch && matchesFilter && matchesZone;
     });
-  }, [localSalesReps, vendedoresSearch, vendedoresFilter]);
+  }, [localSalesReps, vendedoresSearch, vendedoresFilter, vendedoresZoneFilter]);
 
   // Filtered sales reps for official report
   const reportSalesReps = useMemo(() => {
@@ -284,12 +379,15 @@ export default function CommissionsModule({
     setEditingRepId(null);
     setSalesRepError("");
     setSalesRepSuccess("");
+    setQuickZoneInput(false);
+    setNewZoneName("");
+    setZoneError("");
     setSalesRepForm({
       code: `VEND-00${localSalesReps.length + 1}`,
       name: "",
       email: "",
       phone: "",
-      zone: "San Pedro Sula / Zona Norte",
+      zone: availableZones[0] || "San Pedro Sula / Zona Norte",
       commissionRate: 5.0,
       commissionType: "PERCENTAGE",
       monthlyTarget: 50000.0,
@@ -303,12 +401,15 @@ export default function CommissionsModule({
     setEditingRepId(rep.id);
     setSalesRepError("");
     setSalesRepSuccess("");
+    setQuickZoneInput(false);
+    setNewZoneName("");
+    setZoneError("");
     setSalesRepForm({
       code: rep.code,
       name: rep.name,
       email: rep.email || "",
       phone: rep.phone || "",
-      zone: rep.zone || "San Pedro Sula / Zona Norte",
+      zone: rep.zone || availableZones[0] || "San Pedro Sula / Zona Norte",
       commissionRate: rep.commissionRate,
       commissionType: rep.commissionType,
       monthlyTarget: rep.monthlyTarget,
@@ -675,15 +776,31 @@ export default function CommissionsModule({
                 </button>
               </div>
 
-              <div className="relative min-w-[240px]">
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre, código o zona..."
-                  value={vendedoresSearch}
-                  onChange={(e) => setVendedoresSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e]"
-                />
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <select
+                  value={vendedoresZoneFilter}
+                  onChange={(e) => setVendedoresZoneFilter(e.target.value)}
+                  className="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:border-[#1b426e] cursor-pointer"
+                  title="Filtrar por Zona Comercial"
+                >
+                  <option value="TODAS">Todas las Zonas</option>
+                  {availableZones.map((z) => (
+                    <option key={z} value={z}>
+                      {z}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="relative min-w-[220px]">
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre, código o zona..."
+                    value={vendedoresSearch}
+                    onChange={(e) => setVendedoresSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1b426e]"
+                  />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                </div>
               </div>
             </div>
 
@@ -1063,14 +1180,93 @@ export default function CommissionsModule({
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Zona Comercial Asignada</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Zona Metropolitana Tegucigalpa, Corredor Industrial"
-                  value={salesRepForm.zone}
-                  onChange={(e) => setSalesRepForm({ ...salesRepForm, zone: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#1b426e] focus:outline-none"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-700 font-semibold">Zona Comercial Asignada</label>
+                  {!quickZoneInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickZoneInput(true);
+                        setNewZoneName("");
+                        setZoneError("");
+                      }}
+                      className="text-xs font-semibold text-[#1b426e] hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Nueva Zona</span>
+                    </button>
+                  )}
+                </div>
+
+                {quickZoneInput ? (
+                  <div className="space-y-1.5 p-2.5 rounded-xl bg-amber-50/60 border border-amber-200">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        value={newZoneName}
+                        onChange={(e) => setNewZoneName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleCreateZone();
+                          } else if (e.key === "Escape") {
+                            setQuickZoneInput(false);
+                          }
+                        }}
+                        placeholder="Nombre de la nueva zona (ej. Choluteca / Zona Sur)"
+                        className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-[#1b426e] text-slate-800"
+                      />
+                      <button
+                        type="button"
+                        disabled={!newZoneName.trim() || zoneSaving}
+                        onClick={handleCreateZone}
+                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white disabled:opacity-50 cursor-pointer shadow-xs shrink-0 flex items-center gap-1"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>{zoneSaving ? "Guardando..." : "Guardar"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuickZoneInput(false)}
+                        className="px-2.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer shrink-0"
+                        title="Cancelar"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {zoneError && (
+                      <p className="text-[11px] text-rose-600 font-semibold">{zoneError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <select
+                    value={salesRepForm.zone}
+                    onChange={(e) => {
+                      if (e.target.value === "__NEW_ZONE__") {
+                        setQuickZoneInput(true);
+                        setNewZoneName("");
+                        setZoneError("");
+                      } else {
+                        setSalesRepForm({ ...salesRepForm, zone: e.target.value });
+                      }
+                    }}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#1b426e] focus:outline-none cursor-pointer text-slate-800"
+                  >
+                    <option value="">Sin zona asignada</option>
+                    {salesRepForm.zone && !availableZones.includes(salesRepForm.zone) && (
+                      <option value={salesRepForm.zone}>{salesRepForm.zone}</option>
+                    )}
+                    {availableZones.map((z) => (
+                      <option key={z} value={z}>
+                        {z}
+                      </option>
+                    ))}
+                    <option value="__NEW_ZONE__" className="font-bold text-[#1b426e]">
+                      ➕ Crear nueva zona...
+                    </option>
+                  </select>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3 p-4 bg-amber-50/60 rounded-xl border border-amber-200/60">

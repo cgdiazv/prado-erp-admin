@@ -4,9 +4,11 @@ import React, { useState, useMemo } from "react";
 import { Customer } from "@/types/dashboard";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import { FileText, Download, Printer, Settings, Plus, Search, ChevronLeft, ChevronDown, X, Building2, Users, CheckCircle2, Pencil } from "lucide-react";
+import { DEFAULT_SALES_ZONES } from "@/components/CommissionsModule";
 
 interface CustomersModuleProps {
   customers: Customer[];
+  salesReps?: Array<{ id: string; name: string; code?: string; zone?: string | null }>;
   onRefreshCustomers: () => Promise<void> | void;
   onBack: () => void;
   onOpenCustomerStatement: (customerIdOrName: string) => void;
@@ -26,6 +28,7 @@ interface CustomersModuleProps {
 
 export default function CustomersModule({
   customers,
+  salesReps = [],
   onRefreshCustomers,
   onBack,
   onOpenCustomerStatement,
@@ -72,6 +75,61 @@ export default function CustomersModule({
     commercial: true,
   });
 
+  // Customer Vendedor & Zona Assignments (persisted locally & optimistic)
+  const [customerAssignments, setCustomerAssignments] = useState<
+    Record<string, { salesRepId?: string; salesRepName?: string; zone?: string }>
+  >(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("prado_customer_assignments");
+        if (stored) return JSON.parse(stored);
+      } catch {
+        // ignore
+      }
+    }
+    return {};
+  });
+
+  const saveCustomerAssignment = (
+    customerId: string,
+    data: { salesRepId?: string; salesRepName?: string; zone?: string }
+  ) => {
+    setCustomerAssignments((prev) => {
+      const next = { ...prev, [customerId]: { ...prev[customerId], ...data } };
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("prado_customer_assignments", JSON.stringify(next));
+        } catch {
+          // ignore
+        }
+      }
+      return next;
+    });
+  };
+
+  const [availableZones, setAvailableZones] = useState<string[]>(DEFAULT_SALES_ZONES);
+
+  React.useEffect(() => {
+    fetch("/api/sales-zones")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setAvailableZones(res.data);
+        }
+      })
+      .catch(() => null);
+  }, []);
+
+  const getCustomerAssignment = (c: Customer) => {
+    const assign = customerAssignments[c.id] || {};
+    const repId = (c as any).salesRepId || assign.salesRepId;
+    const repName = (c as any).salesRepName || assign.salesRepName;
+    const rep = salesReps.find((r) => r.id === repId || (repName && r.name === repName));
+    const finalRepName = rep?.name || repName || null;
+    const zone = (c as any).zone || assign.zone || rep?.zone || null;
+    return { repName: finalRepName, zone };
+  };
+
   const defaultNewCustomerForm = {
     name: "",
     rtn: "",
@@ -83,6 +141,9 @@ export default function CustomersModule({
     city: "San Pedro Sula",
     paymentTerms: "Crédito 30 días",
     creditLimit: 0,
+    salesRepId: "",
+    salesRepName: "",
+    zone: "",
   };
   const [newCustomerForm, setNewCustomerForm] = useState(defaultNewCustomerForm);
 
@@ -96,6 +157,9 @@ export default function CustomersModule({
     phone: "",
     address: "",
     currency: "USD",
+    salesRepId: "",
+    salesRepName: "",
+    zone: "",
   });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState("");
@@ -112,12 +176,16 @@ export default function CustomersModule({
   // Filtered customers list
   const filteredCustomers = useMemo(() => {
     return customers.filter((c) => {
+      const { repName, zone } = getCustomerAssignment(c);
+      const q = search.toLowerCase();
       const matchesSearch =
         search === "" ||
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        (c.macolaCode && c.macolaCode.toLowerCase().includes(search.toLowerCase())) ||
-        (c.email && c.email.toLowerCase().includes(search.toLowerCase())) ||
-        (c.phone && c.phone.includes(search));
+        c.name.toLowerCase().includes(q) ||
+        (c.macolaCode && c.macolaCode.toLowerCase().includes(q)) ||
+        (c.email && c.email.toLowerCase().includes(q)) ||
+        (c.phone && c.phone.includes(search)) ||
+        (repName && repName.toLowerCase().includes(q)) ||
+        (zone && zone.toLowerCase().includes(q));
 
       if (!matchesSearch) return false;
 
@@ -126,7 +194,7 @@ export default function CustomersModule({
       }
       return true;
     });
-  }, [customers, search, filterType]);
+  }, [customers, search, filterType, customerAssignments, salesReps]);
 
   // Filtered customers for official report
   const reportCustomers = useMemo(() => {
@@ -174,21 +242,28 @@ export default function CustomersModule({
       "No.",
       "Código",
       "Nombre de Cliente",
+      "Vendedor",
+      "Zona",
       "Teléfono",
       "Correo Electrónico",
       "Dirección",
       "Moneda",
     ];
 
-    const rows = customersToExport.map((c, idx) => [
-      idx + 1,
-      `"${(c.macolaCode || `#${c.id.slice(0, 6)}`).replace(/"/g, '""')}"`,
-      `"${c.name.replace(/"/g, '""')}"`,
-      `"${(c.phone || "").replace(/"/g, '""')}"`,
-      `"${(c.email || "").replace(/"/g, '""')}"`,
-      `"${(c.address || "").replace(/"/g, '""')}"`,
-      `"${c.currency || "USD"}"`,
-    ]);
+    const rows = customersToExport.map((c, idx) => {
+      const { repName, zone } = getCustomerAssignment(c);
+      return [
+        idx + 1,
+        `"${(c.macolaCode || `#${c.id.slice(0, 6)}`).replace(/"/g, '""')}"`,
+        `"${c.name.replace(/"/g, '""')}"`,
+        `"${(repName || "Sin asignar").replace(/"/g, '""')}"`,
+        `"${(zone || "Sin asignar").replace(/"/g, '""')}"`,
+        `"${(c.phone || "").replace(/"/g, '""')}"`,
+        `"${(c.email || "").replace(/"/g, '""')}"`,
+        `"${(c.address || "").replace(/"/g, '""')}"`,
+        `"${c.currency || "USD"}"`,
+      ];
+    });
 
     const companyName = internalCompanySettings?.nombreLegal || internalCompanySettings?.nombre || "PRADO ERP";
     const csvContent =
@@ -244,6 +319,13 @@ export default function CustomersModule({
 
       const json = await res.json();
       if (json.success && json.data) {
+        if (newCustomerForm.salesRepId || newCustomerForm.salesRepName || newCustomerForm.zone) {
+          saveCustomerAssignment(json.data.id, {
+            salesRepId: newCustomerForm.salesRepId,
+            salesRepName: newCustomerForm.salesRepName,
+            zone: newCustomerForm.zone,
+          });
+        }
         await onRefreshCustomers();
         setDrawerSuccess("¡Cliente registrado correctamente!");
         setTimeout(() => setDrawerSuccess(""), 4000);
@@ -267,6 +349,7 @@ export default function CustomersModule({
 
   // Edit Modal handlers
   const handleOpenEditCustomer = (c: Customer) => {
+    const assign = customerAssignments[c.id] || {};
     setEditingCustomer(c);
     setEditForm({
       name: c.name || "",
@@ -276,6 +359,9 @@ export default function CustomersModule({
       phone: c.phone || "",
       address: c.address || "",
       currency: c.currency || "USD",
+      salesRepId: (c as any).salesRepId || assign.salesRepId || "",
+      salesRepName: (c as any).salesRepName || assign.salesRepName || "",
+      zone: (c as any).zone || assign.zone || "",
     });
     setEditError("");
     setEditSuccess("");
@@ -296,6 +382,11 @@ export default function CustomersModule({
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Error al actualizar cliente");
       }
+      saveCustomerAssignment(editingCustomer.id, {
+        salesRepId: editForm.salesRepId,
+        salesRepName: editForm.salesRepName,
+        zone: editForm.zone,
+      });
       setEditSuccess("¡Cliente actualizado exitosamente!");
       await onRefreshCustomers();
       setTimeout(() => {
@@ -430,6 +521,8 @@ export default function CustomersModule({
               <tr>
                 <th className="p-3.5">Código</th>
                 <th className="p-3.5">Cliente</th>
+                <th className="p-3.5">Vendedor</th>
+                <th className="p-3.5">Zona</th>
                 <th className="p-3.5">Correo Electrónico</th>
                 <th className="p-3.5">Teléfono</th>
                 <th className="p-3.5">Dirección</th>
@@ -439,36 +532,57 @@ export default function CustomersModule({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <TableRowsSkeleton rows={6} cols={7} />
+                <TableRowsSkeleton rows={6} cols={9} />
               ) : (
                 <>
-                  {filteredCustomers.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50/80 transition">
-                      <td className="p-3.5 font-mono">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditCustomer(c)}
-                          className="text-[#1b426e] font-semibold hover:underline cursor-pointer flex items-center gap-1.5 group"
-                          title="Haz clic para editar cliente"
-                        >
-                          <span>{c.macolaCode || `#${c.id.slice(0, 6)}`}</span>
-                        </button>
-                      </td>
-                      <td className="p-3.5 font-medium text-slate-900">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditCustomer(c)}
-                          className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium"
-                          title="Haz clic para editar cliente"
-                        >
-                          {c.name}
-                        </button>
-                      </td>
-                      <td className="p-3.5 text-slate-500">{c.email || "—"}</td>
-                      <td className="p-3.5 text-slate-500">{c.phone || "—"}</td>
-                      <td className="p-3.5 text-slate-500 truncate max-w-xs">{c.address || "—"}</td>
-                      <td className="p-3.5 font-medium">{c.currency}</td>
-                      <td className="p-3.5 text-right print:hidden">
+                  {filteredCustomers.map((c) => {
+                    const { repName, zone } = getCustomerAssignment(c);
+                    return (
+                      <tr key={c.id} className="hover:bg-slate-50/80 transition">
+                        <td className="p-3.5 font-mono">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditCustomer(c)}
+                            className="text-[#1b426e] font-semibold hover:underline cursor-pointer flex items-center gap-1.5 group"
+                            title="Haz clic para editar cliente"
+                          >
+                            <span>{c.macolaCode || `#${c.id.slice(0, 6)}`}</span>
+                          </button>
+                        </td>
+                        <td className="p-3.5 font-medium text-slate-900">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditCustomer(c)}
+                            className="hover:text-[#1b426e] hover:underline cursor-pointer text-left font-medium"
+                            title="Haz clic para editar cliente"
+                          >
+                            {c.name}
+                          </button>
+                        </td>
+                        <td className="p-3.5 font-medium text-slate-800">
+                          {repName ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="font-semibold text-slate-800">{repName}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 italic">Sin asignar</span>
+                          )}
+                        </td>
+                        <td className="p-3.5 text-slate-700">
+                          {zone ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[11px] font-medium border border-slate-200/60">
+                              {zone}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic">Sin asignar</span>
+                          )}
+                        </td>
+                        <td className="p-3.5 text-slate-500">{c.email || "—"}</td>
+                        <td className="p-3.5 text-slate-500">{c.phone || "—"}</td>
+                        <td className="p-3.5 text-slate-500 truncate max-w-xs">{c.address || "—"}</td>
+                        <td className="p-3.5 font-medium">{c.currency}</td>
+                        <td className="p-3.5 text-right print:hidden">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
@@ -491,10 +605,11 @@ export default function CustomersModule({
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                   {filteredCustomers.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="p-8 text-center text-slate-400">
+                      <td colSpan={9} className="p-8 text-center text-slate-400">
                         No se encontraron clientes
                       </td>
                     </tr>
@@ -707,6 +822,49 @@ export default function CustomersModule({
                         />
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Vendedor Asignado</label>
+                        <select
+                          value={newCustomerForm.salesRepId}
+                          onChange={(e) => {
+                            const repId = e.target.value;
+                            const found = salesReps.find((r) => r.id === repId);
+                            setNewCustomerForm({
+                              ...newCustomerForm,
+                              salesRepId: repId,
+                              salesRepName: found ? found.name : "",
+                              zone: found?.zone || newCustomerForm.zone,
+                            });
+                          }}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 cursor-pointer"
+                        >
+                          <option value="">Sin vendedor asignado</option>
+                          {salesReps.map((sr) => (
+                            <option key={sr.id} value={sr.id}>
+                              {sr.name} {sr.zone ? `(${sr.zone})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Zona Asignada</label>
+                        <select
+                          value={newCustomerForm.zone}
+                          onChange={(e) => setNewCustomerForm({ ...newCustomerForm, zone: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 cursor-pointer"
+                        >
+                          <option value="">Sin zona asignada</option>
+                          {availableZones.map((z) => (
+                            <option key={z} value={z}>
+                              {z}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -880,6 +1038,49 @@ export default function CustomersModule({
                   onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Vendedor Asignado</label>
+                  <select
+                    value={editForm.salesRepId}
+                    onChange={(e) => {
+                      const repId = e.target.value;
+                      const found = salesReps.find((r) => r.id === repId);
+                      setEditForm({
+                        ...editForm,
+                        salesRepId: repId,
+                        salesRepName: found ? found.name : "",
+                        zone: found?.zone || editForm.zone,
+                      });
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 cursor-pointer"
+                  >
+                    <option value="">Sin vendedor asignado</option>
+                    {salesReps.map((sr) => (
+                      <option key={sr.id} value={sr.id}>
+                        {sr.name} {sr.zone ? `(${sr.zone})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Zona Asignada</label>
+                  <select
+                    value={editForm.zone}
+                    onChange={(e) => setEditForm({ ...editForm, zone: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 cursor-pointer"
+                  >
+                    <option value="">Sin zona asignada</option>
+                    {availableZones.map((z) => (
+                      <option key={z} value={z}>
+                        {z}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="pt-2 flex justify-between items-center">
@@ -1115,6 +1316,8 @@ export default function CustomersModule({
                       <th className="py-2.5 px-3 text-center w-10">#</th>
                       <th className="py-2.5 px-3 w-28">Código</th>
                       <th className="py-2.5 px-3">Cliente / Razón Social</th>
+                      <th className="py-2.5 px-3">Vendedor</th>
+                      <th className="py-2.5 px-3">Zona</th>
                       <th className="py-2.5 px-3">Teléfono</th>
                       <th className="py-2.5 px-3">Correo Electrónico</th>
                       <th className="py-2.5 px-3">Dirección</th>
@@ -1122,32 +1325,37 @@ export default function CustomersModule({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 text-slate-700">
-                    {reportCustomers.map((c, index) => (
-                      <tr key={c.id} className="hover:bg-slate-50/50">
-                        <td className="py-2 px-3 text-center font-mono text-slate-400 text-[11px]">{index + 1}</td>
-                        <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap text-[11px]">
-                          {c.macolaCode || `#${c.id.slice(0, 6)}`}
-                        </td>
-                        <td className="py-2 px-3 font-semibold text-slate-900">{c.name}</td>
-                        <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{c.phone || "—"}</td>
-                        <td className="py-2 px-3 text-slate-600">{c.email || "—"}</td>
-                        <td className="py-2 px-3 text-slate-600 truncate max-w-xs">{c.address || "—"}</td>
-                        <td className="py-2 px-3 text-center font-mono font-bold text-[11px]">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded text-[10px] ${
-                              c.currency === "USD"
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                : "bg-blue-50 text-blue-700 border border-blue-200"
-                            }`}
-                          >
-                            {c.currency}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {reportCustomers.map((c, index) => {
+                      const { repName, zone } = getCustomerAssignment(c);
+                      return (
+                        <tr key={c.id} className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 text-center font-mono text-slate-400 text-[11px]">{index + 1}</td>
+                          <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap text-[11px]">
+                            {c.macolaCode || `#${c.id.slice(0, 6)}`}
+                          </td>
+                          <td className="py-2 px-3 font-semibold text-slate-900">{c.name}</td>
+                          <td className="py-2 px-3 text-slate-700 whitespace-nowrap text-[11px]">{repName || "—"}</td>
+                          <td className="py-2 px-3 text-slate-700 whitespace-nowrap text-[11px]">{zone || "—"}</td>
+                          <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{c.phone || "—"}</td>
+                          <td className="py-2 px-3 text-slate-600">{c.email || "—"}</td>
+                          <td className="py-2 px-3 text-slate-600 truncate max-w-xs">{c.address || "—"}</td>
+                          <td className="py-2 px-3 text-center font-mono font-bold text-[11px]">
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] ${
+                                c.currency === "USD"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                              }`}
+                            >
+                              {c.currency}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {reportCustomers.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                        <td colSpan={9} className="py-8 text-center text-slate-400 font-medium">
                           No hay clientes que coincidan con el alcance seleccionado.
                         </td>
                       </tr>
