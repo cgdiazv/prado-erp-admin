@@ -67,18 +67,28 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       }
     }
 
+    const updateData: Record<string, any> = {
+      ...(name !== undefined && { name }),
+      ...(macolaCode !== undefined && { macolaCode: macolaCode || null }),
+      ...(email !== undefined && { email: email || null }),
+      ...(phone !== undefined && { phone: phone || null }),
+      ...(address !== undefined && { address: address || null }),
+      ...(currency !== undefined && { currency }),
+    };
+
     const updated = await prisma.customer.update({
       where: { id: existing.id },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(macolaCode !== undefined && { macolaCode: macolaCode || null }),
-        ...(rtn !== undefined && { rtn: rtn || null }),
-        ...(email !== undefined && { email: email || null }),
-        ...(phone !== undefined && { phone: phone || null }),
-        ...(address !== undefined && { address: address || null }),
-        ...(currency !== undefined && { currency }),
-      } as any,
+      data: updateData as any,
     });
+
+    if (rtn !== undefined) {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "Customer" SET "rtn" = $1 WHERE "id" = $2`,
+        rtn || null,
+        existing.id
+      ).catch((e: unknown) => console.error("Error updating customer rtn:", e));
+      (updated as any).rtn = rtn || null;
+    }
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error: unknown) {

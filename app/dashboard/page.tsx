@@ -53,6 +53,9 @@ type Customer = {
   phone: string | null;
   address: string | null;
   currency: string;
+  salesRepId?: string | null;
+  salesRepName?: string | null;
+  zone?: string | null;
 };
 
 type Vendor = {
@@ -3903,8 +3906,14 @@ ${accountRowsHtml(equity)}
           } md:translate-x-0 md:sticky md:top-0 md:z-30`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 border-b border-slate-200 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
+        <div
+          className={`border-b border-slate-200 flex shrink-0 transition-all duration-300 ${
+            sidebarCollapsed
+              ? "py-3 px-2 flex-col items-center justify-center gap-2"
+              : "h-16 px-4 items-center justify-between"
+          }`}
+        >
+          <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3 overflow-hidden"}`}>
             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
               <img src="/logo-prado-erp.webp" alt="Prado ERP" className="w-full h-full object-contain" />
             </div>
@@ -3916,7 +3925,9 @@ ${accountRowsHtml(equity)}
           </div>
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition hidden md:block"
+            className={`p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition hidden md:flex items-center justify-center ${
+              sidebarCollapsed ? "w-8 h-8" : ""
+            }`}
             title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5868,6 +5879,7 @@ ${accountRowsHtml(equity)}
             <div className="animate-in fade-in duration-150">
               <CustomersModule
                 customers={customers}
+                salesReps={salesReps}
                 loading={loading}
                 onRefreshCustomers={loadDashboardData}
                 onBack={() => setCurrentView("dashboard")}
