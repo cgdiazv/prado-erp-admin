@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Roboto, Roboto_Mono } from "next/font/google";
+import { Roboto, Roboto_Mono, Manrope, Inter } from "next/font/google";
 import "./globals.css";
 
 const roboto = Roboto({
@@ -14,6 +14,20 @@ const robotoMono = Roboto_Mono({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-roboto-mono",
+  display: "swap",
+});
+
+const manrope = Manrope({
+  weight: ["400", "500", "600", "700", "800"],
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+});
+
+const inter = Inter({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -61,7 +75,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${roboto.variable} ${robotoMono.variable} h-full antialiased`}
+      className={`${roboto.variable} ${robotoMono.variable} ${manrope.variable} ${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
