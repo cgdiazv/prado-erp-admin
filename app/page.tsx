@@ -38,7 +38,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#14253b] selection:bg-[#a6e9cf] selection:text-[#25426f]">
+    <div className="min-h-screen bg-white text-[#14253b] selection:bg-[#a6e9cf] selection:text-[#25426f] overflow-x-hidden">
       {/* =========================================================================
           SECTION 0: Presentación (Hero)
           ========================================================================= */}
@@ -598,9 +598,9 @@ export default function HomePage() {
           ========================================================================= */}
       <section className="py-20 md:py-[96px] bg-white">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-[100px] items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 xl:gap-[100px] items-center">
             {/* Left: Invoice Mock Scenario */}
-            <div className="lg:col-span-6 bg-[#eaf5ef] rounded-[20px] p-6 sm:p-10 flex flex-col items-center gap-5">
+            <div className="min-w-0 bg-[#eaf5ef] rounded-[20px] p-6 sm:p-10 flex flex-col items-center gap-5">
               {/* White Invoice Card */}
               <div className="w-full max-w-[425px] bg-white rounded-[6px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-6 sm:p-[30px] flex flex-col gap-[22px]">
                 {/* Header */}
@@ -701,7 +701,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: Local Tax Preparation Info */}
-            <div className="lg:col-span-6 flex flex-col gap-8 md:gap-8">
+            <div className="min-w-0 flex flex-col gap-8 md:gap-8">
               <div className="flex flex-col gap-[18px]">
                 <span className="font-inter font-semibold text-[12px] leading-[15px] tracking-wider text-[#087e63] uppercase">
                   HONDURAS, DESDE EL ORIGEN
@@ -768,9 +768,9 @@ export default function HomePage() {
           ========================================================================= */}
       <section className="py-20 md:py-[88px] bg-[#25426f] text-white">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-[90px] items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-8 lg:gap-12 xl:gap-[90px] items-center">
             {/* Left: Value of Reports */}
-            <div className="lg:col-span-5 flex flex-col gap-[30px]">
+            <div className="min-w-0 flex flex-col gap-[30px]">
               <div className="flex flex-col gap-[18px]">
                 <span className="font-inter font-semibold text-[12px] leading-[15px] tracking-wider text-[#a6e9cf] uppercase">
                   INFORMACIÓN PARA DECIDIR
@@ -807,7 +807,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: Conceptual Aging Report Card */}
-            <div className="lg:col-span-7 bg-white rounded-[12px] p-6 sm:p-8 text-[#14253b] shadow-2xl flex flex-col gap-6">
+            <div className="min-w-0 bg-white rounded-[12px] p-6 sm:p-8 text-[#14253b] shadow-2xl flex flex-col gap-6">
               {/* Header */}
               <div className="flex items-center justify-between pb-2">
                 <div className="flex flex-col gap-1.5">
@@ -1176,9 +1176,9 @@ export default function HomePage() {
           ========================================================================= */}
       <section className="py-20 md:py-[88px] bg-white border-y border-[#dde5e2]">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-8 lg:gap-12 xl:gap-20 items-center">
             {/* Left Header */}
-            <div className="lg:col-span-5 flex flex-col gap-[18px]">
+            <div className="min-w-0 flex flex-col gap-[18px]">
               <span className="font-inter font-semibold text-[12px] leading-[15px] tracking-wider text-[#087e63] uppercase">
                 UN COMIENZO SENCILLO
               </span>
@@ -1188,7 +1188,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Steps */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-8">
+            <div className="min-w-0 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-8">
               {/* Step 1 */}
               <div className="flex flex-col gap-[18px]">
                 <span className="font-manrope text-[45px] leading-[61px] text-[#709b88]">
@@ -1243,9 +1243,9 @@ export default function HomePage() {
           ========================================================================= */}
       <section className="py-20 md:py-[88px] bg-white">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-[120px] items-start">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-10 lg:gap-14 xl:gap-[120px]">
             {/* Left Header */}
-            <div className="lg:col-span-4 flex flex-col gap-[18px]">
+            <div className="w-full lg:w-[320px] xl:w-[380px] lg:flex-shrink-0 flex flex-col gap-[18px]">
               <span className="font-inter font-semibold text-[12px] leading-[15px] tracking-wider text-[#087e63] uppercase">
                 ANTES DE EMPEZAR
               </span>
@@ -1258,15 +1258,15 @@ export default function HomePage() {
             </div>
 
             {/* Right FAQs */}
-            <div className="lg:col-span-8 flex flex-col divide-y divide-[#dde5e2] border-y border-[#dde5e2]">
+            <div className="w-full flex-1 min-w-0 flex flex-col divide-y divide-[#dde5e2] border-y border-[#dde5e2]">
               {/* FAQ 1 */}
-              <div className="py-6 flex flex-col gap-3">
+              <div className="py-6 flex flex-col gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={() => toggleFaq(0)}
                   className="flex items-center justify-between text-left group w-full gap-4"
                 >
-                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition">
+                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition min-w-0 break-words">
                     ¿Necesito una tarjeta para probar Prado ERP?
                   </h3>
                   <div className="text-[#087e63] p-1 flex-shrink-0">
@@ -1278,20 +1278,20 @@ export default function HomePage() {
                   </div>
                 </button>
                 {openFaq.includes(0) && (
-                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-6">
+                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-2 sm:pr-6 break-words">
                     No. Puede probar Prado ERP durante 60 días sin tarjeta de crédito. No hay contratos y puede cancelar cuando quiera.
                   </p>
                 )}
               </div>
 
               {/* FAQ 2 */}
-              <div className="py-6 flex flex-col gap-3">
+              <div className="py-6 flex flex-col gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={() => toggleFaq(1)}
                   className="flex items-center justify-between text-left group w-full gap-4"
                 >
-                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition">
+                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition min-w-0 break-words">
                     ¿Tengo que instalar algún programa?
                   </h3>
                   <div className="text-[#087e63] p-1 flex-shrink-0">
@@ -1303,20 +1303,20 @@ export default function HomePage() {
                   </div>
                 </button>
                 {openFaq.includes(1) && (
-                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-6">
+                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-2 sm:pr-6 break-words">
                     No. Prado ERP es una plataforma en la nube: puede facturar y administrar su empresa en línea, sin instalación.
                   </p>
                 )}
               </div>
 
               {/* FAQ 3 */}
-              <div className="py-6 flex flex-col gap-3">
+              <div className="py-6 flex flex-col gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={() => toggleFaq(2)}
                   className="flex items-center justify-between text-left group w-full gap-4"
                 >
-                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition">
+                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition min-w-0 break-words">
                     ¿Está pensado para empresas en Honduras?
                   </h3>
                   <div className="text-[#087e63] p-1 flex-shrink-0">
@@ -1328,20 +1328,20 @@ export default function HomePage() {
                   </div>
                 </button>
                 {openFaq.includes(2) && (
-                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-6">
+                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-2 sm:pr-6 break-words">
                     Sí. Incluye numeración CAI autorizada por el SAR, cálculo de ISV, plan de cuentas hondureño y retenciones del SAR, según las funciones de su plan.
                   </p>
                 )}
               </div>
 
               {/* FAQ 4 */}
-              <div className="py-6 flex flex-col gap-3">
+              <div className="py-6 flex flex-col gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={() => toggleFaq(3)}
                   className="flex items-center justify-between text-left group w-full gap-4"
                 >
-                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition">
+                  <h3 className="font-manrope font-bold text-lg sm:text-[18px] leading-[25px] text-[#25426f] group-hover:text-[#087e63] transition min-w-0 break-words">
                     ¿Cómo se facturan los planes que aparecen aquí?
                   </h3>
                   <div className="text-[#087e63] p-1 flex-shrink-0">
@@ -1353,7 +1353,7 @@ export default function HomePage() {
                   </div>
                 </button>
                 {openFaq.includes(3) && (
-                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-6">
+                  <p className="font-inter text-[14px] leading-[24px] text-[#637080] pr-2 sm:pr-6 break-words">
                     Los precios mostrados son equivalentes mensuales con facturación anual: Básico, $96 USD/año; Profesional, $288 USD/año; Empresarial, $480 USD/año.
                   </p>
                 )}
@@ -1369,8 +1369,8 @@ export default function HomePage() {
       {/* Final Callout (Invitación final) */}
       <section className="bg-[#eaf5ef] py-16 md:py-[72px]">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-            <div className="flex flex-col gap-[18px] max-w-[740px]">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="flex flex-col gap-[18px] max-w-[740px] min-w-0">
               <span className="font-inter font-semibold text-[11px] leading-[13px] tracking-wider text-[#087e63] uppercase">
                 SU PRÓXIMO PASO EMPIEZA AQUÍ
               </span>
