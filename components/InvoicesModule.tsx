@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Edit3, Eye, ChevronLeft } from "lucide-react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Edit3, Eye, ChevronLeft, Search, Check, ChevronsUpDown, Building2, User } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -153,11 +153,16 @@ export function InvoicesModule({
   onReceivePayment,
   onRefreshInvoices,
 }: InvoicesModuleProps) {
+  const onRefreshInvoicesRef = useRef(onRefreshInvoices);
   useEffect(() => {
-    if (onRefreshInvoices) {
-      onRefreshInvoices();
-    }
+    onRefreshInvoicesRef.current = onRefreshInvoices;
   }, [onRefreshInvoices]);
+
+  useEffect(() => {
+    if (onRefreshInvoicesRef.current) {
+      onRefreshInvoicesRef.current();
+    }
+  }, []);
   // Resolver la moneda seleccionada en configuración (con fallback a localStorage y USD)
   const { effectiveCurrencySymbol, effectiveCurrencyCode } = useMemo(() => {
     if (defaultCurrencySymbol && defaultCurrencyCode && (defaultCurrencySymbol !== "$" || defaultCurrencyCode !== "USD")) {
@@ -275,9 +280,24 @@ export function InvoicesModule({
     return new Date(base.getTime() + days * 86400000).toISOString().split("T")[0];
   };
 
+  const initializedEditorRef = useRef<string | null>(null);
+
   // Sync / Initialize invoice form when entering editor mode or changing editingInvoice
   useEffect(() => {
-    if (currentView !== "factura-editor") return;
+    if (currentView !== "factura-editor") {
+      initializedEditorRef.current = null;
+      return;
+    }
+
+    const sessionKey = editingInvoice && typeof editingInvoice === "object"
+      ? `edit-${(editingInvoice as any).id || (editingInvoice as any).num || "invoice"}`
+      : "new-invoice";
+
+    // Prevent wiping form if already initialized for this editing session
+    if (initializedEditorRef.current === sessionKey) {
+      return;
+    }
+    initializedEditorRef.current = sessionKey;
 
     const isRealInvoice = editingInvoice && typeof editingInvoice === "object" && ("num" in editingInvoice || "customer" in editingInvoice);
     if (isRealInvoice) {
@@ -416,6 +436,285 @@ export function InvoicesModule({
     document.addEventListener("mousedown", handleGlobalClick);
     return () => document.removeEventListener("mousedown", handleGlobalClick);
   }, [showInvoiceSaveDropdown, showInvoiceSendDropdown, showPrintDownloadDropdown]);
+
+  // Customer autocomplete search state in invoice editor
+  const [customerSearchInput, setCustomerSearchInput] = useState("");
+  const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
+  const [highlightedCustomerIndex, setHighlightedCustomerIndex] = useState(-1);
+  const customerDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync search input with invoiceForm.customerName
+  useEffect(() => {
+    setCustomerSearchInput(invoiceForm.customerName || "");
+  }, [invoiceForm.customerName]);
+
+  // Outside click listener for customer autocomplete dropdown
+  useEffect(() => {
+    if (!isCustomerDropdownOpen) return;
+    const handleCustomerOutsideClick = (e: MouseEvent) => {
+      if (
+        customerDropdownRef.current &&
+        !customerDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsCustomerDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleCustomerOutsideClick);
+    return () => document.removeEventListener("mousedown", handleCustomerOutsideClick);
+  }, [isCustomerDropdownOpen]);
+
+  // Filter customers dynamically as the user types
+  const filteredCustomers = useMemo(() => {
+    const query = customerSearchInput.trim();
+    if (!query) {
+      return customers.slice(0, 15);
+    }
+
+    const norm = (s: string) =>
+      s
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    const normalizedQuery = norm(query);
+
+    const matched = customers.filter((c) => {
+      const name = norm(c.name || "");
+      const code = norm(c.macolaCode || "");
+      const rtn = norm(c.rtn || (c as any).taxId || "");
+      const email = norm(c.email || "");
+      const phone = norm(c.phone || "");
+
+      return (
+        name.includes(normalizedQuery) ||
+        code.includes(normalizedQuery) ||
+        rtn.includes(normalizedQuery) ||
+        email.includes(normalizedQuery) ||
+        phone.includes(normalizedQuery)
+      );
+    });
+
+    // If query matches the current selected customer exactly, also show other customers below
+    if (
+      matched.length === 1 &&
+      matched[0].id === invoiceForm.customerId &&
+      customers.length > 1
+    ) {
+      const others = customers.filter((c) => c.id !== matched[0].id).slice(0, 10);
+      return [...matched, ...others];
+    }
+
+    return matched;
+  }, [customers, customerSearchInput, invoiceForm.customerId]);
+
+  const handleCustomerInputChange = (text: string) => {
+    setCustomerSearchInput(text);
+    setIsCustomerDropdownOpen(true);
+    setHighlightedCustomerIndex(-1);
+
+    const exactMatch = customers.find(
+      (c) => c.name.toLowerCase() === text.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      const custRtn = exactMatch.rtn || (!exactMatch.macolaCode?.startsWith("CUS-") ? exactMatch.macolaCode : "") || (exactMatch as any)?.taxId || "";
+      setInvoiceForm((prev) => ({
+        ...prev,
+        customerId: exactMatch.id,
+        customerName: exactMatch.name,
+        customerEmail: exactMatch.email || prev.customerEmail,
+        customerRtn: custRtn || prev.customerRtn,
+        customerAddress: exactMatch.address || prev.customerAddress,
+        deliveredTo: (!prev.deliveredTo || prev.deliveredTo === prev.customerName) ? exactMatch.name : prev.deliveredTo,
+        deliveryAddress: (!prev.deliveryAddress || prev.deliveryAddress === prev.customerAddress) ? (exactMatch.address || "") : prev.deliveryAddress,
+        salesRepId: prev.salesRepId || exactMatch.salesRepId || "",
+        salesRepName: prev.salesRepName || exactMatch.salesRepName || "",
+      }));
+    } else {
+      setInvoiceForm((prev) => ({
+        ...prev,
+        customerId: "",
+        customerName: text,
+        deliveredTo: (!prev.deliveredTo || prev.deliveredTo === prev.customerName) ? text : prev.deliveredTo,
+      }));
+    }
+  };
+
+  const handleSelectCustomer = (selected: Customer) => {
+    const custRtn = selected.rtn || (!selected.macolaCode?.startsWith("CUS-") ? selected.macolaCode : "") || (selected as any)?.taxId || "";
+    setInvoiceForm((prev) => ({
+      ...prev,
+      customerId: selected.id,
+      customerName: selected.name,
+      customerEmail: selected.email || "",
+      customerRtn: custRtn,
+      customerAddress: selected.address || "",
+      deliveredTo: selected.name,
+      deliveryAddress: selected.address || "",
+      salesRepId: prev.salesRepId || selected.salesRepId || "",
+      salesRepName: prev.salesRepName || selected.salesRepName || "",
+    }));
+    setCustomerSearchInput(selected.name);
+    setIsCustomerDropdownOpen(false);
+    setHighlightedCustomerIndex(-1);
+  };
+
+  const handleClearCustomer = () => {
+    setInvoiceForm((prev) => ({
+      ...prev,
+      customerId: "",
+      customerName: "",
+      customerEmail: "",
+      customerRtn: "",
+      customerAddress: "",
+      deliveredTo: "",
+      deliveryAddress: "",
+    }));
+    setCustomerSearchInput("");
+    setIsCustomerDropdownOpen(true);
+    setHighlightedCustomerIndex(-1);
+  };
+
+  const handleCustomerInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isCustomerDropdownOpen) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setIsCustomerDropdownOpen(true);
+        return;
+      }
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedCustomerIndex((prev) =>
+        prev < filteredCustomers.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedCustomerIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredCustomers.length - 1
+      );
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (
+        highlightedCustomerIndex >= 0 &&
+        highlightedCustomerIndex < filteredCustomers.length
+      ) {
+        handleSelectCustomer(filteredCustomers[highlightedCustomerIndex]);
+      } else if (filteredCustomers.length > 0 && customerSearchInput.trim()) {
+        handleSelectCustomer(filteredCustomers[0]);
+      } else {
+        setIsCustomerDropdownOpen(false);
+      }
+    } else if (e.key === "Escape") {
+      setIsCustomerDropdownOpen(false);
+      setHighlightedCustomerIndex(-1);
+    }
+  };
+
+  // SKU / Product autocomplete search state for invoice lines
+  const [activeSkuDropdownLineId, setActiveSkuDropdownLineId] = useState<string | null>(null);
+  const [highlightedSkuIndex, setHighlightedSkuIndex] = useState(-1);
+
+  // Outside click listener for SKU autocomplete dropdown
+  useEffect(() => {
+    if (!activeSkuDropdownLineId) return;
+    const handleSkuOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (!target.closest("[data-sku-container='true']")) {
+        setActiveSkuDropdownLineId(null);
+        setHighlightedSkuIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleSkuOutsideClick);
+    return () => document.removeEventListener("mousedown", handleSkuOutsideClick);
+  }, [activeSkuDropdownLineId]);
+
+  // Helper to filter inventory items dynamically for any line's query
+  const getMatchingInventoryItems = (query: string) => {
+    const q = (query || "").trim();
+    if (!q) {
+      return inventory.slice(0, 15);
+    }
+
+    const norm = (s: string) =>
+      s
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    const normalizedQuery = norm(q);
+
+    return inventory.filter((item) => {
+      const s = norm(item.sku || "");
+      const d = norm(item.description || "");
+      const c = norm(item.category || "");
+      return s.includes(normalizedQuery) || d.includes(normalizedQuery) || c.includes(normalizedQuery);
+    });
+  };
+
+  const handleSelectInventoryItem = (lineId: string, item: InventoryItem) => {
+    setInvoiceForm((prev) => {
+      const updatedLines = prev.lines.map((line) => {
+        if (line.id !== lineId) return line;
+        const q = line.quantity || 1;
+        const rate = item.price || 0;
+        return {
+          ...line,
+          productId: item.id,
+          sku: item.sku,
+          productName: item.description,
+          description: item.description,
+          rate: rate,
+          amount: q * rate,
+        };
+      });
+      return { ...prev, lines: updatedLines };
+    });
+    setActiveSkuDropdownLineId(null);
+    setHighlightedSkuIndex(-1);
+  };
+
+  const handleSkuInputKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    lineId: string,
+    matchingItems: InventoryItem[]
+  ) => {
+    if (activeSkuDropdownLineId !== lineId) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveSkuDropdownLineId(lineId);
+        return;
+      }
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedSkuIndex((prev) =>
+        prev < matchingItems.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedSkuIndex((prev) =>
+        prev > 0 ? prev - 1 : matchingItems.length - 1
+      );
+    } else if (e.key === "Enter") {
+      if (
+        highlightedSkuIndex >= 0 &&
+        highlightedSkuIndex < matchingItems.length
+      ) {
+        e.preventDefault();
+        handleSelectInventoryItem(lineId, matchingItems[highlightedSkuIndex]);
+      } else if (matchingItems.length > 0 && e.currentTarget.value.trim()) {
+        e.preventDefault();
+        handleSelectInventoryItem(lineId, matchingItems[0]);
+      } else {
+        setActiveSkuDropdownLineId(null);
+      }
+    } else if (e.key === "Escape" || e.key === "Tab") {
+      setActiveSkuDropdownLineId(null);
+      setHighlightedSkuIndex(-1);
+    }
+  };
 
   // Statistics for list view
   const totalFacturado = invoicesList.reduce((acc, item) => acc + item.total, 0);
@@ -1963,32 +2262,153 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80">
                         {/* Customer Selection */}
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-slate-700">Cliente / Empresa</label>
-                          <select
-                            value={invoiceForm.customerId}
-                            onChange={(e) => {
-                              const selected = customers.find((c) => c.id === e.target.value);
-                              const custRtn = selected?.rtn || (!selected?.macolaCode?.startsWith("CUS-") ? selected?.macolaCode : "") || (selected as any)?.taxId || "";
-                              setInvoiceForm({
-                                ...invoiceForm,
-                                customerId: e.target.value,
-                                customerName: selected ? selected.name : "",
-                                customerEmail: selected ? selected.email || "" : "",
-                                customerRtn: custRtn,
-                                customerAddress: selected ? selected.address || "" : "",
-                                deliveredTo: selected ? selected.name : "",
-                                deliveryAddress: selected ? selected.address || "" : "",
-                              });
-                            }}
-                            className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
-                          >
-                            <option value="">-- Seleccionar o agregar Cliente --</option>
-                            {customers.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name} {c.macolaCode ? `(${c.macolaCode})` : ""}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-slate-700">
+                              Cliente / Empresa
+                            </label>
+                            {invoiceForm.customerId ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                Cliente registrado
+                              </span>
+                            ) : invoiceForm.customerName ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/80">
+                                Cliente manual
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div className="relative" ref={customerDropdownRef}>
+                            <div className="relative flex items-center">
+                              <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
+                              <input
+                                type="text"
+                                value={customerSearchInput}
+                                onChange={(e) => handleCustomerInputChange(e.target.value)}
+                                onFocus={(e) => {
+                                  setIsCustomerDropdownOpen(true);
+                                  e.target.select();
+                                }}
+                                onKeyDown={handleCustomerInputKeyDown}
+                                placeholder="Escriba el nombre, código o RTN del cliente..."
+                                className="w-full pl-9 pr-16 py-2.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/15 font-semibold shadow-2xs transition"
+                                autoComplete="off"
+                              />
+                              <div className="absolute right-2.5 flex items-center gap-1">
+                                {customerSearchInput && (
+                                  <button
+                                    type="button"
+                                    onClick={handleClearCustomer}
+                                    className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                                    title="Limpiar búsqueda"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setIsCustomerDropdownOpen((prev) => !prev)}
+                                  className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                                  title="Mostrar opciones"
+                                >
+                                  <ChevronsUpDown className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* SUGGESTIONS POPUP */}
+                            {isCustomerDropdownOpen && (
+                              <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200/90 overflow-hidden divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+                                <div className="px-3 py-1.5 bg-slate-50 flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                  <span>{customerSearchInput.trim() ? "Sugerencias encontradas" : "Clientes frecuentes"}</span>
+                                  <span className="text-[10px] font-semibold text-slate-400 font-mono">
+                                    {filteredCustomers.length} {filteredCustomers.length === 1 ? "cliente" : "clientes"}
+                                  </span>
+                                </div>
+
+                                <div className="max-h-60 overflow-y-auto divide-y divide-slate-50 p-1">
+                                  {filteredCustomers.length > 0 ? (
+                                    filteredCustomers.map((c, idx) => {
+                                      const isSelected = invoiceForm.customerId === c.id;
+                                      const isHighlighted = highlightedCustomerIndex === idx;
+                                      const custRtn = c.rtn || (!c.macolaCode?.startsWith("CUS-") ? c.macolaCode : "") || (c as any)?.taxId || "";
+
+                                      return (
+                                        <div
+                                          key={c.id}
+                                          onClick={() => handleSelectCustomer(c)}
+                                          onMouseEnter={() => setHighlightedCustomerIndex(idx)}
+                                          className={`px-3 py-2 rounded-lg text-left flex items-center justify-between gap-2 transition cursor-pointer ${
+                                            isSelected
+                                              ? "bg-blue-50/80 text-[#1b426e] font-bold"
+                                              : isHighlighted
+                                              ? "bg-slate-100/80 text-slate-900"
+                                              : "hover:bg-slate-50 text-slate-800"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold ${
+                                              isSelected ? "bg-[#1b426e] text-white" : "bg-slate-100 text-slate-600"
+                                            }`}>
+                                              {c.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="min-w-0">
+                                              <div className="text-xs font-bold truncate flex items-center gap-1.5">
+                                                <span>{c.name}</span>
+                                                {c.macolaCode && (
+                                                  <span className="text-[10px] font-mono text-slate-400 font-normal">
+                                                    ({c.macolaCode})
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                                                {custRtn && (
+                                                  <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-600">
+                                                    RTN: {custRtn}
+                                                  </span>
+                                                )}
+                                                {c.email && (
+                                                  <span className="truncate max-w-[180px]">{c.email}</span>
+                                                )}
+                                                {c.phone && <span>Tel: {c.phone}</span>}
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          {isSelected && (
+                                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                          )}
+                                        </div>
+                                      );
+                                    })
+                                  ) : (
+                                    <div className="p-3 text-center space-y-2">
+                                      <p className="text-xs text-slate-500">
+                                        No se encontraron clientes que coincidan con <span className="font-bold text-slate-800">"{customerSearchInput}"</span>.
+                                      </p>
+                                      {customerSearchInput.trim() && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setInvoiceForm((prev) => ({
+                                              ...prev,
+                                              customerId: "",
+                                              customerName: customerSearchInput.trim(),
+                                              deliveredTo: (!prev.deliveredTo || prev.deliveredTo === prev.customerName) ? customerSearchInput.trim() : prev.deliveredTo,
+                                            }));
+                                            setIsCustomerDropdownOpen(false);
+                                          }}
+                                          className="w-full py-1.5 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1b426e] text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                                        >
+                                          <span>Usar "{customerSearchInput.trim()}" como cliente ocasional</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
 
                           {invoiceForm.customerEmail && (
                             <p className="text-[11px] text-slate-500">
@@ -2189,13 +2609,13 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                           <h3 className="text-sm font-bold text-slate-900">Producto o servicio</h3>
                         </div>
 
-                        <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-2xs">
+                        <div className="border border-slate-200 rounded-2xl shadow-2xs bg-white overflow-visible">
                           <table className="w-full text-left text-xs text-slate-700">
                             <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                               <tr>
                                 <th className="p-3 w-8 text-center">#</th>
                                 {salesSettings?.fechaServicio && <th className="p-3 w-32">Fecha servicio</th>}
-                                {salesSettings?.mostrarColumnaProductoServicio !== false && <th className="p-3 min-w-[180px]">SKU / CÓDIGO</th>}
+                                {salesSettings?.mostrarColumnaProductoServicio !== false && <th className="p-3 min-w-[200px]">SKU / CÓDIGO</th>}
                                 {salesSettings?.mostrarColumnaSku && salesSettings?.mostrarColumnaProductoServicio === false && <th className="p-3 w-28">SKU</th>}
                                 <th className="p-3 min-w-[200px]">Descripción</th>
                                 <th className="p-3 w-20 text-right">Cant.</th>
@@ -2205,8 +2625,12 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 bg-white">
-                              {invoiceForm.lines.map((line, idx) => (
-                                <tr key={line.id} className="hover:bg-slate-50/60 transition">
+                              {invoiceForm.lines.map((line, idx) => {
+                                const matchingItems = getMatchingInventoryItems(line.sku || "");
+                                const isSkuOpen = activeSkuDropdownLineId === line.id;
+
+                                return (
+                                <tr key={line.id} className={`hover:bg-slate-50/60 transition ${isSkuOpen ? "relative z-30" : "relative z-0"}`}>
                                   <td className="p-3 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</td>
                                   {salesSettings?.fechaServicio && (
                                     <td className="p-3">
@@ -2220,25 +2644,130 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                   )}
                                   {salesSettings?.mostrarColumnaProductoServicio !== false && (
                                     <td className="p-3">
-                                      <input
-                                        type="text"
-                                        list={`inventory-list-${line.id}`}
-                                        placeholder="Buscar SKU / CÓDIGO..."
-                                        value={line.sku || ""}
-                                        onChange={(e) => updateInvoiceLine(line.id, "sku", e.target.value)}
-                                        className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-mono font-bold text-[#1b426e] focus:outline-none focus:border-[#1b426e] uppercase placeholder:font-normal placeholder:normal-case"
-                                      />
-                                      <datalist id={`inventory-list-${line.id}`}>
-                                        {inventory.map((item) => (
-                                          <option
-                                            key={item.id}
-                                            value={item.sku}
-                                            label={`${item.sku} — ${item.description}${item.price ? ` (${invoiceCurrencySymbol} ${item.price.toFixed(2)}${item.price2 ? ` | P2: ${item.price2.toFixed(2)}` : ""}${item.price3 ? ` | P3: ${item.price3.toFixed(2)}` : ""})` : ""}`}
+                                      <div className="relative" data-sku-container="true">
+                                      <div className="relative flex items-center">
+                                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 pointer-events-none" />
+                                        <input
+                                          type="text"
+                                          placeholder="Buscar SKU o nombre..."
+                                          value={line.sku || ""}
+                                          onChange={(e) => {
+                                            updateInvoiceLine(line.id, "sku", e.target.value);
+                                            setActiveSkuDropdownLineId(line.id);
+                                            setHighlightedSkuIndex(-1);
+                                          }}
+                                          onFocus={(e) => {
+                                            setActiveSkuDropdownLineId(line.id);
+                                            setHighlightedSkuIndex(-1);
+                                            e.target.select();
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (activeSkuDropdownLineId !== line.id) {
+                                              setActiveSkuDropdownLineId(line.id);
+                                            }
+                                          }}
+                                          onKeyDown={(e) => handleSkuInputKeyDown(e, line.id, matchingItems)}
+                                          className="w-full pl-7 pr-7 py-1 text-xs rounded-lg border border-slate-200 font-mono font-bold text-[#1b426e] focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 uppercase placeholder:font-normal placeholder:normal-case shadow-2xs transition"
+                                          autoComplete="off"
+                                        />
+                                        {line.sku && (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              updateInvoiceLine(line.id, "sku", "");
+                                              setActiveSkuDropdownLineId(line.id);
+                                              setHighlightedSkuIndex(-1);
+                                            }}
+                                            className="absolute right-1.5 p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                                            title="Limpiar código"
                                           >
-                                            {item.sku} — {item.description}
-                                          </option>
-                                        ))}
-                                      </datalist>
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        )}
+                                      </div>
+
+                                      {/* SKU SUGGESTIONS POPUP */}
+                                      {isSkuOpen && (
+                                        <div className="absolute z-50 left-0 top-full mt-1.5 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-slate-200/90 overflow-hidden divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150 text-left">
+                                          <div className="px-3 py-1.5 bg-slate-50 flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                            <span>{line.sku?.trim() ? "Sugerencias de catálogo" : "Artículos frecuentes"}</span>
+                                            <span className="text-[10px] font-semibold text-slate-400 font-mono">
+                                              {matchingItems.length} {matchingItems.length === 1 ? "artículo" : "artículos"}
+                                            </span>
+                                          </div>
+
+                                          <div className="max-h-56 overflow-y-auto divide-y divide-slate-50 p-1">
+                                            {matchingItems.length > 0 ? (
+                                              matchingItems.map((item, mIdx) => {
+                                                const isSelected = line.productId === item.id || (line.sku && line.sku.toLowerCase() === item.sku?.toLowerCase());
+                                                const isHighlighted = highlightedSkuIndex === mIdx;
+
+                                                return (
+                                                  <div
+                                                    key={item.id}
+                                                    onMouseDown={(e) => {
+                                                      e.preventDefault();
+                                                      handleSelectInventoryItem(line.id, item);
+                                                    }}
+                                                    onClick={() => handleSelectInventoryItem(line.id, item)}
+                                                    onMouseEnter={() => setHighlightedSkuIndex(mIdx)}
+                                                    className={`px-3 py-2 rounded-lg text-left flex items-center justify-between gap-2 transition cursor-pointer ${
+                                                      isSelected
+                                                        ? "bg-blue-50/80 text-[#1b426e] font-bold"
+                                                        : isHighlighted
+                                                        ? "bg-slate-100/80 text-slate-900"
+                                                        : "hover:bg-slate-50 text-slate-800"
+                                                    }`}
+                                                  >
+                                                    <div className="min-w-0 flex-1">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className="font-mono font-bold text-xs text-[#1b426e] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 shrink-0">
+                                                          {item.sku}
+                                                        </span>
+                                                        <span className="text-xs font-semibold text-slate-800 truncate">
+                                                          {item.description}
+                                                        </span>
+                                                      </div>
+                                                      <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500">
+                                                        <span className="font-mono font-bold text-slate-700">
+                                                          {invoiceCurrencySymbol} {(item.price || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                        {typeof item.quantity === "number" && (
+                                                          <span className={`px-1.5 py-0.2 rounded text-[9px] font-semibold ${
+                                                            item.quantity > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+                                                          }`}>
+                                                            Stock: {item.quantity}
+                                                          </span>
+                                                        )}
+                                                        {item.category && (
+                                                          <span className="text-slate-400 truncate max-w-[110px]">
+                                                            • {item.category}
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                    </div>
+
+                                                    {isSelected && (
+                                                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                    )}
+                                                  </div>
+                                                );
+                                              })
+                                            ) : (
+                                              <div className="p-3 text-center space-y-1">
+                                                <p className="text-xs text-slate-500">
+                                                  No se encontraron artículos con <span className="font-bold text-slate-800">"{line.sku}"</span>.
+                                                </p>
+                                                <p className="text-[10px] text-slate-400">
+                                                  Puedes continuar escribiendo para usar este SKU como código libre / manual.
+                                                </p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                      </div>
                                     </td>
                                   )}
                                   {salesSettings?.mostrarColumnaSku && salesSettings?.mostrarColumnaProductoServicio === false && (
@@ -2323,7 +2852,8 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                     </button>
                                   </td>
                                 </tr>
-                              ))}
+                              );
+                              })}
                               {invoiceForm.lines.length === 0 && (
                                 <tr>
                                   <td colSpan={9} className="p-6 text-center text-slate-400 text-xs">

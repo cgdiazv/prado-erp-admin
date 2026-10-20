@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Factory, Package, Tag, Boxes, AlertCircle, Clock, CheckCircle2, ShieldAlert, Layers, Hash, BookOpen, Download, Upload, FileSpreadsheet, ArrowRight, ArrowLeft, RefreshCw, X, FileText, Calendar, CreditCard, Printer, Database, ArrowUpDown, FileUp, FolderOpen, HelpCircle, Receipt, Check, Trash2 } from "lucide-react";
 import CajaChicaModule from "@/components/CajaChicaModule";
@@ -2656,7 +2656,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     try {
       const res = await fetch("/api/invoices");
       const invcRes = await res.json();
@@ -2681,7 +2681,7 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error("Error loading invoices:", err);
     }
-  };
+  }, []);
 
   const loadInventory = async () => {
     try {
