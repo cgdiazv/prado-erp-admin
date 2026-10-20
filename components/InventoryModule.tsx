@@ -33,7 +33,8 @@ import {
   SlidersHorizontal,
   Check,
   FileCheck,
-  Trash2
+  Trash2,
+  Lock
 } from "lucide-react";
 
 interface InventoryModuleProps {
@@ -60,6 +61,8 @@ interface InventoryModuleProps {
     [key: string]: any;
   };
   companyLogo?: string | null;
+  hasStockControl?: boolean;
+  onUpgradeClick?: () => void;
 }
 
 export type InventoryColumnKey =
@@ -118,6 +121,8 @@ export default function InventoryModule({
   loading = false,
   companySettings,
   companyLogo,
+  hasStockControl = true,
+  onUpgradeClick,
 }: InventoryModuleProps) {
   // Local active sub-view state
   const [activeTab, setActiveTab] = useState<"inventario" | "lotes" | "series">(currentSubView);
@@ -598,9 +603,22 @@ export default function InventoryModule({
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
   };
 
+  const effectiveVisibleColumns = useMemo(() => {
+    if (!hasStockControl) {
+      return {
+        ...visibleColumns,
+        tracking: false,
+        quantity: false,
+        cost: false,
+        inventoryValue: false,
+      };
+    }
+    return visibleColumns;
+  }, [hasStockControl, visibleColumns]);
+
   const visibleColumnCount = useMemo(() => {
-    return 1 + Object.values(visibleColumns).filter(Boolean).length;
-  }, [visibleColumns]);
+    return 1 + Object.values(effectiveVisibleColumns).filter(Boolean).length;
+  }, [effectiveVisibleColumns]);
 
   // Bulk Delete State & Handlers
   const [showDeleteBulkModal, setShowDeleteBulkModal] = useState(false);
@@ -1177,11 +1195,17 @@ export default function InventoryModule({
               }`}
             >
               <Package className="w-3.5 h-3.5" />
-              <span>Catálogo ({localInventory.length})</span>
+              <span>{hasStockControl ? `Catálogo (${localInventory.length})` : `Productos y Servicios (${localInventory.length})`}</span>
             </button>
             <button
               type="button"
-              onClick={() => handleTabChange("lotes")}
+              onClick={() => {
+                if (!hasStockControl && onUpgradeClick) {
+                  onUpgradeClick();
+                } else {
+                  handleTabChange("lotes");
+                }
+              }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "lotes"
                   ? "bg-white text-amber-700 shadow-xs"
@@ -1190,13 +1214,25 @@ export default function InventoryModule({
             >
               <Clock className="w-3.5 h-3.5 text-amber-600" />
               <span>Control de Lotes</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                {allLots.length}
-              </span>
+              {!hasStockControl ? (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  PRO
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                  {allLots.length}
+                </span>
+              )}
             </button>
             <button
               type="button"
-              onClick={() => handleTabChange("series")}
+              onClick={() => {
+                if (!hasStockControl && onUpgradeClick) {
+                  onUpgradeClick();
+                } else {
+                  handleTabChange("series");
+                }
+              }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "series"
                   ? "bg-white text-purple-700 shadow-xs"
@@ -1205,9 +1241,15 @@ export default function InventoryModule({
             >
               <Tag className="w-3.5 h-3.5 text-purple-600" />
               <span>Números de Serie</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
-                {allSerials.length}
-              </span>
+              {!hasStockControl ? (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  PRO
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
+                  {allSerials.length}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -1228,7 +1270,7 @@ export default function InventoryModule({
             className="px-4 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#1b426e]/20"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Nuevo producto</span>
+            <span>{hasStockControl ? "Nuevo producto" : "Nuevo producto / servicio"}</span>
           </button>
         </div>
       </div>
@@ -1236,6 +1278,30 @@ export default function InventoryModule({
       {/* ================= VIEW 1: CATALOGO DE PRODUCTOS ================= */}
       {activeTab === "inventario" && (
         <div className="space-y-4">
+          {!hasStockControl && (
+            <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/70 border border-blue-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#1b426e] flex items-center justify-center shrink-0 shadow-2xs">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-xs">Catálogo de Productos y Servicios (Plan Básico)</p>
+                  <p className="text-slate-600 text-[11px] mt-0.5">
+                    Registre sus artículos, tarifas y servicios para autocompletar automáticamente en facturas y cotizaciones. El control de existencias en bodega, lotes y números de serie está disponible en el <strong>Plan Profesional</strong>.
+                  </p>
+                </div>
+              </div>
+              {onUpgradeClick && (
+                <button
+                  type="button"
+                  onClick={onUpgradeClick}
+                  className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs shadow-xs transition cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  Ver Plan Profesional &rarr;
+                </button>
+              )}
+            </div>
+          )}
           {/* Toolbar Card (Search, filter, export) */}
           <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
@@ -1258,9 +1324,9 @@ export default function InventoryModule({
                   onChange={(e) => setFilterType(e.target.value as any)}
                   className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-[#1b426e] cursor-pointer pr-8 font-medium appearance-none"
                 >
-                  <option value="todos">Todos los productos</option>
-                  <option value="con-stock">Con inventario disponible</option>
-                  <option value="bajo-stock">Bajo inventario / Alerta</option>
+                  <option value="todos">{hasStockControl ? "Todos los productos" : "Todos los artículos y servicios"}</option>
+                  {hasStockControl && <option value="con-stock">Con inventario disponible</option>}
+                  {hasStockControl && <option value="bajo-stock">Bajo inventario / Alerta</option>}
                   <option value="macola">Con código / SKU</option>
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
@@ -1322,7 +1388,9 @@ export default function InventoryModule({
             <div className="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-semibold text-sm text-slate-900">
-                  Control Maestro de Inventario ({filteredInventory.length})
+                  {hasStockControl
+                    ? `Control Maestro de Inventario (${filteredInventory.length})`
+                    : `Catálogo de Productos y Servicios (${filteredInventory.length})`}
                 </h2>
                 {pageSize !== "all" && totalPages > 1 && (
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold font-mono">
@@ -1356,22 +1424,28 @@ export default function InventoryModule({
                         </button>
                       </div>
                       <div className="space-y-0.5 max-h-64 overflow-y-auto">
-                        {INVENTORY_COLUMNS.map((col) => (
-                          <label
-                            key={col.key}
-                            className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer text-xs text-slate-700 select-none transition"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={visibleColumns[col.key]}
-                              onChange={() => toggleColumn(col.key)}
-                              className="w-3.5 h-3.5 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer accent-[#1b426e]"
-                            />
-                            <span className={visibleColumns[col.key] ? "font-medium text-slate-900" : "text-slate-400"}>
-                              {col.label}
-                            </span>
-                          </label>
-                        ))}
+                        {INVENTORY_COLUMNS.map((col) => {
+                          const isStockOnly = !hasStockControl && ["tracking", "quantity", "cost", "inventoryValue"].includes(col.key);
+                          return (
+                            <label
+                              key={col.key}
+                              className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs select-none transition ${
+                                isStockOnly ? "opacity-50 cursor-not-allowed bg-slate-50" : "hover:bg-slate-50 cursor-pointer text-slate-700"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                disabled={isStockOnly}
+                                checked={effectiveVisibleColumns[col.key]}
+                                onChange={() => !isStockOnly && toggleColumn(col.key)}
+                                className="w-3.5 h-3.5 rounded text-[#1b426e] focus:ring-[#1b426e] border-slate-300 cursor-pointer accent-[#1b426e]"
+                              />
+                              <span className={effectiveVisibleColumns[col.key] ? "font-medium text-slate-900" : "text-slate-400"}>
+                                {col.label} {isStockOnly && <span className="text-[9px] font-bold text-amber-700 ml-1">(PRO)</span>}
+                              </span>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1531,15 +1605,15 @@ export default function InventoryModule({
                         />
                       </div>
                     </th>
-                    {visibleColumns.sku && <th className="p-3.5">SKU / CÓDIGO</th>}
-                    {visibleColumns.description && <th className="p-3.5">DESCRIPCIÓN DEL ARTÍCULO</th>}
-                    {visibleColumns.category && <th className="p-3.5">CATEGORÍA</th>}
-                    {visibleColumns.tracking && <th className="p-3.5">RASTREO</th>}
-                    {visibleColumns.quantity && <th className="p-3.5 text-right">EXISTENCIAS</th>}
-                    {visibleColumns.cost && <th className="p-3.5 text-right">COSTO PROM.</th>}
-                    {visibleColumns.price && <th className="p-3.5 text-right">PRECIO VENTA</th>}
-                    {visibleColumns.inventoryValue && <th className="p-3.5 text-right">VALOR INVENTARIO</th>}
-                    {visibleColumns.actions && <th className="p-3.5 text-right">ACCIONES</th>}
+                    {effectiveVisibleColumns.sku && <th className="p-3.5">SKU / CÓDIGO</th>}
+                    {effectiveVisibleColumns.description && <th className="p-3.5">DESCRIPCIÓN DEL ARTÍCULO</th>}
+                    {effectiveVisibleColumns.category && <th className="p-3.5">CATEGORÍA</th>}
+                    {effectiveVisibleColumns.tracking && <th className="p-3.5">RASTREO</th>}
+                    {effectiveVisibleColumns.quantity && <th className="p-3.5 text-right">EXISTENCIAS</th>}
+                    {effectiveVisibleColumns.cost && <th className="p-3.5 text-right">COSTO PROM.</th>}
+                    {effectiveVisibleColumns.price && <th className="p-3.5 text-right">PRECIO VENTA</th>}
+                    {effectiveVisibleColumns.inventoryValue && <th className="p-3.5 text-right">VALOR INVENTARIO</th>}
+                    {effectiveVisibleColumns.actions && <th className="p-3.5 text-right">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1569,7 +1643,7 @@ export default function InventoryModule({
                                 />
                               </div>
                             </td>
-                            {visibleColumns.sku && (
+                            {effectiveVisibleColumns.sku && (
                               <td className="p-3.5 font-mono font-bold text-[#1b426e] whitespace-nowrap">
                                 <button
                                   type="button"
@@ -1581,7 +1655,7 @@ export default function InventoryModule({
                                 </button>
                               </td>
                             )}
-                            {visibleColumns.description && (
+                            {effectiveVisibleColumns.description && (
                               <td className="p-3.5 font-medium text-slate-900 whitespace-nowrap">
                                 <button
                                   type="button"
@@ -1605,7 +1679,7 @@ export default function InventoryModule({
                                 </button>
                               </td>
                             )}
-                            {visibleColumns.category && (
+                            {effectiveVisibleColumns.category && (
                               <td className="p-3.5 font-medium whitespace-nowrap">
                                 {item.category ? (
                                   <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
@@ -1616,7 +1690,7 @@ export default function InventoryModule({
                                 )}
                               </td>
                             )}
-                            {visibleColumns.tracking && (
+                            {effectiveVisibleColumns.tracking && (
                               <td className="p-3.5 whitespace-nowrap">
                                 {item.trackingType === "LOT" ? (
                                   <button
@@ -1649,27 +1723,27 @@ export default function InventoryModule({
                                 )}
                               </td>
                             )}
-                            {visibleColumns.quantity && (
+                            {effectiveVisibleColumns.quantity && (
                               <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">
                                 <span className={item.quantity <= 0 ? "text-rose-600 font-bold" : "text-slate-800"}>
                                   {item.quantity}
                                 </span>
                               </td>
                             )}
-                            {visibleColumns.cost && (
+                            {effectiveVisibleColumns.cost && (
                               <td className="p-3.5 text-right font-mono font-medium whitespace-nowrap">{formatCurrency(item.cost)}</td>
                             )}
-                            {visibleColumns.price && (
+                            {effectiveVisibleColumns.price && (
                               <td className="p-3.5 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
                                 {formatCurrency(item.price)}
                               </td>
                             )}
-                            {visibleColumns.inventoryValue && (
+                            {effectiveVisibleColumns.inventoryValue && (
                               <td className="p-3.5 text-right font-mono text-slate-900 font-bold whitespace-nowrap">
                                 {formatCurrency(item.quantity * item.cost)}
                               </td>
                             )}
-                            {visibleColumns.actions && (
+                            {effectiveVisibleColumns.actions && (
                               <td className="p-3.5 text-right font-sans whitespace-nowrap">
                                 <div className="flex items-center justify-end gap-1.5">
                                   {item.trackingType === "LOT" ? (
@@ -2231,7 +2305,7 @@ export default function InventoryModule({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <span className="text-[11px] font-semibold text-[#1b426e] uppercase tracking-wider">
-                  Control de Inventario
+                  {hasStockControl ? "Control de Inventario" : "Catálogo de Productos y Servicios"}
                 </span>
                 <h3 className="text-base font-bold text-slate-900">Editar Producto / Artículo</h3>
               </div>
@@ -2326,14 +2400,36 @@ export default function InventoryModule({
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Existencias (Stock)</label>
-                  <input
-                    type="number"
-                    required
-                    value={productForm.quantity}
-                    onChange={(e) => setProductForm({ ...productForm, quantity: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-slate-700">Existencias (Stock)</label>
+                    {!hasStockControl && (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5" /> Plan Pro
+                      </span>
+                    )}
+                  </div>
+                  {hasStockControl ? (
+                    <input
+                      type="number"
+                      required
+                      value={productForm.quantity}
+                      onChange={(e) => setProductForm({ ...productForm, quantity: Number(e.target.value) })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1b426e] text-slate-900 font-mono font-bold"
+                    />
+                  ) : (
+                    <div className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs flex items-center justify-between">
+                      <span>Sin control de stock (Catálogo)</span>
+                      {onUpgradeClick && (
+                        <button
+                          type="button"
+                          onClick={onUpgradeClick}
+                          className="text-[#1b426e] font-semibold hover:underline text-[11px] cursor-pointer"
+                        >
+                          Activar inventario
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -2436,17 +2532,33 @@ export default function InventoryModule({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Tipo de Rastreo de Inventario *
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-slate-700">
+                      Tipo de Rastreo de Inventario *
+                    </label>
+                    {!hasStockControl && (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5" /> Plan Pro
+                      </span>
+                    )}
+                  </div>
                   <select
                     value={productForm.trackingType}
+                    disabled={!hasStockControl}
                     onChange={(e) => setProductForm({ ...productForm, trackingType: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50/50 border border-amber-300 focus:outline-none focus:border-[#1b426e] text-slate-900 font-semibold cursor-pointer"
+                    className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-none focus:border-[#1b426e] font-semibold ${
+                      !hasStockControl
+                        ? "bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"
+                        : "bg-amber-50/50 border-amber-300 text-slate-900 cursor-pointer"
+                    }`}
                   >
-                    <option value="NONE">Sin rastreo (Inventario Estándar)</option>
-                    <option value="LOT">Control por Lotes y Vencimientos</option>
-                    <option value="SERIAL">Control por Números de Serie</option>
+                    <option value="NONE">Sin rastreo (Catálogo Estándar)</option>
+                    <option value="LOT" disabled={!hasStockControl}>
+                      Control por Lotes y Vencimientos {hasStockControl ? "" : "(Plan Pro)"}
+                    </option>
+                    <option value="SERIAL" disabled={!hasStockControl}>
+                      Control por Números de Serie {hasStockControl ? "" : "(Plan Pro)"}
+                    </option>
                   </select>
                 </div>
               </div>

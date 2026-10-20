@@ -4396,7 +4396,7 @@ ${accountRowsHtml(equity)}
           </div>
 
 
-          {/* Inventario Collapsible Group */}
+          {/* Inventario / Productos y Servicios Collapsible Group */}
           <div className="pt-1">
             <button
               onClick={() => toggleSidebarSection("inventario")}
@@ -4409,12 +4409,9 @@ ${accountRowsHtml(equity)}
                 <Package className="w-4 h-4 shrink-0 text-slate-600" />
                 {!sidebarCollapsed && (
                   <span className="flex items-center gap-1.5">
-                    <span>Inventario ({inventory.length})</span>
-                    {isItemLocked("inventario") && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
-                        PRO
-                      </span>
-                    )}
+                    <span>
+                      {isItemLocked("lotes") ? "Productos y Servicios" : "Inventario"} ({inventory.length})
+                    </span>
                   </span>
                 )}
               </div>
@@ -4434,12 +4431,7 @@ ${accountRowsHtml(equity)}
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
-                  <span>Catálogo de Productos</span>
-                  {isItemLocked("inventario") && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-200">
-                      PRO
-                    </span>
-                  )}
+                  <span>{isItemLocked("lotes") ? "Productos y Servicios" : "Catálogo de Productos"}</span>
                 </button>
                 <button
                   onClick={() => setCurrentView("lotes")}
@@ -5949,6 +5941,8 @@ ${accountRowsHtml(equity)}
                 formatCurrency={formatCurrency}
                 companySettings={companySettings}
                 companyLogo={companyLogo}
+                hasStockControl={!isItemLocked("lotes")}
+                onUpgradeClick={() => setShowBillingModal(true)}
               />
             </div>
           )}

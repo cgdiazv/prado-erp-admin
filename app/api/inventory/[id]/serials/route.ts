@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveCompanyId } from "@/lib/tenant";
+import { resolveCompanyId, getTenantSession, requirePlanFeature } from "@/lib/tenant";
 
 type RouteProps = {
   params: Promise<{ id: string }>;
@@ -39,8 +39,12 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
 // POST /api/inventory/[id]/serials - Add serial(s) to item
 export async function POST(request: NextRequest, { params }: RouteProps) {
   try {
+    const session = await getTenantSession(request);
+    const planGate = requirePlanFeature(session, "inventory");
+    if (planGate) return planGate;
+
     const { id } = await params;
-    const companyId = await resolveCompanyId(request);
+    const companyId = session?.companyId || await resolveCompanyId(request);
     const body = await request.json();
     const { serialNumber, serialNumbers, status, notes } = body;
 

@@ -27,6 +27,7 @@ export const PLANS: Plan[] = [
     features: [
       "1 usuario",
       "Facturación y cotizaciones",
+      "Catálogo de productos y servicios",
       "Clientes y proveedores",
       "Plan de cuentas y Libro Diario",
       "Reportes básicos",
@@ -47,8 +48,10 @@ export const PLANS: Plan[] = [
       "Hasta 5 usuarios",
       "Todo lo del plan Básico",
       "Punto de Venta (POS)",
+      "Control de inventario, stock y almacén",
+      "Control de lotes y números de serie",
       "Pedidos de venta y despachos",
-      "Inventario y órdenes de compra",
+      "Órdenes de compra y proveedores",
       "Bancos y conciliación bancaria",
       "Caja chica y retenciones",
       "Reportes avanzados",
@@ -72,6 +75,7 @@ export const PLANS: Plan[] = [
       "Comisiones y vendedores",
       "Multi-divisa avanzada",
       "Notas de crédito/débito",
+      "Módulo de producción (BOMs y OT)",
       "Soporte dedicado",
     ],
     paymentLink: "https://pay.delvalletradings.com/b/cNiaEW5i75A0dXg56t4Ni0c",
@@ -83,7 +87,8 @@ export const PLANS: Plan[] = [
 export function getPlan(id: string | null | undefined): Plan | undefined {
   if (!id) return undefined;
   const normalized = id.toLowerCase();
-  return PLANS.find((p) => p.id === normalized || (p.id === "empresarial" && normalized === "enterprise"));
+  const planKey = normalized === "enterprise" ? "empresarial" : normalized === "pro" ? "profesional" : normalized;
+  return PLANS.find((p) => p.id === planKey);
 }
 
 /**
@@ -155,7 +160,12 @@ export function hasFeatureAccess(
   if (subscriptionStatus === "TRIAL") return true;
 
   const normalized = (planId || "").toLowerCase();
-  const planKey = normalized === "enterprise" ? "empresarial" : normalized;
+  const planKey =
+    normalized === "enterprise"
+      ? "empresarial"
+      : normalized === "pro"
+      ? "profesional"
+      : normalized;
 
   // Si no tiene plan o es básico
   const minTier = FEATURE_MIN_PLAN[feature];
@@ -182,9 +192,14 @@ export function getRequiredPlanForNav(navItem: string): { tier: PlanTier; featur
       return { tier: "profesional", featureName: "Pedidos de Venta y Despachos", featureKey: "sales_orders" };
 
     case "inventario":
+      // El Catálogo de Productos y Servicios está disponible para todos los planes (incluyendo Básico)
+      return null;
+
     case "lotes":
+      return { tier: "profesional", featureName: "Control de Lotes y Vencimientos", featureKey: "inventory" };
+
     case "series":
-      return { tier: "profesional", featureName: "Inventario y Control de Stock", featureKey: "inventory" };
+      return { tier: "profesional", featureName: "Control de Números de Serie", featureKey: "inventory" };
 
     case "lista-ordenes-compra":
     case "orden-compra-editor":

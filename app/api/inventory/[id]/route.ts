@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveCompanyId } from "@/lib/tenant";
+import { resolveCompanyId, getTenantSession, requirePlanFeature } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +63,13 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
     }
 
     const { sku, description, quantity, cost, price, price2, price3, trackingType, imageUrl, category } = body;
+
+    // El control por lotes o números de serie requiere el plan Profesional (feature: "inventory")
+    if (trackingType && trackingType !== "NONE") {
+      const session = await getTenantSession(request);
+      const planGate = requirePlanFeature(session, "inventory");
+      if (planGate) return planGate;
+    }
 
     // Check SKU uniqueness if changing
     if (sku && sku !== existing.sku) {

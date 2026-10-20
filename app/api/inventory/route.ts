@@ -84,12 +84,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getTenantSession(request);
-    const planGate = requirePlanFeature(session, "inventory");
-    if (planGate) return planGate;
-
     const companyId = session?.companyId || await resolveCompanyId(request);
     const body = await request.json();
     const { sku, description, quantity, cost, price, price2, price3, trackingType, imageUrl, category } = body;
+
+    // El control por lotes o números de serie requiere el plan Profesional (feature: "inventory")
+    if (trackingType && trackingType !== "NONE") {
+      const planGate = requirePlanFeature(session, "inventory");
+      if (planGate) return planGate;
+    }
 
     if (!sku || !description) {
       return NextResponse.json(
@@ -160,9 +163,6 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getTenantSession(request);
-    const planGate = requirePlanFeature(session, "inventory");
-    if (planGate) return planGate;
-
     const companyId = session?.companyId || await resolveCompanyId(request);
     const body = await request.json();
     const { ids } = body;
