@@ -20,6 +20,7 @@ import VendorsModule from "@/components/VendorsModule";
 import InventoryModule from "@/components/InventoryModule";
 import POSModule from "@/components/pos/POSModule";
 import PosTerminalsModule from "@/components/pos/PosTerminalsModule";
+import DashboardMonthlySalesChart from "@/components/DashboardMonthlySalesChart";
 import CommissionsModule from "@/components/CommissionsModule";
 import { Skeleton, CardSkeleton, TableRowsSkeleton } from "@/components/Skeleton";
 import { InvoicesModule, numberToWordsSpanish } from "@/components/InvoicesModule";
@@ -293,6 +294,7 @@ export default function AdminDashboard() {
     due: string;
     total: number;
     status: string;
+    currency?: string;
     paymentTerms?: string;
     customerEmail?: string;
     lines?: Array<{
@@ -5262,6 +5264,11 @@ ${accountRowsHtml(equity)}
                   </div>
                 </div>
               </div>
+
+              <DashboardMonthlySalesChart
+                invoices={invoicesList}
+                formatCurrency={formatCurrency}
+              />
 
               {/* Quick Navigation Panels */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
