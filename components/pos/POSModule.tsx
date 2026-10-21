@@ -852,6 +852,7 @@ export default function POSModule({
       )}
 
       {/* Mobile Segmented Switcher: Catálogo vs Ticket */}
+      {!showCheckoutModal && (
       <div className="lg:hidden bg-slate-200/90 p-1.5 border-b border-slate-300 flex items-center gap-1.5 shrink-0">
         <button
           type="button"
@@ -883,9 +884,21 @@ export default function POSModule({
           )}
         </button>
       </div>
+      )}
 
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div
+          className={`flex h-full w-[200%] transition-transform duration-500 ease-in-out lg:w-[140%] ${
+            showCheckoutModal ? "-translate-x-1/2 lg:-translate-x-[28.5714%]" : "translate-x-0"
+          }`}
+        >
       {/* ================= 2. MAIN SPLIT BODY ================= */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div
+        aria-hidden={showCheckoutModal}
+        inert={showCheckoutModal}
+        className={`w-1/2 shrink-0 flex flex-col overflow-hidden lg:w-[71.4286%] ${showCheckoutModal ? "pointer-events-none" : ""}`}
+      >
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
         {/* ================= LEFT: VISUAL PRODUCT CATALOG (60-65%) ================= */}
         <div
           className={`flex-1 flex flex-col bg-slate-50 border-r border-slate-200 overflow-hidden ${
@@ -1273,28 +1286,33 @@ export default function POSModule({
         </div>
       </div>
 
-      {/* ================= 3. CHECKOUT & TENDER MODAL ================= */}
-      {showCheckoutModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
-            {/* Modal Header */}
-            <div className="p-4 bg-[#1b426e] text-white flex items-center justify-between">
+      </div>
+
+      {/* ================= 3. CHECKOUT & TENDER STEP ================= */}
+      <section
+        aria-hidden={!showCheckoutModal}
+        inert={!showCheckoutModal}
+        className={`w-1/2 shrink-0 h-full overflow-hidden bg-slate-100 lg:w-[28.5714%] ${showCheckoutModal ? "" : "pointer-events-none"}`}
+      >
+          <div className="w-full max-w-3xl h-full mx-auto bg-white border-x border-slate-200 overflow-hidden flex flex-col">
+            <div className="p-4 bg-[#1b426e] text-white flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowCheckoutModal(false)}
+                className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer"
+                aria-label="Volver al carrito"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
               <div>
                 <h3 className="font-bold text-base">Cobro de Ticket</h3>
                 <p className="text-xs text-slate-300">
                   Cliente: {selectedCustomer.name} • {cartTotals.totalItems} artículos • <span className="text-amber-300 font-semibold">{activeRegister}</span> ({selectedSalesRep})
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowCheckoutModal(false)}
-                className="p-1 rounded-lg hover:bg-white/20 text-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
-            <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex-1 min-h-0 p-5 space-y-4 overflow-y-auto">
               {/* Grand Total Box */}
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
                 <div>
@@ -1373,11 +1391,11 @@ export default function POSModule({
               {/* Cash Tendering & Change Calculator */}
               {paymentMethod === "EFECTIVO" && (
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Monto Recibido del Cliente
-                    </label>
-                    <div className="relative">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="min-w-0 flex-1">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Monto Recibido del Cliente
+                      </label>
                       <input
                         type="number"
                         step="any"
@@ -1386,24 +1404,23 @@ export default function POSModule({
                         className="w-full text-lg font-mono font-bold rounded-xl px-3.5 py-2 bg-white border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
-                  </div>
-
-                  {/* Quick Bill Denominations */}
-                  <div>
-                    <div className="text-[11px] font-semibold text-slate-500 mb-1">
-                      Sugerencias de billetes rápidos:
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {quickCashOptions.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setAmountReceived(opt.toString())}
-                          className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-xs font-mono font-semibold text-slate-800 transition cursor-pointer shadow-2xs"
-                        >
-                          {opt === cartTotals.total ? `Exacto (${formatCurrency(opt)})` : formatCurrency(opt)}
-                        </button>
-                      ))}
+                    {/* Quick Bill Denominations */}
+                    <div className="min-w-0 flex-[1.5]">
+                      <div className="text-[11px] font-semibold text-slate-500 mb-1">
+                        Sugerencias de billetes rápidos:
+                      </div>
+                      <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-1">
+                        {quickCashOptions.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setAmountReceived(opt.toString())}
+                            className="shrink-0 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-xs font-mono font-semibold text-slate-800 transition cursor-pointer shadow-2xs"
+                          >
+                            {opt === cartTotals.total ? `Exacto (${formatCurrency(opt)})` : formatCurrency(opt)}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -1462,8 +1479,7 @@ export default function POSModule({
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowCheckoutModal(false)}
@@ -1491,8 +1507,9 @@ export default function POSModule({
               </button>
             </div>
           </div>
+      </section>
         </div>
-      )}
+      </div>
 
       {/* ================= 4. SALE COMPLETED / THERMAL RECEIPT MODAL ================= */}
       {completedSale && (
