@@ -1539,7 +1539,7 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 <button
                                   type="button"
                                   onClick={() => onOpenInvoiceEditor(fact)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] transition cursor-pointer inline-flex items-center justify-center"
                                   title="Editar factura"
                                   aria-label="Editar factura"
                                 >

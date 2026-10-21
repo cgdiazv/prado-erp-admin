@@ -631,29 +631,29 @@ export default function CreditDebitNotesModule({
                               <button
                                 type="button"
                                 onClick={() => handlePrintNote(note)}
-                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] text-slate-600 hover:text-[#1b426e] border border-slate-200 transition cursor-pointer shadow-2xs"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] transition cursor-pointer inline-flex items-center justify-center"
                                 title="Imprimir comprobante PDF"
                                 aria-label="Imprimir comprobante PDF"
                               >
-                                <Printer className="w-4 h-4" />
+                                <Printer className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => openEditNoteModal(note)}
-                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition cursor-pointer shadow-2xs"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer inline-flex items-center justify-center"
                                 title="Editar nota"
                                 aria-label="Editar nota"
                               >
-                                <Pencil className="w-4 h-4" />
+                                <Pencil className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteNote(note.id, note.noteNumber)}
-                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 transition cursor-pointer shadow-2xs"
+                                className="p-1.5 rounded-lg text-red-600 hover:text-red-700 transition cursor-pointer inline-flex items-center justify-center"
                                 title="Eliminar nota"
                                 aria-label="Eliminar nota"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </td>

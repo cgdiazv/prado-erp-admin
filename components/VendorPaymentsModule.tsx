@@ -872,7 +872,7 @@ export default function VendorPaymentsModule({
                             type="button"
                             onClick={() => setActiveVoucher(p)}
                             title="Ver / Imprimir Comprobante de Egreso"
-                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer inline-flex items-center justify-center"
                           >
                             <Printer className="w-3.5 h-3.5" />
                           </button>
@@ -885,7 +885,7 @@ export default function VendorPaymentsModule({
                                 setVoidReason("");
                               }}
                               title="Anular pago y revertir facturas"
-                              className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition cursor-pointer"
+                              className="p-1.5 rounded-lg text-rose-600 hover:text-rose-800 transition cursor-pointer inline-flex items-center justify-center"
                             >
                               <Ban className="w-3.5 h-3.5" />
                             </button>

@@ -1172,7 +1172,7 @@ export default function SalesOrdersModule({
                             setSelectedOrder(order);
                             handleOpenEdit(order);
                           }}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] transition cursor-pointer inline-flex items-center justify-center"
                           title="Ver y editar pedido de venta"
                           aria-label="Ver y editar pedido de venta"
                         >
@@ -1184,7 +1184,7 @@ export default function SalesOrdersModule({
                           <button
                             type="button"
                             onClick={() => onNavigateToProduction(order)}
-                            className="p-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-800 border border-orange-200 transition cursor-pointer"
+                            className="p-1.5 rounded-lg text-orange-600 hover:text-orange-800 transition cursor-pointer inline-flex items-center justify-center"
                             title="Crear Orden de Trabajo (Producción)"
                             aria-label="Crear Orden de Trabajo"
                           >
@@ -1200,7 +1200,7 @@ export default function SalesOrdersModule({
                               setSelectedOrder(order);
                               setShowConvertModal(true);
                             }}
-                            className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 border border-emerald-200 transition cursor-pointer"
+                            className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-800 transition cursor-pointer inline-flex items-center justify-center"
                             title="Generar Factura SAR con 1 clic"
                             aria-label="Generar Factura SAR"
                           >
@@ -1208,14 +1208,6 @@ export default function SalesOrdersModule({
                           </button>
                         )}
 
-                        {order.status === "FACTURADO" && order.invoiceNumber && (
-                          <span
-                            className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
-                            title={`Factura emitida: #${order.invoiceNumber}`}
-                          >
-                            #{order.invoiceNumber}
-                          </span>
-                        )}
                       </div>
                     </td>
                   </tr>
