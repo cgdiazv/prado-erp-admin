@@ -44,6 +44,7 @@ import {
 import { InventoryItem, Customer, SalesRep, CompanySettings } from "@/types/dashboard";
 import { offlineSync } from "@/lib/offline-sync";
 import { getSyncQueue, clearSyncedTickets, OfflineSyncTicket } from "@/lib/offline-db";
+import { DEFAULT_POS_REGISTERS } from "@/lib/posRegisters";
 
 export interface CartItem {
   id: string; // unique cart line id
@@ -394,6 +395,9 @@ export default function POSModule({
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"EFECTIVO" | "TARJETA" | "TRANSFERENCIA" | "CREDITO">("EFECTIVO");
   const [amountReceived, setAmountReceived] = useState<string>("");
+  const [registerOptions, setRegisterOptions] = useState<string[]>(DEFAULT_POS_REGISTERS);
+  const [registersLoading, setRegistersLoading] = useState(true);
+  const [registersError, setRegistersError] = useState("");
   // Active Register & Shift/Cashier State with localStorage persistence
   const [activeRegister, setActiveRegister] = useState<string>(() => {
     if (typeof window !== "undefined") {
@@ -401,7 +405,7 @@ export default function POSModule({
         const saved = localStorage.getItem("prado_pos_active_shift");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed.registerName) return parsed.registerName;
+          if (typeof parsed.registerName === "string" && parsed.registerName) return parsed.registerName;
         }
       } catch {}
     }
@@ -414,7 +418,7 @@ export default function POSModule({
         const saved = localStorage.getItem("prado_pos_active_shift");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed.cashierName) return parsed.cashierName;
+          if (salesReps.some((rep) => rep.name === parsed.cashierName)) return parsed.cashierName;
         }
       } catch {}
     }
@@ -424,27 +428,74 @@ export default function POSModule({
   // Modal to change Register & Cashier
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [tempRegister, setTempRegister] = useState(activeRegister);
+  const [registerSearch, setRegisterSearch] = useState(activeRegister);
+  const [showRegisterSuggestions, setShowRegisterSuggestions] = useState(false);
   const [tempCashier, setTempCashier] = useState(selectedSalesRep);
-  const [customRegisterMode, setCustomRegisterMode] = useState(false);
-  const [customRegisterName, setCustomRegisterName] = useState("");
+  const [cashierSearch, setCashierSearch] = useState(selectedSalesRep);
+  const [showCashierSuggestions, setShowCashierSuggestions] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/pos/terminals", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        const terminals = data?.data?.terminals;
+        if (!response.ok || !data?.success || !Array.isArray(terminals) || terminals.length === 0
+          || terminals.some((terminal: unknown) => typeof terminal !== "string" || !terminal.trim())) {
+          throw new Error(data?.error || "La lista de terminales del POS no es válida.");
+        }
+        if (cancelled) return;
+
+        setRegisterOptions(terminals);
+        let savedRegister = "";
+        try {
+          const saved = localStorage.getItem("prado_pos_active_shift");
+          savedRegister = saved ? JSON.parse(saved).registerName || "" : "";
+        } catch {
+          savedRegister = "";
+        }
+        setActiveRegister(terminals.includes(savedRegister) ? savedRegister : terminals[0]);
+        setRegistersError("");
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setRegistersError(error instanceof Error ? error.message : "No se pudieron cargar las terminales.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setRegistersLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleOpenShiftModal = () => {
-    setTempRegister(activeRegister);
-    setTempCashier(selectedSalesRep);
-    const standardRegisters = ["Caja 01 - Principal", "Caja 02 - Mostrador", "Caja 03 - Rápida", "Caja 04 - Kiosco"];
-    if (standardRegisters.includes(activeRegister)) {
-      setCustomRegisterMode(false);
-      setCustomRegisterName("");
-    } else {
-      setCustomRegisterMode(true);
-      setCustomRegisterName(activeRegister);
-    }
+    const register = registerOptions.includes(activeRegister) ? activeRegister : registerOptions[0] || "";
+    setTempRegister(register);
+    setRegisterSearch(register);
+    setShowRegisterSuggestions(false);
+    const cashier = (
+      salesReps.some((rep) => rep.name === selectedSalesRep)
+        ? selectedSalesRep
+        : salesReps[0]?.name || "Cajero Principal"
+    );
+    setTempCashier(cashier);
+    setCashierSearch(cashier);
+    setShowCashierSuggestions(false);
     setShowShiftModal(true);
   };
 
   const handleSaveShiftConfig = () => {
-    const finalRegister = (customRegisterMode ? customRegisterName.trim() : tempRegister) || "Caja 01 - Principal";
-    const finalCashier = tempCashier.trim() || "Cajero Principal";
+    const selectedRep = salesReps.find((rep) => rep.name === tempCashier);
+    if (salesReps.length > 0 && !selectedRep) {
+      setShowCashierSuggestions(true);
+      return;
+    }
+
+    const finalRegister = registerOptions.includes(tempRegister) ? tempRegister : registerOptions[0];
+    const finalCashier = selectedRep?.name || "Cajero Principal";
     setActiveRegister(finalRegister);
     setSelectedSalesRep(finalCashier);
     try {
@@ -1807,74 +1858,80 @@ export default function POSModule({
                   <span>1. Seleccionar Caja / Terminal</span>
                 </label>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    "Caja 01 - Principal",
-                    "Caja 02 - Mostrador",
-                    "Caja 03 - Rápida",
-                    "Caja 04 - Kiosco",
-                  ].map((reg) => {
-                    const isSelected = !customRegisterMode && tempRegister === reg;
-                    return (
-                      <button
-                        key={reg}
-                        type="button"
-                        onClick={() => {
-                          setCustomRegisterMode(false);
-                          setTempRegister(reg);
-                        }}
-                        className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition cursor-pointer text-xs font-semibold ${
-                          isSelected
-                            ? "bg-blue-50/70 border-[#1b426e] text-[#1b426e] shadow-2xs ring-1 ring-[#1b426e]"
-                            : "border-slate-200 hover:bg-slate-50 text-slate-700"
-                        }`}
+                {registersLoading ? (
+                  <p className="text-xs text-slate-500">Cargando terminales...</p>
+                ) : registerOptions.length > 0 ? (
+                  <div className="relative">
+                    <input
+                      type="search"
+                      role="combobox"
+                      aria-label="Buscar caja o terminal"
+                      aria-autocomplete="list"
+                      aria-expanded={showRegisterSuggestions}
+                      aria-controls="register-suggestions"
+                      autoComplete="off"
+                      value={registerSearch}
+                      onFocus={() => setShowRegisterSuggestions(true)}
+                      onBlur={() => setShowRegisterSuggestions(false)}
+                      onChange={(event) => {
+                        setRegisterSearch(event.target.value);
+                        setTempRegister("");
+                        setShowRegisterSuggestions(true);
+                      }}
+                      placeholder="Buscar caja o terminal..."
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-xs text-slate-800 focus:border-[#1b426e] focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20"
+                    />
+                    <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    {showRegisterSuggestions && (
+                      <div
+                        id="register-suggestions"
+                        role="listbox"
+                        className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
                       >
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-[#1b426e]" : "bg-slate-300"}`} />
-                          <span>{reg}</span>
-                        </div>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-[#1b426e]" />}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Opción personalizada */}
-                <div className="mt-2.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCustomRegisterMode(true);
-                      if (!customRegisterName && tempRegister) {
-                        setCustomRegisterName(tempRegister);
-                      }
-                    }}
-                    className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition cursor-pointer text-xs font-semibold ${
-                      customRegisterMode
-                        ? "bg-blue-50/70 border-[#1b426e] text-[#1b426e] ring-1 ring-[#1b426e]"
-                        : "border-slate-200 hover:bg-slate-50 text-slate-700"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${customRegisterMode ? "bg-[#1b426e]" : "bg-slate-300"}`} />
-                      <span>Otra caja / Nombre personalizado</span>
-                    </div>
-                    {customRegisterMode && <CheckCircle2 className="w-4 h-4 text-[#1b426e]" />}
-                  </button>
-
-                  {customRegisterMode && (
-                    <div className="mt-2 pl-4">
-                      <input
-                        type="text"
-                        value={customRegisterName}
-                        onChange={(e) => setCustomRegisterName(e.target.value)}
-                        placeholder="Ej. Caja Terraza, Terminal Móvil 02..."
-                        className="w-full text-xs rounded-xl px-3 py-2 bg-slate-50 border border-slate-300 focus:outline-none focus:border-[#1b426e] focus:bg-white"
-                        autoFocus
-                      />
-                    </div>
-                  )}
-                </div>
+                        {registerOptions
+                          .filter((register) =>
+                            register.toLocaleLowerCase().includes(registerSearch.trim().toLocaleLowerCase())
+                          )
+                          .map((register) => (
+                            <button
+                              key={register}
+                              type="button"
+                              role="option"
+                              aria-selected={tempRegister === register}
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => {
+                                setTempRegister(register);
+                                setRegisterSearch(register);
+                                setShowRegisterSuggestions(false);
+                              }}
+                              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition ${
+                                tempRegister === register
+                                  ? "bg-blue-50 font-semibold text-[#1b426e]"
+                                  : "text-slate-700 hover:bg-slate-50"
+                              }`}
+                            >
+                              <span>{register}</span>
+                              {tempRegister === register && (
+                                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#1b426e]" />
+                              )}
+                            </button>
+                          ))}
+                        {!registerOptions.some((register) =>
+                          register.toLocaleLowerCase().includes(registerSearch.trim().toLocaleLowerCase())
+                        ) && (
+                          <p className="px-3 py-2 text-xs text-slate-500">No se encontraron terminales.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">No hay terminales configuradas.</p>
+                )}
+                {registersError && (
+                  <p role="alert" className="mt-2 rounded-lg border border-red-200 bg-red-50 p-2 text-[11px] text-red-700">
+                    {registersError}
+                  </p>
+                )}
               </div>
 
               {/* 2. SELECCIÓN DE CAJERO */}
@@ -1884,55 +1941,84 @@ export default function POSModule({
                   <span>2. Seleccionar Cajero / Vendedor Activo</span>
                 </label>
 
-                {salesReps && salesReps.length > 0 && (
-                  <div className="space-y-1.5 mb-3 max-h-40 overflow-y-auto pr-1">
-                    {salesReps.map((rep) => {
-                      const isSelected = tempCashier === rep.name;
-                      return (
-                        <button
-                          key={rep.id || rep.name}
-                          type="button"
-                          onClick={() => setTempCashier(rep.name)}
-                          className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition cursor-pointer text-xs ${
-                            isSelected
-                              ? "bg-blue-50/70 border-[#1b426e] text-[#1b426e] font-bold ring-1 ring-[#1b426e]"
-                              : "border-slate-200 hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                              isSelected ? "bg-[#1b426e] text-white" : "bg-slate-200 text-slate-600"
-                            }`}>
-                              {rep.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div>{rep.name}</div>
-                              {rep.email && <div className="text-[10px] text-slate-400 font-normal">{rep.email}</div>}
-                            </div>
-                          </div>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-[#1b426e]" />}
-                        </button>
-                      );
-                    })}
+                {salesReps.length > 0 ? (
+                  <div className="relative mb-3">
+                    <input
+                      type="search"
+                      role="combobox"
+                      aria-label="Buscar cajero o vendedor"
+                      aria-autocomplete="list"
+                      aria-expanded={showCashierSuggestions}
+                      aria-controls="cashier-suggestions"
+                      autoComplete="off"
+                      value={cashierSearch}
+                      onFocus={() => setShowCashierSuggestions(true)}
+                      onBlur={() => setShowCashierSuggestions(false)}
+                      onChange={(event) => {
+                        setCashierSearch(event.target.value);
+                        setTempCashier("");
+                        setShowCashierSuggestions(true);
+                      }}
+                      placeholder="Buscar cajero o vendedor..."
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-xs text-slate-800 focus:border-[#1b426e] focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20"
+                    />
+                    <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+
+                    {showCashierSuggestions && (
+                      <div
+                        id="cashier-suggestions"
+                        role="listbox"
+                        className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+                      >
+                        {salesReps
+                          .filter((rep) => {
+                            const query = cashierSearch.trim().toLocaleLowerCase();
+                            return !query
+                              || rep.name.toLocaleLowerCase().includes(query)
+                              || (rep.email || "").toLocaleLowerCase().includes(query);
+                          })
+                          .map((rep) => (
+                            <button
+                              key={rep.id || rep.name}
+                              type="button"
+                              role="option"
+                              aria-selected={tempCashier === rep.name}
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => {
+                                setTempCashier(rep.name);
+                                setCashierSearch(rep.name);
+                                setShowCashierSuggestions(false);
+                              }}
+                              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition ${
+                                tempCashier === rep.name
+                                  ? "bg-blue-50 font-semibold text-[#1b426e]"
+                                  : "text-slate-700 hover:bg-slate-50"
+                              }`}
+                            >
+                              <span>
+                                <span className="block">{rep.name}</span>
+                                {rep.email && <span className="mt-0.5 block text-[10px] text-slate-400">{rep.email}</span>}
+                              </span>
+                              {tempCashier === rep.name && <CheckCircle2 className="h-4 w-4 shrink-0 text-[#1b426e]" />}
+                            </button>
+                          ))}
+                        {!salesReps.some((rep) => {
+                          const query = cashierSearch.trim().toLocaleLowerCase();
+                          return !query
+                            || rep.name.toLocaleLowerCase().includes(query)
+                            || (rep.email || "").toLocaleLowerCase().includes(query);
+                        }) && (
+                          <p className="px-3 py-2 text-xs text-slate-500">No se encontraron cajeros o vendedores.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-900">
+                    No hay cajeros o vendedores activos. Agregue uno en la sección de vendedores para asignarlo a esta caja.
+                  </p>
                 )}
 
-                {/* Entrada manual de nombre de cajero */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                    O escribe el nombre del cajero:
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={tempCashier}
-                      onChange={(e) => setTempCashier(e.target.value)}
-                      placeholder="Nombre del cajero u operador..."
-                      className="w-full text-xs rounded-lg pl-8 pr-3 py-1.5 bg-white border border-slate-300 focus:outline-none focus:border-[#1b426e]"
-                    />
-                    <User className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
-                  </div>
-                </div>
               </div>
 
               {/* Informative Note */}
@@ -1956,7 +2042,9 @@ export default function POSModule({
               <button
                 type="button"
                 onClick={handleSaveShiftConfig}
-                className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#153457] text-xs font-bold text-white shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                disabled={registersLoading || Boolean(registersError) || !registerOptions.includes(tempRegister)
+                  || (salesReps.length > 0 && !salesReps.some((rep) => rep.name === tempCashier))}
+                className="px-5 py-2 rounded-xl bg-[#1b426e] hover:bg-[#153457] text-xs font-bold text-white shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Guardar Cambios</span>

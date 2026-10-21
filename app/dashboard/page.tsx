@@ -19,6 +19,7 @@ import CustomersModule from "@/components/CustomersModule";
 import VendorsModule from "@/components/VendorsModule";
 import InventoryModule from "@/components/InventoryModule";
 import POSModule from "@/components/pos/POSModule";
+import PosTerminalsModule from "@/components/pos/PosTerminalsModule";
 import CommissionsModule from "@/components/CommissionsModule";
 import { Skeleton, CardSkeleton, TableRowsSkeleton } from "@/components/Skeleton";
 import { InvoicesModule, numberToWordsSpanish } from "@/components/InvoicesModule";
@@ -221,7 +222,7 @@ type PurchaseInvoice = {
   createdAt?: string;
 };
 
-type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv" | "pos" | "produccion" | "ordenes-trabajo" | "boms";
+type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "terminales-pos" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv" | "pos" | "produccion" | "ordenes-trabajo" | "boms";
 type SidebarMenuSection = "contabilidad" | "ventas" | "compras" | "inventario" | "produccion";
 
 
@@ -1316,6 +1317,10 @@ export default function AdminDashboard() {
   const [userForm, setUserForm] = useState({ name: "", email: "", password: "", role: "user" });
   const [userModalError, setUserModalError] = useState("");
   const [userModalLoading, setUserModalLoading] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordChangeError, setPasswordChangeError] = useState("");
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState("");
+  const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
 
   const teamLimitReached = teamMaxUsers !== null && teamUsers.length >= teamMaxUsers;
 
@@ -1375,6 +1380,44 @@ export default function AdminDashboard() {
       setUserModalError(err instanceof Error ? err.message : "Error inesperado.");
     } finally {
       setUserModalLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPasswordChangeError("");
+    setPasswordChangeSuccess("");
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordChangeError("La nueva contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordChangeError("La nueva contraseña y su confirmación no coinciden.");
+      return;
+    }
+
+    setPasswordChangeLoading(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || "No se pudo cambiar la contraseña.");
+      }
+
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordChangeSuccess(data.message || "La contraseña se actualizó correctamente.");
+    } catch (err) {
+      setPasswordChangeError(err instanceof Error ? err.message : "Error inesperado al cambiar la contraseña.");
+    } finally {
+      setPasswordChangeLoading(false);
     }
   };
 
@@ -2790,7 +2833,7 @@ export default function AdminDashboard() {
   };
 
   const [currentAdminUser, setCurrentAdminUser] = useState<{ id: string; email: string; name: string; role: string } | null>(null);
-  const isAdminUser = !currentAdminUser || (currentAdminUser?.role || "").toLowerCase() !== "user";
+  const isAdminUser = ["admin", "super_admin"].includes((currentAdminUser?.role || "").toLowerCase());
 
   const loadCurrentUser = async () => {
     try {
@@ -3952,6 +3995,7 @@ ${accountRowsHtml(equity)}
       { label: "Notas Crédito / Débito", view: "notas-credito-debito" },
       { label: "Vendedores", view: "vendedores" },
       { label: "Comisiones", view: "comisiones" },
+      ...(isAdminUser ? [{ label: "Terminales POS", view: "terminales-pos" as const }] : []),
       { label: "Antigüedad de Saldos", view: "antiguedad-saldos" },
     ],
     compras: [
@@ -4155,7 +4199,8 @@ ${accountRowsHtml(equity)}
                   currentView === "vendedores" ||
                   currentView === "comisiones" ||
                   currentView === "antiguedad-saldos" ||
-                  currentView === "pos"
+                  currentView === "pos" ||
+                  currentView === "terminales-pos"
                   ? "font-semibold text-slate-900"
                   : ""
                 }`}
@@ -4299,6 +4344,18 @@ ${accountRowsHtml(equity)}
                     </span>
                   )}
                 </button>
+
+                {isAdminUser && (
+                  <button
+                    onClick={() => setCurrentView("terminales-pos")}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "terminales-pos"
+                        ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      }`}
+                  >
+                    Terminales POS
+                  </button>
+                )}
 
                 {/* 6. Antigüedad de Saldos */}
                 <button
@@ -4666,7 +4723,9 @@ ${accountRowsHtml(equity)}
               }[hoveredSidebarMenu.section]}
             </p>
             <div className="space-y-0.5">
-              {sidebarFlyoutItems[hoveredSidebarMenu.section].map(({ label, view }) => (
+              {sidebarFlyoutItems[hoveredSidebarMenu.section]
+                .filter(({ view }) => view !== "terminales-pos" || isAdminUser)
+                .map(({ label, view }) => (
                 <button
                   key={view}
                   type="button"
@@ -4679,7 +4738,7 @@ ${accountRowsHtml(equity)}
                 >
                   {label}
                 </button>
-              ))}
+                ))}
             </div>
           </div>
         )}
@@ -6054,6 +6113,23 @@ ${accountRowsHtml(equity)}
                 onNavigateBack={() => setCurrentView("dashboard")}
               />
             </div>
+          )}
+
+          {currentView === "terminales-pos" && !isAdminUser && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-xs">
+              <p className="text-sm font-bold text-slate-900">Acceso restringido</p>
+              <p className="mt-2 text-xs text-slate-500">La administración de terminales POS solo está disponible para administradores.</p>
+              <button
+                type="button"
+                onClick={() => setCurrentView("dashboard")}
+                className="mt-5 rounded-xl bg-[#1b426e] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#143355]"
+              >
+                Regresar a Dashboard
+              </button>
+            </div>
+          )}
+          {currentView === "terminales-pos" && isAdminUser && (
+            <PosTerminalsModule onBack={() => setCurrentView("comisiones")} />
           )}
 
           {/* ================= VIEW: INVENTARIO, LOTES Y SERIES ================= */}
@@ -9618,6 +9694,11 @@ ${accountRowsHtml(equity)}
                               para agregar más miembros a su equipo.
                             </div>
                           )}
+                          {!teamCanManage && (
+                            <p className="mb-4 text-xs text-slate-500">
+                              Solo los administradores y propietarios pueden agregar usuarios al equipo.
+                            </p>
+                          )}
 
                           <div className="overflow-x-auto border border-slate-100 rounded-xl">
                             <table className="w-full text-left text-xs border-collapse">
@@ -9718,6 +9799,76 @@ ${accountRowsHtml(equity)}
                               </tbody>
                             </table>
                           </div>
+                        </div>
+
+                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                          <h2 className="font-bold text-sm text-slate-900 mb-1">Cambiar contraseña</h2>
+                          <p className="text-xs text-slate-500 mb-4">
+                            Ingrese su contraseña actual y elija una nueva contraseña para su cuenta.
+                          </p>
+
+                          <form onSubmit={handleChangePassword} className="max-w-md space-y-3">
+                            <div>
+                              <label htmlFor="current-password" className="block text-xs font-semibold text-slate-700 mb-1">
+                                Contraseña actual
+                              </label>
+                              <input
+                                id="current-password"
+                                type="password"
+                                autoComplete="current-password"
+                                required
+                                value={passwordForm.currentPassword}
+                                onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
+                                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1b426e]"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="new-password" className="block text-xs font-semibold text-slate-700 mb-1">
+                                Nueva contraseña
+                              </label>
+                              <input
+                                id="new-password"
+                                type="password"
+                                autoComplete="new-password"
+                                minLength={6}
+                                required
+                                value={passwordForm.newPassword}
+                                onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1b426e]"
+                                placeholder="Mínimo 6 caracteres"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="confirm-new-password" className="block text-xs font-semibold text-slate-700 mb-1">
+                                Confirmar nueva contraseña
+                              </label>
+                              <input
+                                id="confirm-new-password"
+                                type="password"
+                                autoComplete="new-password"
+                                minLength={6}
+                                required
+                                value={passwordForm.confirmPassword}
+                                onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1b426e]"
+                              />
+                            </div>
+
+                            {passwordChangeError && (
+                              <p role="alert" className="text-xs font-semibold text-red-600">{passwordChangeError}</p>
+                            )}
+                            {passwordChangeSuccess && (
+                              <p role="status" className="text-xs font-semibold text-emerald-700">{passwordChangeSuccess}</p>
+                            )}
+
+                            <button
+                              type="submit"
+                              disabled={passwordChangeLoading}
+                              className="px-4 py-2 rounded-xl bg-[#1b426e] hover:bg-[#143355] text-white font-semibold text-xs cursor-pointer transition disabled:opacity-50"
+                            >
+                              {passwordChangeLoading ? "Actualizando..." : "Actualizar contraseña"}
+                            </button>
+                          </form>
                         </div>
 
                         {/* MODAL: CREAR / EDITAR USUARIO */}

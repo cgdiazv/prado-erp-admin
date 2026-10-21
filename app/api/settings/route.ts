@@ -33,14 +33,24 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => null);
-    if (!body || typeof body !== "object") {
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json({ success: false, error: "Configuración inválida." }, { status: 400 });
     }
 
+    const existing = await prisma.companySettings.findUnique({
+      where: { id: session.companyId },
+      select: { appSettings: true },
+    });
+    const existingSettings =
+      existing?.appSettings && typeof existing.appSettings === "object" && !Array.isArray(existing.appSettings)
+        ? existing.appSettings
+        : {};
+    const appSettings = { ...existingSettings, ...body };
+
     await prisma.companySettings.upsert({
       where: { id: session.companyId },
-      update: { appSettings: body },
-      create: { id: session.companyId, appSettings: body },
+      update: { appSettings },
+      create: { id: session.companyId, appSettings },
     });
 
     return NextResponse.json({ success: true });
