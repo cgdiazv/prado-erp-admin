@@ -139,20 +139,25 @@ export default function POSModule({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Extract categories dynamically
+  const sellableInventory = useMemo(
+    () => inventory.filter((item) => item.isSold !== false),
+    [inventory]
+  );
+
   const categories = useMemo(() => {
     const set = new Set<string>();
-    inventory.forEach((item) => {
+    sellableInventory.forEach((item) => {
       if (item.category && item.category.trim() !== "") {
         set.add(item.category.trim());
       }
     });
     return Array.from(set);
-  }, [inventory]);
+  }, [sellableInventory]);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return inventory.filter((item) => {
+    return sellableInventory.filter((item) => {
       const matchCat =
         selectedCategory === "all" ||
         (selectedCategory === "uncategorized" && (!item.category || item.category.trim() === "")) ||
@@ -166,7 +171,7 @@ export default function POSModule({
         item.description.toLowerCase().includes(q)
       );
     });
-  }, [inventory, searchQuery, selectedCategory]);
+  }, [sellableInventory, searchQuery, selectedCategory]);
 
   // ----------------------------------------------------
   // Live Ticket / Cart State
@@ -930,7 +935,7 @@ export default function POSModule({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
               }`}
             >
-              Todos los Artículos ({inventory.length})
+              Todos los Artículos ({sellableInventory.length})
             </button>
             {categories.map((cat) => (
               <button

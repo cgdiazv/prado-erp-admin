@@ -62,7 +62,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
       );
     }
 
-    const { sku, description, quantity, cost, price, price2, price3, trackingType, imageUrl, category } = body;
+    const { sku, description, quantity, cost, price, price2, price3, isSold, trackingType, imageUrl, category } = body;
 
     // El control por lotes o números de serie requiere el plan Profesional (feature: "inventory")
     if (trackingType && trackingType !== "NONE") {
@@ -112,6 +112,7 @@ export async function PATCH(request: NextRequest, { params }: RouteProps) {
         ...(price !== undefined && { price: Number(price) }),
         ...(price2 !== undefined && { price2: price2 !== null ? Number(price2) : 0 }),
         ...(price3 !== undefined && { price3: price3 !== null ? Number(price3) : 0 }),
+        ...(typeof isSold === "boolean" && { isSold }),
         ...(trackingType !== undefined && { trackingType }),
         ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
         ...(itemCategory !== undefined && { category: itemCategory }),

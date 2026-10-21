@@ -633,16 +633,6 @@ export default function AdminDashboard() {
       })
       .catch((err) => console.error("Error loading company settings from DB:", err));
 
-    // 3. Load inventory items from database
-    fetch("/api/inventory")
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setInventory(res.data);
-        }
-      })
-      .catch((err) => console.error("Error loading inventory items from DB:", err));
-
     // 4. Load credit and debit notes from database
     fetch("/api/credit-debit-notes")
       .then((res) => res.json())
@@ -2602,6 +2592,7 @@ export default function AdminDashboard() {
   };
 
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [inventoryError, setInventoryError] = useState("");
 
   // Fetch all live data from Next.js API routes
   const loadDashboardData = async () => {
@@ -2628,6 +2619,7 @@ export default function AdminDashboard() {
       if (venRes.success) setVendors(venRes.data || []);
       if (invRes.success) {
         setInventory(Array.isArray(invRes.data) ? invRes.data : []);
+        setInventoryError("");
       }
 
       if (bankRes.success) setConnectedBanks(bankRes.data || []);
@@ -2716,18 +2708,21 @@ export default function AdminDashboard() {
     try {
       const res = await fetch("/api/inventory");
       const invRes = await res.json();
-      if (invRes && invRes.success && Array.isArray(invRes.data)) {
-        setInventory(invRes.data);
+      if (!res.ok || !invRes?.success || !Array.isArray(invRes.data)) {
+        throw new Error(invRes?.error || "No se pudo cargar el catálogo de productos.");
       }
+      setInventory(invRes.data);
+      setInventoryError("");
     } catch (err) {
       console.error("Error loading inventory:", err);
+      setInventoryError(err instanceof Error ? err.message : "No se pudo cargar el catálogo de productos.");
     }
   };
 
   useEffect(() => {
     if (currentView === "lista-facturas") {
       loadInvoices();
-    } else if (currentView === "inventario") {
+    } else if (currentView === "inventario" || currentView === "lotes" || currentView === "series") {
       loadInventory();
     }
   }, [currentView]);
@@ -6068,7 +6063,8 @@ ${accountRowsHtml(equity)}
                 inventory={inventory}
                 setInventory={setInventory}
                 loading={loading}
-                onRefreshInventory={loadDashboardData}
+                onRefreshInventory={loadInventory}
+                inventoryError={inventoryError}
                 accounts={accounts}
                 productCategories={productCategoriesList.map((c) => c.name)}
                 onAddCategory={handleAddProductCategory}

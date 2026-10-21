@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     const session = await getTenantSession(request);
     const companyId = session?.companyId || await resolveCompanyId(request);
     const body = await request.json();
-    const { sku, description, quantity, cost, price, price2, price3, trackingType, imageUrl, category } = body;
+    const { sku, description, quantity, cost, price, price2, price3, isSold, trackingType, imageUrl, category } = body;
 
     // El control por lotes o números de serie requiere el plan Profesional (feature: "inventory")
     if (trackingType && trackingType !== "NONE") {
@@ -140,6 +140,7 @@ export async function POST(request: NextRequest) {
         price: price !== undefined ? Number(price) : 0,
         price2: price2 !== undefined && price2 !== null ? Number(price2) : 0,
         price3: price3 !== undefined && price3 !== null ? Number(price3) : 0,
+        isSold: typeof isSold === "boolean" ? isSold : true,
         trackingType: trackingType || "NONE",
         imageUrl: imageUrl || null,
         category: itemCategory,
@@ -201,5 +202,4 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
-
 

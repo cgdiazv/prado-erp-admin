@@ -75,6 +75,7 @@ model InventoryItem {
   price        Float        @default(0)
   price2       Float?       @default(0)
   price3       Float?       @default(0)
+  isSold       Boolean      @default(true)
   trackingType String       @default("NONE") // "NONE" | "LOT" | "SERIAL"
   category     String?
   imageUrl     String?
@@ -979,4 +980,3 @@ model WorkOrderItem {
 
   @@index([workOrderId])
 }
-
