@@ -7,6 +7,16 @@
   --brand-hover: #143355;
   --brand-light: #f0f5fa;
   --brand-border: #b8cee5;
+
+  /* Custom crisp border-radius scale (less round corners for KPI cards and all containers) */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.3125rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.625rem;
+  --radius-3xl: 0.875rem;
+  --radius-4xl: 1rem;
 }
 
 @theme inline {
@@ -20,6 +30,15 @@
   --font-mono: var(--font-roboto-mono), ui-monospace, SFMono-Regular, monospace;
   --font-manrope: var(--font-manrope), Manrope, sans-serif;
   --font-inter: var(--font-inter), Inter, sans-serif;
+
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.3125rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.625rem;
+  --radius-3xl: 0.875rem;
+  --radius-4xl: 1rem;
 }
 
 .font-manrope {

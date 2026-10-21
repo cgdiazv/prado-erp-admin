@@ -901,22 +901,22 @@ export default function ProductionModule({
         <div className="space-y-4 sm:space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Órdenes</span>
               <p className="text-2xl font-black text-slate-900 mt-1">{woKpis.total}</p>
               <span className="text-[10px] text-slate-400">Registradas en el sistema</span>
             </div>
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-blue-200 bg-blue-50/20 shadow-sm">
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-blue-200 bg-blue-50/20 shadow-sm">
               <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Planificadas</span>
               <p className="text-2xl font-black text-blue-700 mt-1">{woKpis.planificadas}</p>
               <span className="text-[10px] text-blue-600">Por iniciar en planta</span>
             </div>
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-amber-200 bg-amber-50/20 shadow-sm">
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-sm">
               <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">En Proceso</span>
               <p className="text-2xl font-black text-amber-700 mt-1">{woKpis.enProceso}</p>
               <span className="text-[10px] text-amber-600">Fabricación en curso</span>
             </div>
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-emerald-200 bg-emerald-50/20 shadow-sm">
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-sm">
               <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Cerradas / Listas</span>
               <p className="text-2xl font-black text-emerald-700 mt-1">{woKpis.completadas}</p>
               <span className="text-[10px] text-emerald-600">Stock rebajado</span>
@@ -924,7 +924,7 @@ export default function ProductionModule({
           </div>
 
           {/* Search, Filters, and New Button */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               {/* Search input */}
               <div className="relative flex-1 sm:w-64">
