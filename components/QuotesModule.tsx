@@ -232,6 +232,12 @@ export default function QuotesModule({
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [customerSearchInput, setCustomerSearchInput] = useState("");
+  const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
+  const [highlightedCustomerIndex, setHighlightedCustomerIndex] = useState(-1);
+  const customerDropdownRef = useRef<HTMLDivElement>(null);
+  const [activeSkuDropdownIndex, setActiveSkuDropdownIndex] = useState<number | null>(null);
+  const [highlightedSkuIndex, setHighlightedSkuIndex] = useState(-1);
   const printAreaRef = useRef<HTMLDivElement>(null);
   const printDropdownRef = useRef<HTMLDivElement>(null);
   const [showPrintDownloadDropdown, setShowPrintDownloadDropdown] = useState(false);
@@ -241,6 +247,38 @@ export default function QuotesModule({
   const quoteSendDropdownRef = useRef<HTMLDivElement>(null);
   const [showQuoteSendDropdown, setShowQuoteSendDropdown] = useState(false);
   const [sendingQuoteEmail, setSendingQuoteEmail] = useState(false);
+
+  const filteredCustomers = useMemo(() => {
+    const query = customerSearchInput.trim();
+    if (!query) return customers.slice(0, 15);
+
+    const normalize = (value: string) =>
+      value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizedQuery = normalize(query);
+
+    return customers
+      .filter((customer) =>
+        [customer.name, customer.rtn || "", customer.email || "", customer.phone || ""]
+          .some((value) => normalize(value).includes(normalizedQuery))
+      )
+      .slice(0, 15);
+  }, [customers, customerSearchInput]);
+
+  const filteredSkuInventory = useMemo(() => {
+    if (activeSkuDropdownIndex === null) return [];
+    const query = formData.lines[activeSkuDropdownIndex]?.sku?.trim() || "";
+    if (!query) return inventory.slice(0, 15);
+
+    const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return inventory
+      .filter((item) =>
+        [item.sku, item.description]
+          .some((value) =>
+            value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery)
+          )
+      )
+      .slice(0, 15);
+  }, [activeSkuDropdownIndex, formData.lines, inventory]);
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
@@ -258,6 +296,37 @@ export default function QuotesModule({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!isCustomerDropdownOpen) return;
+
+    const handleCustomerOutsideClick = (e: MouseEvent) => {
+      if (
+        customerDropdownRef.current &&
+        !customerDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsCustomerDropdownOpen(false);
+        setHighlightedCustomerIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleCustomerOutsideClick);
+    return () => document.removeEventListener("mousedown", handleCustomerOutsideClick);
+  }, [isCustomerDropdownOpen]);
+
+  useEffect(() => {
+    if (activeSkuDropdownIndex === null) return;
+
+    const handleSkuOutsideClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest("[data-quote-sku-autocomplete]")) {
+        setActiveSkuDropdownIndex(null);
+        setHighlightedSkuIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleSkuOutsideClick);
+    return () => document.removeEventListener("mousedown", handleSkuOutsideClick);
+  }, [activeSkuDropdownIndex]);
 
   // Cargar Cotizaciones desde la API
   const fetchQuotes = async () => {
@@ -322,6 +391,9 @@ export default function QuotesModule({
 
   // Manejar apertura de editor (Nuevo o Edición)
   const handleOpenCreate = () => {
+    setCustomerSearchInput("");
+    setIsCustomerDropdownOpen(false);
+    setHighlightedCustomerIndex(-1);
     setFormData({
       ...initialFormState,
       quoteNumber: nextQuoteNumber,
@@ -345,6 +417,9 @@ export default function QuotesModule({
 
   const handleOpenEdit = (quote: Quote) => {
     setActiveEditorTab("Editar");
+    setCustomerSearchInput(quote.customerId ? quote.customerName : "");
+    setIsCustomerDropdownOpen(false);
+    setHighlightedCustomerIndex(-1);
     setFormData({
       id: quote.id,
       quoteNumber: quote.quoteNumber,
@@ -403,11 +478,43 @@ export default function QuotesModule({
         customerAddress: cust.address || "",
         currency: cust.currency || prev.currency || effectiveCurrencyCode || "HNL",
       }));
+      setCustomerSearchInput(cust.name);
+      setIsCustomerDropdownOpen(false);
+      setHighlightedCustomerIndex(-1);
     } else {
       setFormData((prev) => ({
         ...prev,
         customerId: "",
       }));
+    }
+  };
+
+  const handleCustomerSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!isCustomerDropdownOpen) {
+        setIsCustomerDropdownOpen(true);
+        setHighlightedCustomerIndex(
+          e.key === "ArrowDown" ? 0 : Math.max(filteredCustomers.length - 1, 0)
+        );
+      } else if (filteredCustomers.length > 0) {
+        setHighlightedCustomerIndex((current) =>
+          e.key === "ArrowDown"
+            ? (current + 1) % filteredCustomers.length
+            : current <= 0
+              ? filteredCustomers.length - 1
+              : current - 1
+        );
+      }
+    } else if (e.key === "Enter" && isCustomerDropdownOpen) {
+      e.preventDefault();
+      const customer = filteredCustomers[highlightedCustomerIndex] || filteredCustomers[0];
+      if (customer) handleCustomerSelect(customer.id);
+    } else if (e.key === "Escape" && isCustomerDropdownOpen) {
+      e.preventDefault();
+      setIsCustomerDropdownOpen(false);
+      setHighlightedCustomerIndex(-1);
+      setCustomerSearchInput(formData.customerId ? formData.customerName : "");
     }
   };
 
@@ -458,6 +565,43 @@ export default function QuotesModule({
       }
       return { ...prev, lines };
     });
+  };
+
+  const handleSkuSearchKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (activeSkuDropdownIndex !== index) {
+        setActiveSkuDropdownIndex(index);
+        setHighlightedSkuIndex(
+          e.key === "ArrowDown" ? 0 : Math.max(filteredSkuInventory.length - 1, 0)
+        );
+      } else if (filteredSkuInventory.length > 0) {
+        setHighlightedSkuIndex((current) =>
+          e.key === "ArrowDown"
+            ? (current + 1) % filteredSkuInventory.length
+            : current <= 0
+              ? filteredSkuInventory.length - 1
+              : current - 1
+        );
+      }
+    } else if (e.key === "Enter" && activeSkuDropdownIndex === index) {
+      e.preventDefault();
+      const item =
+        (highlightedSkuIndex >= 0 && filteredSkuInventory[highlightedSkuIndex]) ||
+        (formData.lines[index]?.sku?.trim() ? filteredSkuInventory[0] : undefined);
+      if (item) {
+        handleProductSelect(index, item.sku);
+        setActiveSkuDropdownIndex(null);
+        setHighlightedSkuIndex(-1);
+      }
+    } else if (e.key === "Escape" && activeSkuDropdownIndex === index) {
+      e.preventDefault();
+      setActiveSkuDropdownIndex(null);
+      setHighlightedSkuIndex(-1);
+    }
   };
 
   // Actualizar línea
@@ -1528,21 +1672,80 @@ export default function QuotesModule({
                       </span>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        <label htmlFor="quote-customer-search" className="block text-[11px] font-semibold text-slate-700 mb-1">
                           Seleccionar Cliente
                         </label>
-                        <select
-                          value={formData.customerId}
-                          onChange={(e) => handleCustomerSelect(e.target.value)}
-                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e]"
-                        >
-                          <option value="">-- Seleccionar de catálogo existente --</option>
-                          {customers.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative" ref={customerDropdownRef}>
+                          <div className="relative flex items-center">
+                            <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                            <input
+                              id="quote-customer-search"
+                              type="text"
+                              role="combobox"
+                              aria-autocomplete="list"
+                              aria-expanded={isCustomerDropdownOpen}
+                              aria-controls="quote-customer-options"
+                              aria-activedescendant={
+                                highlightedCustomerIndex >= 0
+                                  ? `quote-customer-option-${highlightedCustomerIndex}`
+                                  : undefined
+                              }
+                              value={customerSearchInput}
+                              onChange={(e) => {
+                                setCustomerSearchInput(e.target.value);
+                                setIsCustomerDropdownOpen(true);
+                                setHighlightedCustomerIndex(-1);
+                              }}
+                              onFocus={() => setIsCustomerDropdownOpen(true)}
+                              onKeyDown={handleCustomerSearchKeyDown}
+                              placeholder="Buscar cliente por nombre, RTN, correo o teléfono..."
+                              autoComplete="off"
+                              className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e]"
+                            />
+                          </div>
+
+                          {isCustomerDropdownOpen && (
+                            <div
+                              id="quote-customer-options"
+                              role="listbox"
+                              className="absolute z-50 left-0 right-0 top-full mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                            >
+                              {filteredCustomers.length > 0 ? (
+                                filteredCustomers.map((customer, index) => (
+                                  <button
+                                    key={customer.id}
+                                    id={`quote-customer-option-${index}`}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={formData.customerId === customer.id}
+                                    onMouseEnter={() => setHighlightedCustomerIndex(index)}
+                                    onClick={() => handleCustomerSelect(customer.id)}
+                                    className={`w-full rounded-lg px-3 py-2 text-left text-xs transition ${
+                                      formData.customerId === customer.id
+                                        ? "bg-blue-50 text-[#1b426e] font-semibold"
+                                        : highlightedCustomerIndex === index
+                                          ? "bg-slate-100 text-slate-900"
+                                          : "text-slate-700 hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    <span className="block truncate font-semibold">{customer.name}</span>
+                                    {(customer.rtn || customer.email || customer.phone) && (
+                                      <span className="mt-0.5 block truncate text-[10px] text-slate-500">
+                                        {[customer.rtn, customer.email, customer.phone]
+                                          .filter(Boolean)
+                                          .join(" · ")}
+                                      </span>
+                                    )}
+                                  </button>
+                                ))
+                              ) : (
+                                <p className="px-3 py-2 text-xs text-slate-500">
+                                  No se encontraron clientes.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div>
@@ -1741,62 +1944,104 @@ export default function QuotesModule({
                     </div>
 
                     <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-2xs">
-                      <table className="w-full text-left text-xs text-slate-700">
+                      <table className="w-full min-w-[800px] table-fixed text-left text-xs text-slate-700">
                         <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                           <tr>
-                            <th className="p-3 w-8 text-center">#</th>
-                            <th className="p-3 min-w-[210px]">Buscar por SKU / Código</th>
-                            <th className="p-3 min-w-[200px]">Producto / Descripción</th>
-                            <th className="p-3 min-w-[200px]">Especificaciones</th>
-                            <th className="p-3 w-20 text-right">Cant.</th>
-                            <th className="p-3 w-28 text-right">Precio Unit. ({formCurrencySymbol})</th>
-                            <th className="p-3 w-28 text-right">Importe ({formCurrencySymbol})</th>
-                            <th className="p-3 w-10 text-center"></th>
+                            <th className="px-2 py-2 w-[4%] text-center">#</th>
+                            <th className="px-2 py-2 w-[19%]">Buscar por SKU / Código</th>
+                            <th className="px-2 py-2 w-[19%]">Producto / Descripción</th>
+                            <th className="px-2 py-2 w-[19%]">Especificaciones</th>
+                            <th className="px-2 py-2 w-[8%] text-right">Cant.</th>
+                            <th className="px-2 py-2 w-[12%] text-right">Precio Unit. ({formCurrencySymbol})</th>
+                            <th className="px-2 py-2 w-[12%] text-right">Importe ({formCurrencySymbol})</th>
+                            <th className="px-2 py-2 w-[7%] text-center"></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white">
                           {formData.lines.map((line, idx) => (
                             <tr key={idx} className="hover:bg-slate-50/60 transition">
-                              <td className="p-3 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</td>
+                              <td className="px-2 py-2 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</td>
 
                               {/* Búsqueda prioritaria por SKU */}
-                              <td className="p-3">
-                                <div className="space-y-1">
+                              <td className="px-2 py-2">
+                                <div className="relative" data-quote-sku-autocomplete>
                                   <input
                                     type="text"
-                                    list={`inventory-quote-sku-list-${idx}`}
-                                    placeholder="Escribir o buscar SKU..."
+                                    role="combobox"
+                                    aria-autocomplete="list"
+                                    aria-expanded={activeSkuDropdownIndex === idx}
+                                    aria-controls={`quote-sku-options-${idx}`}
+                                    aria-activedescendant={
+                                      activeSkuDropdownIndex === idx && highlightedSkuIndex >= 0
+                                        ? `quote-sku-option-${idx}-${highlightedSkuIndex}`
+                                        : undefined
+                                    }
+                                    placeholder="Buscar por SKU o producto..."
                                     required
                                     value={line.sku || ""}
-                                    onChange={(e) => handleSkuChange(idx, e.target.value)}
-                                    className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 font-mono font-semibold text-[#1b426e] focus:border-[#1b426e] bg-slate-50/70 focus:bg-white"
+                                    onChange={(e) => {
+                                      handleSkuChange(idx, e.target.value);
+                                      setActiveSkuDropdownIndex(idx);
+                                      setHighlightedSkuIndex(-1);
+                                    }}
+                                    onFocus={() => {
+                                      setActiveSkuDropdownIndex(idx);
+                                      setHighlightedSkuIndex(-1);
+                                    }}
+                                    onKeyDown={(e) => handleSkuSearchKeyDown(e, idx)}
+                                    autoComplete="off"
+                                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 font-mono font-semibold text-[#1b426e] focus:outline-none focus:border-[#1b426e] focus:ring-2 focus:ring-[#1b426e]/15 bg-white"
                                   />
-                                  <datalist id={`inventory-quote-sku-list-${idx}`}>
-                                    {inventory.map((item) => (
-                                      <option key={item.id} value={item.sku}>
-                                        {item.sku} - {item.description} ({formCurrencySymbol} {item.price}{item.price2 ? ` | P2: ${item.price2}` : ""}{item.price3 ? ` | P3: ${item.price3}` : ""})
-                                      </option>
-                                    ))}
-                                  </datalist>
-                                  {inventory.length > 0 && (
-                                    <select
-                                      value={line.sku || ""}
-                                      onChange={(e) => handleProductSelect(idx, e.target.value)}
-                                      className="w-full px-2 py-0.5 text-[11px] text-slate-500 border border-slate-200 rounded-md bg-slate-50/80 cursor-pointer"
+                                  {activeSkuDropdownIndex === idx && (
+                                    <div
+                                      id={`quote-sku-options-${idx}`}
+                                      role="listbox"
+                                      className="absolute z-50 left-0 right-0 top-full mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
                                     >
-                                      <option value="">-- Catálogo por SKU --</option>
-                                      {inventory.map((item) => (
-                                        <option key={item.id} value={item.sku}>
-                                          {item.sku} — {item.description.slice(0, 24)} (P1: {item.price}{item.price2 ? ` / P2: ${item.price2}` : ""}{item.price3 ? ` / P3: ${item.price3}` : ""})
-                                        </option>
-                                      ))}
-                                    </select>
+                                      {filteredSkuInventory.length > 0 ? (
+                                        filteredSkuInventory.map((item, itemIndex) => (
+                                          <button
+                                            key={item.id}
+                                            id={`quote-sku-option-${idx}-${itemIndex}`}
+                                            type="button"
+                                            role="option"
+                                            aria-selected={line.sku === item.sku}
+                                            onMouseEnter={() => setHighlightedSkuIndex(itemIndex)}
+                                            onClick={() => {
+                                              handleProductSelect(idx, item.sku);
+                                              setActiveSkuDropdownIndex(null);
+                                              setHighlightedSkuIndex(-1);
+                                            }}
+                                            className={`w-full rounded-lg px-2.5 py-2 text-left transition ${
+                                              line.sku === item.sku
+                                                ? "bg-blue-50 text-[#1b426e]"
+                                                : highlightedSkuIndex === itemIndex
+                                                  ? "bg-slate-100 text-slate-900"
+                                                  : "text-slate-700 hover:bg-slate-50"
+                                            }`}
+                                          >
+                                            <span className="block truncate font-mono text-[11px] font-bold">
+                                              {item.sku}
+                                            </span>
+                                            <span className="block truncate text-[10px] text-slate-500">
+                                              {item.description} · {formCurrencySymbol} {item.price}
+                                              {item.price2 ? ` · P2: ${item.price2}` : ""}
+                                              {item.price3 ? ` · P3: ${item.price3}` : ""}
+                                            </span>
+                                          </button>
+                                        ))
+                                      ) : (
+                                        <p className="px-3 py-2 text-[11px] text-slate-500">
+                                          No se encontraron productos.
+                                        </p>
+                                      )}
+                                    </div>
                                   )}
                                 </div>
                               </td>
 
                               {/* Producto / Nombre */}
-                              <td className="p-3">
+                              <td className="px-2 py-2">
                                 <input
                                   type="text"
                                   placeholder="Nombre del producto o servicio..."
@@ -1808,7 +2053,7 @@ export default function QuotesModule({
                               </td>
 
                               {/* Especificaciones */}
-                              <td className="p-3">
+                              <td className="px-2 py-2">
                                 <input
                                   type="text"
                                   placeholder="Especificaciones (tintas, acabado)..."
@@ -1819,26 +2064,26 @@ export default function QuotesModule({
                               </td>
 
                               {/* Cantidad */}
-                              <td className="p-3 text-right">
+                              <td className="px-2 py-2 text-right">
                                 <input
                                   type="number"
                                   min="1"
                                   step="any"
                                   value={line.quantity}
                                   onChange={(e) => handleLineChange(idx, "quantity", e.target.value)}
-                                  className="w-16 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
+                                  className="w-14 px-1.5 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
                                 />
                               </td>
 
                               {/* Precio Unitario */}
-                              <td className="p-3 text-right">
+                              <td className="px-2 py-2 text-right">
                                 <input
                                   type="number"
                                   min="0"
                                   step="0.01"
                                   value={line.rate}
                                   onChange={(e) => handleLineChange(idx, "rate", e.target.value)}
-                                  className="w-24 px-2 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
+                                  className="w-20 px-1.5 py-1 text-xs rounded-lg border border-slate-200 text-right font-mono focus:border-[#1b426e]"
                                 />
                                 {(() => {
                                   const prod = inventory.find((p) => p.sku && p.sku.toLowerCase() === (line.sku || "").toLowerCase());
@@ -1879,11 +2124,11 @@ export default function QuotesModule({
                               </td>
 
                               {/* Importe */}
-                              <td className="p-3 text-right font-bold text-slate-900 font-mono">
-                                {formCurrencySymbol} {line.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              <td className="px-2 py-2 text-right font-bold text-slate-900 font-mono">
+                                {line.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </td>
 
-                              <td className="p-3 text-center">
+                              <td className="px-2 py-2 text-center">
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveLine(idx)}
