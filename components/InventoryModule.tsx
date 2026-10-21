@@ -32,6 +32,7 @@ import {
   Eye,
   SlidersHorizontal,
   RefreshCw,
+  Pencil,
   Check,
   FileCheck,
   Trash2,
@@ -1818,10 +1819,11 @@ export default function InventoryModule({
                                   <button
                                     type="button"
                                     onClick={() => handleOpenEditProduct(item)}
-                                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 font-semibold cursor-pointer transition text-[11px] inline-flex items-center gap-1 border border-slate-200"
-                                    title="Haz clic para editar producto"
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
+                                    title="Editar producto"
+                                    aria-label={`Editar producto ${item.description || item.sku}`}
                                   >
-                                    <span>Editar</span>
+                                    <Pencil className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </td>

@@ -21,7 +21,6 @@ import {
   Calendar,
   User,
   Trash2,
-  Edit3,
   BookOpen,
   ArrowUpRight,
   Send,
@@ -34,7 +33,7 @@ import {
   ArrowRight,
   Info,
   X,
-  Eye,
+  Pencil,
   Download,
   Factory,
 } from "lucide-react";
@@ -1173,11 +1172,11 @@ export default function SalesOrdersModule({
                             setSelectedOrder(order);
                             handleOpenEdit(order);
                           }}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition cursor-pointer"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
                           title="Ver y editar pedido de venta"
                           aria-label="Ver y editar pedido de venta"
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
 
                         {/* Botón Crear Orden de Trabajo en Producción */}

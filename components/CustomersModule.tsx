@@ -596,11 +596,11 @@ export default function CustomersModule({
                           <button
                             type="button"
                             onClick={() => handleOpenEditCustomer(c)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 border border-transparent hover:border-slate-200 transition cursor-pointer inline-flex items-center justify-center"
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
                             title="Editar cliente"
                             aria-label="Editar cliente"
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>

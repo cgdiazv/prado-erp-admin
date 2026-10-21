@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Edit3, Eye, ChevronLeft, Search, Check, ChevronsUpDown, Building2, User } from "lucide-react";
+import { Printer, Download, CreditCard, Clock, BookOpen, Pencil, DollarSign, X, ExternalLink, RefreshCw, Eye, ChevronLeft, Search, Check, ChevronsUpDown, Building2, User } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/Skeleton";
 import {
   Customer,
@@ -1539,11 +1539,11 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 <button
                                   type="button"
                                   onClick={() => onOpenInvoiceEditor(fact)}
-                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
                                   title="Editar factura"
                                   aria-label="Editar factura"
                                 >
-                                  <Edit3 className="w-4 h-4" />
+                                  <Pencil className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </td>

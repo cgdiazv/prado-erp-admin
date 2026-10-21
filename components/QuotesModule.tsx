@@ -22,7 +22,7 @@ import {
   Calendar,
   User,
   Trash2,
-  Edit3,
+  Pencil,
   BookOpen,
   ArrowUpRight,
   Send,
@@ -1392,10 +1392,11 @@ export default function QuotesModule({
                           {quote.status !== "Facturada" && (
                             <button
                               onClick={() => handleOpenEdit(quote)}
-                              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                              className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
                               title="Editar cotización"
+                              aria-label="Editar cotización"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Pencil className="w-3.5 h-3.5" />
                             </button>
                           )}
 

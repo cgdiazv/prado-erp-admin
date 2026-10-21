@@ -12,7 +12,7 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
-  Edit3,
+  Pencil,
 } from "lucide-react";
 
 interface VendorsModuleProps {
@@ -370,11 +370,11 @@ export default function VendorsModule({
                           <button
                             type="button"
                             onClick={() => handleOpenEditVendor(v)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#1b426e] hover:bg-slate-100 border border-transparent hover:border-slate-200 transition cursor-pointer inline-flex items-center justify-center"
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#fff7ed] hover:text-[#1b426e] text-slate-700 cursor-pointer transition border border-slate-200"
                             title="Editar proveedor"
                             aria-label="Editar proveedor"
                           >
-                            <Edit3 className="w-4 h-4" />
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
