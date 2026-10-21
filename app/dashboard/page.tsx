@@ -222,6 +222,7 @@ type PurchaseInvoice = {
 };
 
 type NavItem = "dashboard" | "plan-cuentas" | "transacciones" | "conciliacion-bancaria" | "caja-chica" | "clientes" | "cotizaciones" | "pedidos-venta" | "proveedores" | "vendedores" | "comisiones" | "inventario" | "lotes" | "series" | "notas-credito-debito" | "reportes" | "configuracion" | "factura-editor" | "lista-facturas" | "lista-ordenes-compra" | "orden-compra-editor" | "factura-compra-lista" | "factura-compra-editor" | "deposito-bancario" | "recibir-pago" | "agregar-gasto" | "pagar-proveedor" | "pagos-proveedores" | "devoluciones-proveedor" | "antiguedad-saldos" | "antiguedad-saldos-proveedores" | "estado-cuenta-cliente" | "retenciones-isv" | "pos" | "produccion" | "ordenes-trabajo" | "boms";
+type SidebarMenuSection = "contabilidad" | "ventas" | "compras" | "inventario" | "produccion";
 
 
 
@@ -427,14 +428,42 @@ export default function AdminDashboard() {
     }
   };
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarPreferenceLoaded, setSidebarPreferenceLoaded] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showAccionesDropdown, setShowAccionesDropdown] = useState(false);
+  const [hoveredSidebarMenu, setHoveredSidebarMenu] = useState<{
+    section: SidebarMenuSection;
+    top: number;
+  } | null>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const sidebarFlyoutCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Close mobile drawer when navigating to another view
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [currentView]);
+  useEffect(() => {
+    try {
+      const preference = window.localStorage.getItem("prado-erp-admin:sidebar-collapsed");
+      if (preference !== null) setSidebarCollapsed(preference === "true");
+    } catch (error) {
+      console.error("Error loading sidebar preference:", error);
+    } finally {
+      setSidebarPreferenceLoaded(true);
+    }
+  }, []);
+  useEffect(() => {
+    if (!sidebarPreferenceLoaded) return;
+    try {
+      window.localStorage.setItem("prado-erp-admin:sidebar-collapsed", String(sidebarCollapsed));
+    } catch (error) {
+      console.error("Error saving sidebar preference:", error);
+    }
+  }, [sidebarCollapsed, sidebarPreferenceLoaded]);
+  useEffect(() => () => {
+    if (sidebarFlyoutCloseTimer.current) clearTimeout(sidebarFlyoutCloseTimer.current);
+  }, []);
   const accionesDropdownRef = useRef<HTMLDivElement>(null);
   const mobileAccionesDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -3886,6 +3915,70 @@ ${accountRowsHtml(equity)}
     showSaveDropdown,
   ]);
 
+  const showSidebarFlyout = (section: SidebarMenuSection, event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!sidebarCollapsed || !sidebarRef.current) return;
+    if (sidebarFlyoutCloseTimer.current) clearTimeout(sidebarFlyoutCloseTimer.current);
+    const sidebarTop = sidebarRef.current.getBoundingClientRect().top;
+    const triggerTop = event.currentTarget.getBoundingClientRect().top;
+    const top = Math.max(8, Math.min(triggerTop - sidebarTop, window.innerHeight - 420 - sidebarTop));
+    setHoveredSidebarMenu({ section, top });
+  };
+
+  const scheduleSidebarFlyoutClose = () => {
+    if (sidebarFlyoutCloseTimer.current) clearTimeout(sidebarFlyoutCloseTimer.current);
+    sidebarFlyoutCloseTimer.current = setTimeout(() => setHoveredSidebarMenu(null), 120);
+  };
+
+  const keepSidebarFlyoutOpen = () => {
+    if (sidebarFlyoutCloseTimer.current) clearTimeout(sidebarFlyoutCloseTimer.current);
+  };
+
+  const selectSidebarFlyoutItem = (view: NavItem) => {
+    if (sidebarFlyoutCloseTimer.current) clearTimeout(sidebarFlyoutCloseTimer.current);
+    setHoveredSidebarMenu(null);
+    if (view === "pagos-proveedores") setSelectedPaymentVendor("");
+    if (view === "devoluciones-proveedor") loadVendorReturns();
+    setCurrentView(view);
+  };
+
+  const sidebarFlyoutItems: Record<SidebarMenuSection, { label: string; view: NavItem }[]> = {
+    contabilidad: [
+      { label: "Plan de cuentas", view: "plan-cuentas" },
+      { label: "Transacciones bancarias", view: "transacciones" },
+      { label: "Conciliación extractos", view: "conciliacion-bancaria" },
+      { label: "Caja Chica & Arqueos", view: "caja-chica" },
+    ],
+    ventas: [
+      { label: "Punto de Venta (POS)", view: "pos" },
+      { label: "Clientes", view: "clientes" },
+      { label: "Cotizaciones", view: "cotizaciones" },
+      { label: "Pedidos de Venta", view: "pedidos-venta" },
+      { label: "Facturas", view: "lista-facturas" },
+      { label: "Notas Crédito / Débito", view: "notas-credito-debito" },
+      { label: "Vendedores", view: "vendedores" },
+      { label: "Comisiones", view: "comisiones" },
+      { label: "Antigüedad de Saldos", view: "antiguedad-saldos" },
+    ],
+    compras: [
+      { label: "Proveedores", view: "proveedores" },
+      { label: "Órdenes de compra", view: "lista-ordenes-compra" },
+      { label: "Facturas de compra", view: "factura-compra-lista" },
+      { label: "Pagos a Proveedores", view: "pagos-proveedores" },
+      { label: "Devoluciones a Prov.", view: "devoluciones-proveedor" },
+      { label: "Antigüedad Proveedores", view: "antiguedad-saldos-proveedores" },
+      { label: "Retenciones ISV / SAR", view: "retenciones-isv" },
+    ],
+    inventario: [
+      { label: "Catálogo de Productos", view: "inventario" },
+      { label: "Control de Lotes", view: "lotes" },
+      { label: "Números de Serie", view: "series" },
+    ],
+    produccion: [
+      { label: "Órdenes de Trabajo", view: "ordenes-trabajo" },
+      { label: "Listas de Materiales (BOM)", view: "boms" },
+    ],
+  };
+
   return (
 
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans antialiased">
@@ -3901,19 +3994,14 @@ ${accountRowsHtml(equity)}
 
       {/* ===================== SIDEBAR ===================== */}
       <aside
+        ref={sidebarRef}
         className={`w-64 ${sidebarCollapsed ? "md:w-20" : "md:w-64"
           } shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 fixed inset-y-0 left-0 z-50 h-screen transform ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 md:sticky md:top-0 md:z-30`}
       >
         {/* Brand Header */}
-        <div
-          className={`border-b border-slate-200 flex shrink-0 transition-all duration-300 ${
-            sidebarCollapsed
-              ? "py-3 px-2 flex-col items-center justify-center gap-2"
-              : "h-16 px-4 items-center justify-between"
-          }`}
-        >
-          <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3 overflow-hidden"}`}>
+        <div className="h-16 px-4 border-b border-slate-200 flex shrink-0 items-center justify-between">
+          <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
               <img src="/logo-prado-erp.webp" alt="Prado ERP" className="w-full h-full object-contain" />
             </div>
@@ -3923,17 +4011,6 @@ ${accountRowsHtml(equity)}
               </div>
             )}
           </div>
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className={`p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition hidden md:flex items-center justify-center ${
-              sidebarCollapsed ? "w-8 h-8" : ""
-            }`}
-            title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={sidebarCollapsed ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7m8 14l-7-7 7-7"} />
-            </svg>
-          </button>
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition md:hidden"
@@ -3948,29 +4025,48 @@ ${accountRowsHtml(equity)}
         {/* Navigation Items */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto text-xs font-medium">
           {/* Dashboard Item */}
-          <button
-            onClick={() => setCurrentView("dashboard")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition cursor-pointer ${currentView === "dashboard"
-                ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              }`}
-          >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            {!sidebarCollapsed && <span>Dashboard</span>}
-          </button>
+          <div className={`flex items-center gap-1 -mx-1 ${sidebarCollapsed ? "flex-col-reverse" : ""}`}>
+            <button
+              onClick={() => setCurrentView("dashboard")}
+              className={`min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-xl transition cursor-pointer ${sidebarCollapsed ? "w-full justify-center px-2" : "flex-1"
+                } ${currentView === "dashboard"
+                  ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              {!sidebarCollapsed && <span>Dashboard</span>}
+            </button>
+            <button
+              onClick={() => {
+                setSidebarCollapsed(!sidebarCollapsed);
+                setHoveredSidebarMenu(null);
+              }}
+              className="hidden md:flex shrink-0 items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition"
+              title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+              aria-label={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+              aria-expanded={!sidebarCollapsed}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={sidebarCollapsed ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7m8 14l-7-7 7-7"} />
+              </svg>
+            </button>
+          </div>
 
           {/* Contabilidad Section (Collapsible Dropdown matching screenshot) */}
           <div className="pt-2">
             <button
               onClick={() => toggleSidebarSection("contabilidad")}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
+              onMouseEnter={(event) => showSidebarFlyout("contabilidad", event)}
+              onMouseLeave={scheduleSidebarFlyoutClose}
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
                   ? "font-semibold text-slate-900"
                   : ""
                 }`}
             >
-              <div className="flex items-center gap-3 truncate">
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
                 <svg className="w-4 h-4 shrink-0 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
@@ -4053,8 +4149,10 @@ ${accountRowsHtml(equity)}
           <div className="pt-1">
             <button
               onClick={() => toggleSidebarSection("ventas")}
+              onMouseEnter={(event) => showSidebarFlyout("ventas", event)}
+              onMouseLeave={scheduleSidebarFlyoutClose}
               title={sidebarCollapsed ? "Ventas" : undefined}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
                   currentView === "cotizaciones" ||
                   currentView === "lista-facturas" ||
                   currentView === "factura-editor" ||
@@ -4067,7 +4165,7 @@ ${accountRowsHtml(equity)}
                   : ""
                 }`}
             >
-              <div className="flex items-center gap-3 truncate">
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
                 <Tag className="w-4 h-4 shrink-0 text-slate-600" />
                 {!sidebarCollapsed && <span>Ventas</span>}
               </div>
@@ -4232,8 +4330,10 @@ ${accountRowsHtml(equity)}
           <div className="pt-1">
             <button
               onClick={() => toggleSidebarSection("compras")}
+              onMouseEnter={(event) => showSidebarFlyout("compras", event)}
+              onMouseLeave={scheduleSidebarFlyoutClose}
               title={sidebarCollapsed ? "Compras" : undefined}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
                   currentView === "lista-ordenes-compra" ||
                   currentView === "orden-compra-editor" ||
                   currentView === "factura-compra-lista" ||
@@ -4245,7 +4345,7 @@ ${accountRowsHtml(equity)}
                   : ""
                 }`}
             >
-              <div className="flex items-center gap-3 truncate">
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
                 <svg className="w-4 h-4 shrink-0 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 11h14l1 12H4L5 11z" />
                 </svg>
@@ -4400,12 +4500,14 @@ ${accountRowsHtml(equity)}
           <div className="pt-1">
             <button
               onClick={() => toggleSidebarSection("inventario")}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
+              onMouseEnter={(event) => showSidebarFlyout("inventario", event)}
+              onMouseLeave={scheduleSidebarFlyoutClose}
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
                   ? "font-semibold text-slate-900"
                   : ""
                 }`}
             >
-              <div className="flex items-center gap-3 truncate">
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
                 <Package className="w-4 h-4 shrink-0 text-slate-600" />
                 {!sidebarCollapsed && (
                   <span className="flex items-center gap-1.5">
@@ -4479,13 +4581,15 @@ ${accountRowsHtml(equity)}
           <div className="pt-1">
             <button
               onClick={() => toggleSidebarSection("produccion")}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
+              onMouseEnter={(event) => showSidebarFlyout("produccion", event)}
+              onMouseLeave={scheduleSidebarFlyoutClose}
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
                 currentView === "produccion" || currentView === "ordenes-trabajo" || currentView === "boms"
                   ? "font-semibold text-slate-900"
                   : ""
               }`}
             >
-              <div className="flex items-center gap-3 truncate">
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
                 <Factory className="w-4 h-4 shrink-0 text-slate-600" />
                 {!sidebarCollapsed && (
                   <span className="flex items-center gap-1.5">
@@ -4549,6 +4653,41 @@ ${accountRowsHtml(equity)}
           </div>
 
         </nav>
+
+        {sidebarCollapsed && hoveredSidebarMenu && (
+          <div
+            className="absolute left-full ml-2 hidden w-64 max-w-[calc(100vw-6rem)] overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-xl md:block"
+            style={{ top: hoveredSidebarMenu.top, maxHeight: "calc(100vh - 1rem)" }}
+            onMouseEnter={keepSidebarFlyoutOpen}
+            onMouseLeave={scheduleSidebarFlyoutClose}
+          >
+            <p className="px-2.5 py-2 text-xs font-semibold text-slate-500">
+              {{
+                contabilidad: "Contabilidad",
+                ventas: "Ventas",
+                compras: "Compras",
+                inventario: "Inventario",
+                produccion: "Producción",
+              }[hoveredSidebarMenu.section]}
+            </p>
+            <div className="space-y-0.5">
+              {sidebarFlyoutItems[hoveredSidebarMenu.section].map(({ label, view }) => (
+                <button
+                  key={view}
+                  type="button"
+                  onClick={() => selectSidebarFlyoutItem(view)}
+                  className={`w-full rounded-lg px-2.5 py-2 text-left text-xs transition ${
+                    currentView === view
+                      ? "bg-[#fff7ed] font-semibold text-[#1b426e]"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Mobile navbar actions */}
         <div className="p-3 border-t border-slate-100 space-y-1 md:hidden">
