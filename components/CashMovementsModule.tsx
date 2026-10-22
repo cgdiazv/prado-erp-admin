@@ -83,6 +83,85 @@ export function CashMovementsModule({
 
   const [depositSuccessMsg, setDepositSuccessMsg] = useState("");
   const [showDepositSaveDropdown, setShowDepositSaveDropdown] = useState(false);
+  const [depositCustomerSearch, setDepositCustomerSearch] = useState("");
+  const [depositCustomerDropdownLineId, setDepositCustomerDropdownLineId] = useState<string | null>(null);
+  const [highlightedDepositCustomerIndex, setHighlightedDepositCustomerIndex] = useState(-1);
+  const depositCustomerDropdownRef = useRef<HTMLDivElement>(null);
+
+  const filteredDepositCustomers = useMemo(() => {
+    const query = depositCustomerSearch.trim();
+    if (!query) return customers.slice(0, 15);
+    const normalize = (value: string) =>
+      value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizedQuery = normalize(query);
+
+    return customers
+      .filter((customer) =>
+        [
+          customer.name,
+          customer.macolaCode || "",
+          customer.rtn || "",
+          customer.email || "",
+          customer.phone || "",
+        ].some((value) => normalize(value).includes(normalizedQuery))
+      )
+      .slice(0, 15);
+  }, [customers, depositCustomerSearch]);
+
+  useEffect(() => {
+    if (!depositCustomerDropdownLineId) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        depositCustomerDropdownRef.current &&
+        !depositCustomerDropdownRef.current.contains(event.target as Node)
+      ) {
+        setDepositCustomerDropdownLineId(null);
+        setHighlightedDepositCustomerIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [depositCustomerDropdownLineId]);
+
+  const handleDepositCustomerKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    lineId: string
+  ) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (depositCustomerDropdownLineId !== lineId) {
+        setDepositCustomerDropdownLineId(lineId);
+        setHighlightedDepositCustomerIndex(
+          event.key === "ArrowDown"
+            ? 0
+            : Math.max(filteredDepositCustomers.length - 1, 0)
+        );
+      } else if (filteredDepositCustomers.length > 0) {
+        setHighlightedDepositCustomerIndex((current) =>
+          event.key === "ArrowDown"
+            ? (current + 1) % filteredDepositCustomers.length
+            : current <= 0
+              ? filteredDepositCustomers.length - 1
+              : current - 1
+        );
+      }
+    } else if (event.key === "Enter" && depositCustomerDropdownLineId === lineId) {
+      event.preventDefault();
+      const customer =
+        filteredDepositCustomers[highlightedDepositCustomerIndex] ||
+        filteredDepositCustomers[0];
+      if (customer) {
+        handleDepositLineChange(lineId, "receivedFrom", customer.name);
+        setDepositCustomerSearch(customer.name);
+        setDepositCustomerDropdownLineId(null);
+        setHighlightedDepositCustomerIndex(-1);
+      }
+    } else if (event.key === "Escape" && depositCustomerDropdownLineId === lineId) {
+      event.preventDefault();
+      setDepositCustomerDropdownLineId(null);
+      setHighlightedDepositCustomerIndex(-1);
+    }
+  };
 
   const handleDepositLineChange = (id: string, field: string, val: any) => {
     setDepositForm((prev) => {
@@ -143,6 +222,8 @@ export function CashMovementsModule({
 
   const depositTotalLines = depositForm.lines.reduce((acc, l) => acc + (l.amount || 0), 0);
   const depositFinalTotal = depositTotalLines - (depositForm.cashbackAmount || 0);
+  const depositCurrencySymbol =
+    depositForm.currency === "HNL" || depositForm.currency === "L" ? "L" : "$";
 
   const handleSaveDeposit = async (createAnother = false) => {
     if (depositFinalTotal <= 0) {
@@ -212,7 +293,7 @@ export function CashMovementsModule({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date: depositForm.date,
-          concept: depositForm.memo || `Depósito Bancario: ${destName} - $${depositFinalTotal.toFixed(2)}`,
+          concept: depositForm.memo || `Depósito Bancario: ${destName} - ${depositCurrencySymbol}${depositFinalTotal.toFixed(2)} ${depositForm.currency}`,
           referenceType: "BANK_TX",
           currency: depositForm.currency || "USD",
           lines: journalLines,
@@ -225,7 +306,9 @@ export function CashMovementsModule({
       }
 
       const entryNum = data.data?.entryNumber ? ` [Asiento: ${data.data.entryNumber}]` : "";
-      setDepositSuccessMsg(`¡Depósito bancario por $${depositFinalTotal.toFixed(2)} USD vinculado al Plan de Cuentas con éxito!${entryNum}`);
+      setDepositSuccessMsg(
+        `¡Depósito bancario por ${depositCurrencySymbol}${depositFinalTotal.toFixed(2)} ${depositForm.currency} vinculado al Plan de Cuentas con éxito!${entryNum}`
+      );
 
       if (onRefreshAccounts) onRefreshAccounts();
 
@@ -236,7 +319,7 @@ export function CashMovementsModule({
             account: "",
             accountBalance: 0,
             date: new Date().toISOString().split("T")[0],
-            currency: "USD",
+            currency: defaultCurrencyCode || "HNL",
             memo: "",
             cashbackAccount: "",
             cashbackMemo: "",
@@ -274,6 +357,84 @@ export function CashMovementsModule({
       { id: "2", category: "", description: "", amount: 0 },
     ],
   });
+  const [gastoPayeeSearch, setGastoPayeeSearch] = useState("");
+  const [isGastoPayeeDropdownOpen, setIsGastoPayeeDropdownOpen] = useState(false);
+  const [highlightedGastoPayeeIndex, setHighlightedGastoPayeeIndex] = useState(-1);
+  const gastoPayeeDropdownRef = useRef<HTMLDivElement>(null);
+
+  const filteredGastoPayees = useMemo(() => {
+    const query = gastoPayeeSearch.trim();
+    if (!query) return vendors.slice(0, 15);
+    const normalize = (value: string) =>
+      value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizedQuery = normalize(query);
+
+    return vendors
+      .filter((vendor) =>
+        [
+          vendor.name,
+          vendor.macolaCode || "",
+          vendor.email || "",
+          vendor.phone || "",
+        ].some((value) => normalize(value).includes(normalizedQuery))
+      )
+      .slice(0, 15);
+  }, [vendors, gastoPayeeSearch]);
+
+  useEffect(() => {
+    if (!isGastoPayeeDropdownOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        gastoPayeeDropdownRef.current &&
+        !gastoPayeeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsGastoPayeeDropdownOpen(false);
+        setHighlightedGastoPayeeIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isGastoPayeeDropdownOpen]);
+
+  const selectGastoPayee = (vendor: Vendor) => {
+    setGastoForm((prev) => ({
+      ...prev,
+      payeeId: vendor.id,
+      payeeName: vendor.name,
+    }));
+    setGastoPayeeSearch(vendor.name);
+    setIsGastoPayeeDropdownOpen(false);
+    setHighlightedGastoPayeeIndex(-1);
+  };
+
+  const handleGastoPayeeKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!isGastoPayeeDropdownOpen) {
+        setIsGastoPayeeDropdownOpen(true);
+        setHighlightedGastoPayeeIndex(
+          event.key === "ArrowDown" ? 0 : Math.max(filteredGastoPayees.length - 1, 0)
+        );
+      } else if (filteredGastoPayees.length > 0) {
+        setHighlightedGastoPayeeIndex((current) =>
+          event.key === "ArrowDown"
+            ? (current + 1) % filteredGastoPayees.length
+            : current <= 0
+              ? filteredGastoPayees.length - 1
+              : current - 1
+        );
+      }
+    } else if (event.key === "Enter" && isGastoPayeeDropdownOpen) {
+      event.preventDefault();
+      const vendor =
+        filteredGastoPayees[highlightedGastoPayeeIndex] || filteredGastoPayees[0];
+      if (vendor) selectGastoPayee(vendor);
+    } else if (event.key === "Escape" && isGastoPayeeDropdownOpen) {
+      event.preventDefault();
+      setIsGastoPayeeDropdownOpen(false);
+      setHighlightedGastoPayeeIndex(-1);
+    }
+  };
 
   const gastoTotal = useMemo(() => {
     return gastoForm.lines.reduce((sum, line) => sum + (Number(line.amount) || 0), 0);
@@ -470,6 +631,7 @@ export function CashMovementsModule({
               { id: "2", category: "", description: "", amount: 0 },
             ],
           });
+          setGastoPayeeSearch("");
         } else {
           onNavigateToDashboard();
         }
@@ -1150,9 +1312,6 @@ export function CashMovementsModule({
                     <span>Regresar</span>
                   </button>
                   <h1 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                    </svg>
                     <span>Depósito bancario</span>
                   </h1>
                 </div>
@@ -1194,7 +1353,18 @@ export function CashMovementsModule({
                         <div className="flex items-center gap-2">
                           <select
                             value={depositForm.account}
-                            onChange={(e) => setDepositForm({ ...depositForm, account: e.target.value })}
+                            onChange={(e) => {
+                              const account = e.target.value;
+                              const selectedBank = connectedBanks.find(
+                                (bank) =>
+                                  `${bank.name} (${bank.accountNumber}) ${bank.currency}` === account
+                              );
+                              setDepositForm((prev) => ({
+                                ...prev,
+                                account,
+                                currency: selectedBank?.currency || prev.currency,
+                              }));
+                            }}
                             className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-[#1b426e] font-semibold cursor-pointer shadow-2xs"
                           >
                             <option value="">-- Seleccionar Cuenta --</option>
@@ -1237,7 +1407,7 @@ export function CashMovementsModule({
                     <div className="text-right bg-slate-50 px-6 py-4 rounded-2xl border border-slate-200 w-full md:w-auto">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">IMPORTE TOTAL</span>
                       <div className="text-3xl font-bold text-slate-900 mt-1">
-                        ${depositFinalTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
+                        {depositCurrencySymbol}{depositFinalTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}
                       </div>
                     </div>
 
@@ -1259,7 +1429,10 @@ export function CashMovementsModule({
                   </div>
 
                   {/* Table */}
-                  <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+                  <div
+                    ref={depositCustomerDropdownRef}
+                    className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs"
+                  >
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
@@ -1270,7 +1443,7 @@ export function CashMovementsModule({
                             <th className="p-3 min-w-[200px]">DESCRIPCIÓN</th>
                             <th className="p-3 min-w-[160px]">MÉTODO DE PAGO</th>
                             <th className="p-3 w-36">N.º DE REFERENCIA</th>
-                            <th className="p-3 w-32 text-right">IMPORTE (USD)</th>
+                            <th className="p-3 w-32 text-right">IMPORTE ({depositForm.currency})</th>
                             <th className="p-3 w-12 text-center"></th>
                           </tr>
                         </thead>
@@ -1279,18 +1452,103 @@ export function CashMovementsModule({
                             <tr key={line.id} className="hover:bg-slate-50/70 transition">
                               <td className="p-3 text-center text-slate-400 font-mono font-medium">{idx + 1}</td>
                               <td className="p-3">
-                                <select
-                                  value={line.receivedFrom}
-                                  onChange={(e) => handleDepositLineChange(line.id, "receivedFrom", e.target.value)}
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium cursor-pointer"
-                                >
-                                  <option value="">-- Seleccionar cliente --</option>
-                                  {customers.map((c) => (
-                                    <option key={c.id} value={c.name}>
-                                      {c.name} {c.macolaCode ? `(${c.macolaCode})` : ""}
-                                    </option>
-                                  ))}
-                                </select>
+                                <div className="relative">
+                                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                                  <input
+                                    type="text"
+                                    role="combobox"
+                                    aria-label={`Buscar cliente para la línea ${idx + 1}`}
+                                    aria-autocomplete="list"
+                                    aria-expanded={depositCustomerDropdownLineId === line.id}
+                                    aria-controls={`deposit-customer-options-${line.id}`}
+                                    aria-activedescendant={
+                                      depositCustomerDropdownLineId === line.id &&
+                                      highlightedDepositCustomerIndex >= 0
+                                        ? `deposit-customer-option-${line.id}-${highlightedDepositCustomerIndex}`
+                                        : undefined
+                                    }
+                                    value={line.receivedFrom}
+                                    onChange={(event) => {
+                                      handleDepositLineChange(
+                                        line.id,
+                                        "receivedFrom",
+                                        event.target.value
+                                      );
+                                      setDepositCustomerSearch(event.target.value);
+                                      setDepositCustomerDropdownLineId(line.id);
+                                      setHighlightedDepositCustomerIndex(-1);
+                                    }}
+                                    onFocus={() => {
+                                      setDepositCustomerSearch(line.receivedFrom);
+                                      setDepositCustomerDropdownLineId(line.id);
+                                      setHighlightedDepositCustomerIndex(-1);
+                                    }}
+                                    onKeyDown={(event) =>
+                                      handleDepositCustomerKeyDown(event, line.id)
+                                    }
+                                    placeholder="Buscar cliente..."
+                                    autoComplete="off"
+                                    className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1b426e] font-medium"
+                                  />
+                                  {depositCustomerDropdownLineId === line.id && (
+                                    <div
+                                      id={`deposit-customer-options-${line.id}`}
+                                      role="listbox"
+                                      className="absolute z-50 top-full left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                                    >
+                                      {filteredDepositCustomers.length > 0 ? (
+                                        filteredDepositCustomers.map((customer, customerIndex) => (
+                                          <button
+                                            key={customer.id}
+                                            id={`deposit-customer-option-${line.id}-${customerIndex}`}
+                                            type="button"
+                                            role="option"
+                                            aria-selected={line.receivedFrom === customer.name}
+                                            onMouseEnter={() =>
+                                              setHighlightedDepositCustomerIndex(customerIndex)
+                                            }
+                                            onClick={() => {
+                                              handleDepositLineChange(
+                                                line.id,
+                                                "receivedFrom",
+                                                customer.name
+                                              );
+                                              setDepositCustomerSearch(customer.name);
+                                              setDepositCustomerDropdownLineId(null);
+                                              setHighlightedDepositCustomerIndex(-1);
+                                            }}
+                                            className={`w-full rounded-lg px-2.5 py-2 text-left text-xs transition ${
+                                              line.receivedFrom === customer.name
+                                                ? "bg-blue-50 text-[#1b426e] font-semibold"
+                                                : highlightedDepositCustomerIndex ===
+                                                    customerIndex
+                                                  ? "bg-slate-100 text-slate-900"
+                                                  : "text-slate-700 hover:bg-slate-50"
+                                            }`}
+                                          >
+                                            <span className="block truncate font-semibold">
+                                              {customer.name}
+                                              {customer.macolaCode
+                                                ? ` (${customer.macolaCode})`
+                                                : ""}
+                                            </span>
+                                            {(customer.rtn || customer.email || customer.phone) && (
+                                              <span className="mt-0.5 block truncate text-[10px] text-slate-500">
+                                                {[customer.rtn, customer.email, customer.phone]
+                                                  .filter(Boolean)
+                                                  .join(" · ")}
+                                              </span>
+                                            )}
+                                          </button>
+                                        ))
+                                      ) : (
+                                        <p className="px-2.5 py-2 text-xs text-slate-500">
+                                          No se encontraron clientes.
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               </td>
                               <td className="p-3">
                                 <select
@@ -1383,7 +1641,7 @@ export function CashMovementsModule({
                     </div>
 
                     <div className="text-right text-xs font-semibold text-slate-600">
-                      Total de otros fondos: <span className="font-bold text-slate-900 text-sm ml-2">${depositTotalLines.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                      Total de otros fondos: <span className="font-bold text-slate-900 text-sm ml-2">{depositCurrencySymbol}{depositTotalLines.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
@@ -1463,11 +1721,11 @@ export function CashMovementsModule({
                     <div className="space-y-2 text-right pt-2 font-sans">
                       <div className="flex justify-between items-center text-slate-600">
                         <span>Total:</span>
-                        <span className="font-bold text-slate-900">${depositFinalTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                        <span className="font-bold text-slate-900">{depositCurrencySymbol}{depositFinalTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
                         <span>Total ({depositForm.currency}):</span>
-                        <span className="text-3xl font-bold text-slate-900">${depositFinalTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
+                        <span className="text-3xl font-bold text-slate-900">{depositCurrencySymbol}{depositFinalTotal.toLocaleString("es-HN", { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
                   </div>
@@ -1556,11 +1814,6 @@ export function CashMovementsModule({
                     </svg>
                     <span>Regresar</span>
                   </button>
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                    <svg className="w-4 h-4 text-[#1b426e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
                   <h1 className="text-lg font-bold text-slate-900 tracking-tight">Registrar Gasto</h1>
                 </div>
 
@@ -1601,20 +1854,82 @@ export function CashMovementsModule({
                         
                         {/* Beneficiario (6 cols) */}
                         <div className="sm:col-span-6">
-                          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Beneficiario</label>
-                          <select
-                            value={gastoForm.payeeId}
-                            onChange={(e) => {
-                              const selected = vendors.find((v) => v.id === e.target.value);
-                              setGastoForm({ ...gastoForm, payeeId: e.target.value, payeeName: selected ? selected.name : "" });
-                            }}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium cursor-pointer"
-                          >
-                            <option value="">¿A quién le pagaste?</option>
-                            {vendors.map((v) => (
-                              <option key={v.id} value={v.id}>{v.name}</option>
-                            ))}
-                          </select>
+                          <label htmlFor="expense-payee-search" className="block text-xs font-semibold text-slate-600 mb-1.5">Beneficiario</label>
+                          <div className="relative" ref={gastoPayeeDropdownRef}>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                            <input
+                              id="expense-payee-search"
+                              type="text"
+                              role="combobox"
+                              aria-autocomplete="list"
+                              aria-expanded={isGastoPayeeDropdownOpen}
+                              aria-controls="expense-payee-options"
+                              aria-activedescendant={
+                                highlightedGastoPayeeIndex >= 0
+                                  ? `expense-payee-option-${highlightedGastoPayeeIndex}`
+                                  : undefined
+                              }
+                              value={gastoPayeeSearch}
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                setGastoPayeeSearch(value);
+                                setGastoForm((prev) => ({
+                                  ...prev,
+                                  payeeId: "",
+                                  payeeName: value,
+                                }));
+                                setIsGastoPayeeDropdownOpen(true);
+                                setHighlightedGastoPayeeIndex(-1);
+                              }}
+                              onFocus={() => setIsGastoPayeeDropdownOpen(true)}
+                              onKeyDown={handleGastoPayeeKeyDown}
+                              placeholder="¿A quién le pagaste?"
+                              autoComplete="off"
+                              className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20 font-medium"
+                            />
+                            {isGastoPayeeDropdownOpen && (
+                              <div
+                                id="expense-payee-options"
+                                role="listbox"
+                                className="absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                              >
+                                {filteredGastoPayees.length > 0 ? (
+                                  filteredGastoPayees.map((vendor, index) => (
+                                    <button
+                                      key={vendor.id}
+                                      id={`expense-payee-option-${index}`}
+                                      type="button"
+                                      role="option"
+                                      aria-selected={gastoForm.payeeId === vendor.id}
+                                      onMouseEnter={() => setHighlightedGastoPayeeIndex(index)}
+                                      onClick={() => selectGastoPayee(vendor)}
+                                      className={`w-full rounded-lg px-3 py-2 text-left text-xs transition ${
+                                        gastoForm.payeeId === vendor.id
+                                          ? "bg-blue-50 text-[#1b426e] font-semibold"
+                                          : highlightedGastoPayeeIndex === index
+                                            ? "bg-slate-100 text-slate-900"
+                                            : "text-slate-700 hover:bg-slate-50"
+                                      }`}
+                                    >
+                                      <span className="block truncate font-semibold">
+                                        {vendor.name}
+                                        {vendor.macolaCode ? ` (${vendor.macolaCode})` : ""}
+                                      </span>
+                                      {(vendor.email || vendor.phone) && (
+                                        <span className="mt-0.5 block truncate text-[10px] text-slate-500">
+                                          {[vendor.email, vendor.phone].filter(Boolean).join(" · ")}
+                                        </span>
+                                      )}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <p className="px-3 py-2 text-xs text-slate-500">
+                                    No se encontraron beneficiarios.
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* Cuenta de pago (6 cols) */}
