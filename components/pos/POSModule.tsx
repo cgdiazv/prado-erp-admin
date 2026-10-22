@@ -591,7 +591,8 @@ export default function POSModule({
 
       const invoicePayload = {
         customerId: selectedCustomer.id !== "default" ? selectedCustomer.id : undefined,
-        invoiceNumber: ticketNumber,
+        invoiceNumber: documentType === "TICKET" ? ticketNumber : undefined,
+        documentType,
         customerName: selectedCustomer.name || "Consumidor Final",
         customerRtn: selectedCustomer.rtn || null,
         salesRepId: rep ? rep.id : null,
@@ -600,7 +601,10 @@ export default function POSModule({
         paymentTerms: paymentMethod === "CREDITO" ? "Crédito 15 días" : "Contado",
         paymentMethod: paymentMethod === "CREDITO" ? "Crédito" : paymentMethod === "TARJETA" ? "Tarjeta" : paymentMethod === "TRANSFERENCIA" ? "Transferencia" : "Efectivo",
         subtotal: cartTotals.subtotal,
+        impGravado15: cartTotals.subtotal,
         isv15: cartTotals.isv15,
+        currency: "HNL",
+        cai: documentType === "SAR_INVOICE" ? companySettings?.cai : undefined,
         total: cartTotals.total,
         status: paymentMethod === "CREDITO" ? "Pendiente" : "Pagada",
         lines: cart.map((c) => ({
@@ -623,6 +627,7 @@ export default function POSModule({
         selectedCustomer.name || "Consumidor Final",
         cartTotals.total
       );
+      const completedTicketNumber = saleResult.ticketNumber;
 
       // Update local inventory state
       if (setInventory) {
@@ -638,7 +643,10 @@ export default function POSModule({
       }
 
       const completed = {
-        ticketNumber,
+        ticketNumber: completedTicketNumber,
+        documentType,
+        cai: companySettings?.cai,
+        rangoAutorizado: companySettings?.rangoAutorizado,
         isOffline: saleResult.isOffline,
         date: saleDate.toLocaleString([], {
           year: "numeric",
@@ -668,6 +676,11 @@ export default function POSModule({
       }
     } catch (err) {
       console.error("Error processing POS sale:", err);
+      alert(
+        err instanceof Error
+          ? err.message
+          : "No se pudo completar la venta. Verifique la conexión e inténtelo de nuevo."
+      );
     } finally {
       setIsProcessingSale(false);
     }
@@ -1557,7 +1570,9 @@ export default function POSModule({
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Confirmar y Emitir Ticket</span>
+                    <span>
+                      Confirmar y Emitir {documentType === "SAR_INVOICE" ? "Factura SAR" : "Ticket"}
+                    </span>
                   </>
                 )}
               </button>
@@ -1602,7 +1617,7 @@ export default function POSModule({
                   {completedSale.customerRtn && <div>RTN: {completedSale.customerRtn}</div>}
                   <div>Caja: {completedSale.register || activeRegister}</div>
                   <div>Cajero: {completedSale.cashier}</div>
-                  <div>Ticket: {completedSale.ticketNumber}</div>
+                  <div>{completedSale.documentType === "SAR_INVOICE" ? "Factura SAR" : "Ticket"}: {completedSale.ticketNumber}</div>
                 </div>
 
                 {/* Items */}
@@ -1640,6 +1655,13 @@ export default function POSModule({
                     <span>{formatCurrency(completedSale.changeDue)}</span>
                   </div>
                 </div>
+
+                {completedSale.documentType === "SAR_INVOICE" && (
+                  <div className="text-center text-[9px] border-t border-dashed border-slate-300 pt-2">
+                    <div>CAI: {completedSale.cai || "Sin CAI"}</div>
+                    <div>Rango autorizado: {completedSale.rangoAutorizado || "Sin rango configurado"}</div>
+                  </div>
+                )}
 
                 {/* Offline Badge on Ticket */}
                 {completedSale.isOffline && (

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postSalesInvoiceEntry } from "@/lib/accounting";
+import { createSequentialSalesInvoice } from "@/lib/invoiceNumbering";
 import { resolveCompanyId } from "@/lib/tenant";
 
 export async function POST(
@@ -56,44 +57,6 @@ export async function POST(
       );
     }
 
-    // 2. Determinar el siguiente número de factura
-    const existingInvoices = await prisma.salesInvoice.findMany({
-      where: { companyId },
-      select: { invoiceNumber: true },
-      orderBy: { createdAt: "desc" },
-    });
-
-    let nextInvoiceNumber = "1001";
-    if (existingInvoices.length > 0) {
-      // Intentar extraer números correlativos simples o formato SAR
-      let maxNum = 0;
-      let isSarFormat = false;
-      let sarPrefix = "";
-
-      for (const inv of existingInvoices) {
-        const sarMatch = inv.invoiceNumber.match(/^(\d{3}-\d{3}-\d{2}-)(\d+)$/);
-        if (sarMatch) {
-          isSarFormat = true;
-          sarPrefix = sarMatch[1];
-          const seq = parseInt(sarMatch[2], 10);
-          if (seq > maxNum) maxNum = seq;
-        } else {
-          const numOnly = parseInt(inv.invoiceNumber.replace(/\D/g, ""), 10);
-          if (!isNaN(numOnly) && numOnly > maxNum) {
-            maxNum = numOnly;
-          }
-        }
-      }
-
-      if (isSarFormat && sarPrefix) {
-        nextInvoiceNumber = `${sarPrefix}${String(maxNum + 1).padStart(8, "0")}`;
-      } else if (maxNum > 0) {
-        nextInvoiceNumber = (maxNum + 1).toString();
-      } else {
-        nextInvoiceNumber = `FAC-${new Date().getFullYear()}-${String(existingInvoices.length + 1).padStart(4, "0")}`;
-      }
-    }
-
     // Calcular fecha de vencimiento según términos
     const today = new Date().toISOString().split("T")[0];
     let daysToAdd = 30;
@@ -110,10 +73,7 @@ export async function POST(
     }) || await prisma.companySettings.findUnique({ where: { id: "default" } });
 
     // 3. Crear la Factura de Ventas (SalesInvoice)
-    const newInvoice = await prisma.salesInvoice.create({
-      data: {
-        companyId,
-        invoiceNumber: nextInvoiceNumber,
+    const newInvoice = await createSequentialSalesInvoice(companyId, {
         customerId: quote.customerId || null,
         customerName: quote.customerName,
         customerRtn: quote.customerRtn || null,
@@ -146,10 +106,6 @@ export async function POST(
             amount: l.amount,
           })),
         },
-      },
-      include: {
-        lines: true,
-      },
     });
 
     // 4. GENERACIÓN AUTOMÁTICA DEL ASIENTO CONTABLE EN EL LIBRO DIARIO

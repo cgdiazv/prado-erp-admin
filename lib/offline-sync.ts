@@ -135,19 +135,29 @@ class OfflineSyncManager {
     customerName: string,
     total: number
   ): Promise<{ ticketNumber: string; isOffline: boolean; offlineId?: string }> {
-    // 1. Deduct stock in local IndexedDB immediately
-    if (Array.isArray(invoicePayload.lines)) {
+    const requiresOnlineNumber = invoicePayload.documentType === "SAR_INVOICE";
+
+    // 1. Verify connectivity before reserving a SAR number.
+    const hasConnection = await this.verifyConnectivity();
+
+    if (requiresOnlineNumber && !hasConnection) {
+      throw new Error("La Factura SAR requiere conexión para reservar el correlativo compartido. Inténtelo de nuevo cuando esté en línea.");
+    }
+
+    const deductStockLocally = async () => {
+      if (!Array.isArray(invoicePayload.lines)) return;
       await deductLocalInventoryStock(
         invoicePayload.lines.map((l: any) => ({
           productId: l.productId,
           quantity: l.quantity,
         }))
       );
-    }
+    };
 
-    // 2. Try online first if navigator says we are online
-    const hasConnection = await this.verifyConnectivity();
+    // 2. Ordinary tickets deduct stock immediately, including when queued offline.
+    if (!requiresOnlineNumber) await deductStockLocally();
 
+    // 3. Try online first; ordinary POS tickets can fall back to the offline queue.
     if (hasConnection) {
       try {
         const response = await fetch("/api/invoices", {
@@ -157,11 +167,30 @@ class OfflineSyncManager {
         });
 
         if (response.ok) {
+          const responseData = await response.json();
+          const savedInvoiceNumber = responseData.data?.invoiceNumber;
+          if (requiresOnlineNumber && !savedInvoiceNumber) {
+            throw new Error("El servidor no devolvió el correlativo de la Factura SAR.");
+          }
+          if (requiresOnlineNumber) await deductStockLocally();
           this.lastSyncTime = new Date();
           this.notifyListeners();
-          return { ticketNumber, isOffline: false };
+          return {
+            ticketNumber: savedInvoiceNumber || ticketNumber,
+            isOffline: false,
+          };
         }
+        const responseData = await response.json().catch(() => ({}));
+        if (requiresOnlineNumber) {
+          throw new Error(responseData.error || "No se pudo reservar el correlativo para la Factura SAR.");
+        }
+        throw new Error(responseData.error || `HTTP error ${response.status}`);
       } catch (netErr) {
+        if (requiresOnlineNumber) {
+          throw netErr instanceof Error
+            ? netErr
+            : new Error("No se pudo reservar el correlativo para la Factura SAR.");
+        }
         console.warn("Online POST failed, falling back to offline queue:", netErr);
       }
     }

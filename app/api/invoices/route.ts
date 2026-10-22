@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { postSalesInvoiceEntry, postCustomerPaymentEntry } from "@/lib/accounting";
+import { createSequentialSalesInvoice } from "@/lib/invoiceNumbering";
 import { resolveCompanyId } from "@/lib/tenant";
 
 export async function GET(request: NextRequest) {
@@ -28,7 +29,9 @@ export async function POST(request: NextRequest) {
     const companyId = await resolveCompanyId(request);
     const body = await request.json();
     const {
-      invoiceNumber,
+      invoiceNumber: requestedInvoiceNumber,
+      documentType,
+      invoiceId,
       customerId,
       customerName,
       customerRtn,
@@ -54,9 +57,14 @@ export async function POST(request: NextRequest) {
       lines = [],
     } = body;
 
-    if (!invoiceNumber || !customerName || total <= 0) {
+    const isPosTicket =
+      documentType !== "SAR_INVOICE" &&
+      typeof requestedInvoiceNumber === "string" &&
+      /^POS-/i.test(requestedInvoiceNumber);
+
+    if ((!isPosTicket && !customerName) || (isPosTicket && !requestedInvoiceNumber) || total <= 0) {
       return NextResponse.json(
-        { success: false, error: "Número de factura, cliente y total válido son requeridos." },
+        { success: false, error: "Cliente y total válido son requeridos." },
         { status: 400 }
       );
     }
@@ -69,9 +77,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert SalesInvoice in DB isolated by company
-    const existing = await prisma.salesInvoice.findFirst({
-      where: { invoiceNumber, companyId },
-    });
+    const existing = isPosTicket
+      ? await prisma.salesInvoice.findFirst({
+          where: { invoiceNumber: requestedInvoiceNumber, companyId },
+        })
+      : typeof invoiceId === "string" && invoiceId
+        ? await prisma.salesInvoice.findFirst({ where: { id: invoiceId, companyId } })
+        : null;
+
+    if (invoiceId && !existing) {
+      return NextResponse.json(
+        { success: false, error: "No se encontró la factura que intenta actualizar." },
+        { status: 404 }
+      );
+    }
 
     let savedInvoice;
     if (existing) {
@@ -119,10 +138,7 @@ export async function POST(request: NextRequest) {
         include: { lines: true },
       });
     } else {
-      savedInvoice = await prisma.salesInvoice.create({
-        data: {
-          companyId,
-          invoiceNumber,
+      const invoiceData = {
           customerId: customerId || null,
           customerName,
           customerRtn: customerRtn || null,
@@ -155,9 +171,14 @@ export async function POST(request: NextRequest) {
               amount: Number(l.amount) || 0,
             })),
           },
-        },
-        include: { lines: true },
-      });
+      };
+
+      savedInvoice = isPosTicket
+        ? await prisma.salesInvoice.create({
+            data: { ...invoiceData, companyId, invoiceNumber: requestedInvoiceNumber },
+            include: { lines: true },
+          })
+        : await createSequentialSalesInvoice(companyId, invoiceData);
     }
 
     // AUTOMATIC DOUBLE-ENTRY ACCOUNTING POSTING

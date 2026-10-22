@@ -264,6 +264,7 @@ export function InvoicesModule({
     statementNote: "",
     lines: [],
   });
+  const [savedInvoiceId, setSavedInvoiceId] = useState("");
 
   // Términos de pago según Configuración → Ventas
   const TERMS_DAYS: Record<string, number> = { "Contado": 0, "Neto 15": 15, "Neto 30": 30, "Neto 60": 60 };
@@ -298,6 +299,7 @@ export function InvoicesModule({
       return;
     }
     initializedEditorRef.current = sessionKey;
+    setSavedInvoiceId("");
 
     const isRealInvoice = editingInvoice && typeof editingInvoice === "object" && ("num" in editingInvoice || "customer" in editingInvoice);
     if (isRealInvoice) {
@@ -368,9 +370,8 @@ export function InvoicesModule({
     } else {
       // Create new invoice
       const defTerms = settingsDefaultTerms();
-      const nextNum = (Math.max(0, ...invoicesList.map((i) => parseInt(i.num) || 0)) + 1).toString();
       setInvoiceForm({
-        invoiceNumber: nextNum,
+        invoiceNumber: "",
         customerId: "",
         customerName: "",
         customerRtn: "",
@@ -1014,54 +1015,21 @@ export function InvoicesModule({
     }
 
     const finalTotal = invoiceTotal;
-    setInvoicesList((prev) => {
-      const exists = prev.some((i) => i.num === invoiceForm.invoiceNumber);
-      if (exists) {
-        return prev.map((i) =>
-          i.num === invoiceForm.invoiceNumber
-            ? {
-                ...i,
-                customer: invoiceForm.customerName || i.customer,
-                customerRtn: invoiceForm.customerRtn,
-                customerAddress: invoiceForm.customerAddress,
-                date: invoiceForm.invoiceDate || i.date,
-                due: invoiceForm.dueDate || i.due,
-                total: finalTotal,
-                status: invoiceForm.status || i.status,
-                paymentTerms: invoiceForm.paymentTerms,
-                salesRepId: invoiceForm.salesRepId,
-                salesRepName: invoiceForm.salesRepName,
-                lines: [...invoiceForm.lines],
-              }
-            : i
-        );
-      } else {
-        return [
-          {
-            num: invoiceForm.invoiceNumber,
-            date: invoiceForm.invoiceDate || new Date().toISOString().split("T")[0],
-            customer: invoiceForm.customerName || "Cliente Sin Nombre",
-            customerRtn: invoiceForm.customerRtn,
-            customerAddress: invoiceForm.customerAddress,
-            due: invoiceForm.dueDate || new Date().toISOString().split("T")[0],
-            total: finalTotal,
-            status: invoiceForm.status || "Pendiente",
-            paymentTerms: invoiceForm.paymentTerms,
-            salesRepId: invoiceForm.salesRepId,
-            salesRepName: invoiceForm.salesRepName,
-            lines: [...invoiceForm.lines],
-          },
-          ...prev,
-        ];
-      }
-    });
-
+    const persistedEditingInvoice = editingInvoice
+      ? invoicesList.find(
+          (invoice) =>
+            (editingInvoice.id && invoice.id === editingInvoice.id) ||
+            (!editingInvoice.id && invoice.num === invoiceForm.invoiceNumber)
+        )
+      : undefined;
+    const invoiceId = savedInvoiceId || persistedEditingInvoice?.id;
     try {
       const res = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           invoiceNumber: invoiceForm.invoiceNumber,
+          invoiceId,
           customerId: invoiceForm.customerId || undefined,
           customerName: invoiceForm.customerName || "Cliente General",
           customerRtn: invoiceForm.customerRtn || undefined,
@@ -1094,6 +1062,44 @@ export function InvoicesModule({
         return;
       }
 
+      if (!invoiceId && !data.data?.invoiceNumber) {
+        setInvoiceErrorMsg("El servidor no devolvió el correlativo de la factura.");
+        setTimeout(() => setInvoiceErrorMsg(""), 6000);
+        return;
+      }
+
+      const savedInvoiceNumber = data.data?.invoiceNumber || invoiceForm.invoiceNumber;
+      if (data.data?.id) setSavedInvoiceId(data.data.id);
+      setInvoiceForm((prev) => ({ ...prev, invoiceNumber: savedInvoiceNumber }));
+      setInvoicesList((prev) => {
+        const updatedInvoice = {
+          id: data.data?.id,
+          num: savedInvoiceNumber,
+          date: invoiceForm.invoiceDate || new Date().toISOString().split("T")[0],
+          customer: invoiceForm.customerName || "Cliente Sin Nombre",
+          customerRtn: invoiceForm.customerRtn,
+          customerAddress: invoiceForm.customerAddress,
+          due: invoiceForm.dueDate || new Date().toISOString().split("T")[0],
+          total: finalTotal,
+          status: invoiceForm.status || "Pendiente",
+          paymentTerms: invoiceForm.paymentTerms,
+          salesRepId: invoiceForm.salesRepId,
+          salesRepName: invoiceForm.salesRepName,
+          lines: [...invoiceForm.lines],
+        };
+        const oldInvoiceExists = prev.some(
+          (invoice) => invoice.num === invoiceForm.invoiceNumber
+        );
+        return [
+          updatedInvoice,
+          ...prev.filter(
+            (invoice) =>
+              invoice.num !== savedInvoiceNumber &&
+              (!oldInvoiceExists || invoice.num !== invoiceForm.invoiceNumber)
+          ),
+        ];
+      });
+
       if (data.success && data.journalEntry) {
         setInvoiceSuccessMsg(`¡Factura guardada y contabilizada automáticamente en el Libro Diario (${data.journalEntry.entryNumber})!`);
         if (onRefreshAccounts) onRefreshAccounts();
@@ -1120,8 +1126,9 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
   };
 
   const formatFiscalInvoiceNumber = (num: string | undefined | null) => {
-    if (!num) return "000-001-01-00000001";
+    if (!num) return "Pendiente de correlativo";
     const trimmed = num.toString().trim();
+    if (/^\d{3}-\d{3}-\d{2}-\d+$/.test(trimmed)) return trimmed;
     const clean = trimmed.replace(/^000-001-01-?\s*/, "").trim();
     if (/^\d+$/.test(clean)) {
       return `000-001-01-${clean.padStart(8, "0")}`;
@@ -2470,10 +2477,10 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                             <input
                               type="text"
                               value={invoiceForm.invoiceNumber}
-                              disabled={!salesSettings?.numerosTransaccionesPersonalizados}
-                              title={!salesSettings?.numerosTransaccionesPersonalizados ? "Numeración automática — active 'Números de transacciones personalizados' en Configuración → Ventas para editarla" : ""}
+                              disabled
+                              title="El correlativo se asigna al guardar para mantener la secuencia compartida entre terminales."
                               onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceNumber: e.target.value })}
-                              placeholder="00000001 o 1001"
+                              placeholder="Se asigna al guardar"
                               className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-[#1b426e] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
                             />
                           </div>
@@ -3004,7 +3011,25 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                 />
                               </div>
                             )}
-                            <div className="flex flex-col justify-center gap-1">
+                            <div className="col-span-2 sm:col-span-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+                              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={invoiceForm.isExonerated}
+                                  onChange={(e) => setInvoiceForm({ ...invoiceForm, isExonerated: e.target.checked })}
+                                  className="rounded text-[#1b426e]"
+                                />
+                                <span>Exonerado</span>
+                              </label>
+                              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={invoiceForm.isExempt}
+                                  onChange={(e) => setInvoiceForm({ ...invoiceForm, isExempt: e.target.checked })}
+                                  className="rounded text-[#1b426e]"
+                                />
+                                <span>Exento</span>
+                              </label>
                               <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 cursor-pointer">
                                 <input
                                   type="checkbox"
@@ -3025,26 +3050,6 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                                   <span>I.S.V. 18%</span>
                                 </label>
                               )}
-                            </div>
-                            <div className="flex flex-col justify-center gap-1">
-                              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={invoiceForm.isExonerated}
-                                  onChange={(e) => setInvoiceForm({ ...invoiceForm, isExonerated: e.target.checked })}
-                                  className="rounded text-[#1b426e]"
-                                />
-                                <span>Exonerado</span>
-                              </label>
-                              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={invoiceForm.isExempt}
-                                  onChange={(e) => setInvoiceForm({ ...invoiceForm, isExempt: e.target.checked })}
-                                  className="rounded text-[#1b426e]"
-                                />
-                                <span>Exento</span>
-                              </label>
                             </div>
                           </div>
 
@@ -3856,9 +3861,10 @@ const formatFiscalMoney = (amount: number | null | undefined, forceShow = false)
                           type="button"
                           onClick={() => {
                             setShowInvoiceSaveDropdown(false);
+                            setSavedInvoiceId("");
                             setInvoiceForm((prev) => ({
                               ...prev,
-                              invoiceNumber: (parseInt(prev.invoiceNumber) + 1).toString(),
+                              invoiceNumber: "",
                               lines: [],
                             }));
                           }}

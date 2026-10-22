@@ -171,6 +171,7 @@ export type InvoiceLine = {
 };
 
 export type Invoice = {
+  id?: string;
   num: string;
   date: string;
   customer: string;

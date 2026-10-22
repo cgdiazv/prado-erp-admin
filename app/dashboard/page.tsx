@@ -288,6 +288,7 @@ export default function AdminDashboard() {
   }>>([]);
 
   const [invoicesList, setInvoicesList] = useState<Array<{
+    id?: string;
     num: string;
     date: string;
     customer: string;
@@ -2677,6 +2678,7 @@ export default function AdminDashboard() {
       if (invcRes && invcRes.success && Array.isArray(invcRes.data)) {
         setInvoicesList(
           invcRes.data.map((inv: any) => ({
+            id: inv.id,
             num: inv.invoiceNumber,
             date: inv.invoiceDate,
             customer: inv.customerName,

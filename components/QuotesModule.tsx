@@ -872,7 +872,7 @@ export default function QuotesModule({
   const handleOpenInInvoiceEditor = (quote: Quote) => {
     if (onOpenInvoiceEditor) {
       onOpenInvoiceEditor({
-        num: quote.quoteNumber.replace("COT-", "FAC-"),
+        num: "",
         customer: quote.customerName,
         email: quote.customerEmail,
         date: new Date().toISOString().split("T")[0],
