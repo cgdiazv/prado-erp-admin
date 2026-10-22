@@ -4073,9 +4073,9 @@ ${accountRowsHtml(equity)}
           <div className={`flex items-center gap-1 -mx-1 ${sidebarCollapsed ? "flex-col-reverse" : ""}`}>
             <button
               onClick={() => setCurrentView("dashboard")}
-              className={`min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-xl transition cursor-pointer ${sidebarCollapsed ? "w-full justify-center px-2" : "flex-1"
+              className={`min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-lg transition cursor-pointer ${sidebarCollapsed ? "w-full justify-center px-2" : "flex-1"
                 } ${currentView === "dashboard"
-                  ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs"
+                  ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs border-l-2 border-[#1b426e]"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
             >
@@ -4106,8 +4106,8 @@ ${accountRowsHtml(equity)}
               onClick={() => toggleSidebarSection("contabilidad")}
               onMouseEnter={(event) => showSidebarFlyout("contabilidad", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
-                  ? "font-semibold text-slate-900"
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
+                  ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
                 }`}
             >
@@ -4135,8 +4135,8 @@ ${accountRowsHtml(equity)}
               <div className="pl-9 pr-2 py-1 space-y-0.5 border-l-2 border-slate-100 ml-5 mt-1">
                 <button
                   onClick={() => setCurrentView("plan-cuentas")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "plan-cuentas"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer ${currentView === "plan-cuentas"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4144,8 +4144,8 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("transacciones")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "transacciones"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "transacciones"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4158,8 +4158,8 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("conciliacion-bancaria")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "conciliacion-bancaria"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "conciliacion-bancaria"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4174,8 +4174,8 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("caja-chica")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "caja-chica"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "caja-chica"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4197,7 +4197,7 @@ ${accountRowsHtml(equity)}
               onMouseEnter={(event) => showSidebarFlyout("ventas", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
               title={sidebarCollapsed ? "Ventas" : undefined}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
                   currentView === "cotizaciones" ||
                   currentView === "lista-facturas" ||
                   currentView === "factura-editor" ||
@@ -4207,7 +4207,7 @@ ${accountRowsHtml(equity)}
                   currentView === "antiguedad-saldos" ||
                   currentView === "pos" ||
                   currentView === "terminales-pos"
-                  ? "font-semibold text-slate-900"
+                  ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
                 }`}
             >
@@ -4233,8 +4233,8 @@ ${accountRowsHtml(equity)}
                 {/* 0. Punto de Venta (POS) */}
                 <button
                   onClick={() => setCurrentView("pos")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "pos"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "pos"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4249,8 +4249,8 @@ ${accountRowsHtml(equity)}
                 {/* 1. Clientes */}
                 <button
                   onClick={() => setCurrentView("clientes")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "clientes"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "clientes"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4263,8 +4263,8 @@ ${accountRowsHtml(equity)}
                 {/* 2. Cotizaciones */}
                 <button
                   onClick={() => setCurrentView("cotizaciones")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "cotizaciones"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer ${currentView === "cotizaciones"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4274,8 +4274,8 @@ ${accountRowsHtml(equity)}
                 {/* 2.1 Pedidos de Venta */}
                 <button
                   onClick={() => setCurrentView("pedidos-venta")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "pedidos-venta"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "pedidos-venta"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4290,8 +4290,8 @@ ${accountRowsHtml(equity)}
                 {/* 3. Facturas */}
                 <button
                   onClick={() => setCurrentView("lista-facturas")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "lista-facturas" || currentView === "factura-editor"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer ${currentView === "lista-facturas" || currentView === "factura-editor"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4301,8 +4301,8 @@ ${accountRowsHtml(equity)}
                 {/* 3. Notas de Crédito & Débito */}
                 <button
                   onClick={() => setCurrentView("notas-credito-debito")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "notas-credito-debito"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "notas-credito-debito"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4317,8 +4317,8 @@ ${accountRowsHtml(equity)}
                 {/* 4. Vendedores */}
                 <button
                   onClick={() => setCurrentView("vendedores")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "vendedores"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "vendedores"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4338,8 +4338,8 @@ ${accountRowsHtml(equity)}
                 {/* 5. Comisiones */}
                 <button
                   onClick={() => setCurrentView("comisiones")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "comisiones"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "comisiones"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4354,8 +4354,8 @@ ${accountRowsHtml(equity)}
                 {isAdminUser && (
                   <button
                     onClick={() => setCurrentView("terminales-pos")}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer ${currentView === "terminales-pos"
-                        ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                    className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer ${currentView === "terminales-pos"
+                        ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                         : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                       }`}
                   >
@@ -4366,8 +4366,8 @@ ${accountRowsHtml(equity)}
                 {/* 6. Antigüedad de Saldos */}
                 <button
                   onClick={() => setCurrentView("antiguedad-saldos")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "antiguedad-saldos"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "antiguedad-saldos"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4391,7 +4391,7 @@ ${accountRowsHtml(equity)}
               onMouseEnter={(event) => showSidebarFlyout("compras", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
               title={sidebarCollapsed ? "Compras" : undefined}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
                   currentView === "lista-ordenes-compra" ||
                   currentView === "orden-compra-editor" ||
                   currentView === "factura-compra-lista" ||
@@ -4399,7 +4399,7 @@ ${accountRowsHtml(equity)}
                   currentView === "devoluciones-proveedor" ||
                   currentView === "antiguedad-saldos-proveedores" ||
                   currentView === "retenciones-isv"
-                  ? "font-semibold text-slate-900"
+                  ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
                 }`}
             >
@@ -4436,8 +4436,8 @@ ${accountRowsHtml(equity)}
                 {/* 1. Proveedores */}
                 <button
                   onClick={() => setCurrentView("proveedores")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "proveedores"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "proveedores"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4450,8 +4450,8 @@ ${accountRowsHtml(equity)}
                 {/* 2. Órdenes de compra */}
                 <button
                   onClick={() => setCurrentView("lista-ordenes-compra")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "lista-ordenes-compra" || currentView === "orden-compra-editor"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "lista-ordenes-compra" || currentView === "orden-compra-editor"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4466,8 +4466,8 @@ ${accountRowsHtml(equity)}
                 {/* 3. Facturas de compra */}
                 <button
                   onClick={() => setCurrentView("factura-compra-lista")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "factura-compra-lista" || currentView === "factura-compra-editor"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "factura-compra-lista" || currentView === "factura-compra-editor"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4482,8 +4482,8 @@ ${accountRowsHtml(equity)}
                 {/* 4. Pagos a Proveedores */}
                 <button
                   onClick={() => { setSelectedPaymentVendor(""); setCurrentView("pagos-proveedores"); }}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "pagos-proveedores" || currentView === "pagar-proveedor"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "pagos-proveedores" || currentView === "pagar-proveedor"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4498,8 +4498,8 @@ ${accountRowsHtml(equity)}
                 {/* 5. Devoluciones a proveedores */}
                 <button
                   onClick={() => { setCurrentView("devoluciones-proveedor"); loadVendorReturns(); }}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "devoluciones-proveedor"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "devoluciones-proveedor"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4521,8 +4521,8 @@ ${accountRowsHtml(equity)}
                 {/* 5. Antigüedad Proveedores */}
                 <button
                   onClick={() => setCurrentView("antiguedad-saldos-proveedores")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "antiguedad-saldos-proveedores"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "antiguedad-saldos-proveedores"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4537,8 +4537,8 @@ ${accountRowsHtml(equity)}
                 {/* 6. Retenciones ISV / SAR */}
                 <button
                   onClick={() => setCurrentView("retenciones-isv")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "retenciones-isv"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "retenciones-isv"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4560,8 +4560,8 @@ ${accountRowsHtml(equity)}
               onClick={() => toggleSidebarSection("inventario")}
               onMouseEnter={(event) => showSidebarFlyout("inventario", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
-                  ? "font-semibold text-slate-900"
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
+                  ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
                 }`}
             >
@@ -4586,8 +4586,8 @@ ${accountRowsHtml(equity)}
               <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
                 <button
                   onClick={() => setCurrentView("inventario")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "inventario"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "inventario"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4595,8 +4595,8 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("lotes")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "lotes"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "lotes"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4614,8 +4614,8 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("series")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${currentView === "series"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "series"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -4641,9 +4641,9 @@ ${accountRowsHtml(equity)}
               onClick={() => toggleSidebarSection("produccion")}
               onMouseEnter={(event) => showSidebarFlyout("produccion", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-xl transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
                 currentView === "produccion" || currentView === "ordenes-trabajo" || currentView === "boms"
-                  ? "font-semibold text-slate-900"
+                  ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
               }`}
             >
@@ -4678,9 +4678,9 @@ ${accountRowsHtml(equity)}
               <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
                 <button
                   onClick={() => setCurrentView("ordenes-trabajo")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${
                     currentView === "ordenes-trabajo" || currentView === "produccion"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -4693,9 +4693,9 @@ ${accountRowsHtml(equity)}
                 </button>
                 <button
                   onClick={() => setCurrentView("boms")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-between ${
+                  className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${
                     currentView === "boms"
-                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold"
+                      ? "bg-[#fff7ed] text-[#1b426e] font-semibold border-l-2 border-[#1b426e]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -4736,9 +4736,9 @@ ${accountRowsHtml(equity)}
                   key={view}
                   type="button"
                   onClick={() => selectSidebarFlyoutItem(view)}
-                  className={`w-full rounded-lg px-2.5 py-2 text-left text-xs transition ${
+                  className={`w-full rounded-md px-2.5 py-2 text-left text-xs transition ${
                     currentView === view
-                      ? "bg-[#fff7ed] font-semibold text-[#1b426e]"
+                      ? "bg-[#fff7ed] font-semibold text-[#1b426e] border-l-2 border-[#1b426e]"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
@@ -4763,7 +4763,7 @@ ${accountRowsHtml(equity)}
           <button
             onClick={() => setCurrentView("reportes")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition cursor-pointer ${currentView === "reportes"
-                ? "bg-[#fff7ed] text-[#1b426e]"
+                ? "bg-[#fff7ed] text-[#1b426e] border-l-2 border-[#1b426e]"
                 : "text-slate-700 hover:bg-slate-100"
               }`}
           >
@@ -4774,7 +4774,7 @@ ${accountRowsHtml(equity)}
             <button
               onClick={() => setCurrentView("configuracion")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition cursor-pointer ${currentView === "configuracion"
-                  ? "bg-[#fff7ed] text-[#1b426e]"
+                  ? "bg-[#fff7ed] text-[#1b426e] border-l-2 border-[#1b426e]"
                   : "text-slate-700 hover:bg-slate-100"
                 }`}
             >
