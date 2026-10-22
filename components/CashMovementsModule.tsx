@@ -793,6 +793,51 @@ export function CashMovementsModule({
   const [showInvoiceSearchModal, setShowInvoiceSearchModal] = useState(false);
   const [showCancelPaymentConfirmModal, setShowCancelPaymentConfirmModal] = useState(false);
   const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
+  const [customerSearchInput, setCustomerSearchInput] = useState("");
+  const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
+  const [highlightedCustomerIndex, setHighlightedCustomerIndex] = useState(-1);
+  const customerDropdownRef = useRef<HTMLDivElement>(null);
+
+  const filteredPaymentCustomers = useMemo(() => {
+    const query = customerSearchInput.trim();
+    if (!query) return customers.slice(0, 15);
+    const normalize = (value: string) =>
+      value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizedQuery = normalize(query);
+
+    return customers
+      .filter((customer) =>
+        [
+          customer.name,
+          customer.macolaCode || "",
+          customer.rtn || "",
+          customer.email || "",
+          customer.phone || "",
+        ].some((value) => normalize(value).includes(normalizedQuery))
+      )
+      .slice(0, 15);
+  }, [customers, customerSearchInput]);
+
+  useEffect(() => {
+    setCustomerSearchInput(recibirPagoForm.customerName || "");
+  }, [recibirPagoForm.customerName]);
+
+  useEffect(() => {
+    if (!isCustomerDropdownOpen) return;
+
+    const handleCustomerOutsideClick = (event: MouseEvent) => {
+      if (
+        customerDropdownRef.current &&
+        !customerDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCustomerDropdownOpen(false);
+        setHighlightedCustomerIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleCustomerOutsideClick);
+    return () => document.removeEventListener("mousedown", handleCustomerOutsideClick);
+  }, [isCustomerDropdownOpen]);
 
   const activeCurrencyCode = useMemo(() => {
     const c = (recibirPagoForm.currency || defaultCurrencyCode || "HNL").trim().toUpperCase();
@@ -924,6 +969,9 @@ export function CashMovementsModule({
         amount: pendingInvoice ? pendingInvoice.total : prev.amount,
         referenceNumber: pendingInvoice ? `FAC-${pendingInvoice.num}` : prev.referenceNumber,
       }));
+      setCustomerSearchInput(selected.name);
+      setIsCustomerDropdownOpen(false);
+      setHighlightedCustomerIndex(-1);
     } else {
       setRecibirPagoForm((prev) => ({
         ...prev,
@@ -931,6 +979,39 @@ export function CashMovementsModule({
         customerName: custNameOrId,
         invoiceNumber: "",
       }));
+      setCustomerSearchInput(custNameOrId);
+    }
+  };
+
+  const handlePaymentCustomerKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!isCustomerDropdownOpen) {
+        setIsCustomerDropdownOpen(true);
+        setHighlightedCustomerIndex(
+          event.key === "ArrowDown"
+            ? 0
+            : Math.max(filteredPaymentCustomers.length - 1, 0)
+        );
+      } else if (filteredPaymentCustomers.length > 0) {
+        setHighlightedCustomerIndex((current) =>
+          event.key === "ArrowDown"
+            ? (current + 1) % filteredPaymentCustomers.length
+            : current <= 0
+              ? filteredPaymentCustomers.length - 1
+              : current - 1
+        );
+      }
+    } else if (event.key === "Enter" && isCustomerDropdownOpen) {
+      event.preventDefault();
+      const customer =
+        filteredPaymentCustomers[highlightedCustomerIndex] ||
+        filteredPaymentCustomers[0];
+      if (customer) handleRecibirPagoCustomerChange(customer.id);
+    } else if (event.key === "Escape" && isCustomerDropdownOpen) {
+      event.preventDefault();
+      setIsCustomerDropdownOpen(false);
+      setHighlightedCustomerIndex(-1);
     }
   };
 
@@ -2358,19 +2439,82 @@ export function CashMovementsModule({
                         
                         {/* Cliente (5 cols) */}
                         <div className="sm:col-span-5">
-                          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Cliente</label>
-                          <select
-                            value={recibirPagoForm.customerId}
-                            onChange={(e) => handleRecibirPagoCustomerChange(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20"
-                          >
-                            <option value="">Elige un cliente</option>
-                            {customers.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name} {c.macolaCode ? `(${c.macolaCode})` : ""}
-                              </option>
-                            ))}
-                          </select>
+                          <label htmlFor="payment-customer-search" className="block text-xs font-semibold text-slate-600 mb-1.5">Cliente</label>
+                          <div className="relative" ref={customerDropdownRef}>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                            <input
+                              id="payment-customer-search"
+                              type="text"
+                              role="combobox"
+                              aria-autocomplete="list"
+                              aria-expanded={isCustomerDropdownOpen}
+                              aria-controls="payment-customer-options"
+                              aria-activedescendant={
+                                highlightedCustomerIndex >= 0
+                                  ? `payment-customer-option-${highlightedCustomerIndex}`
+                                  : undefined
+                              }
+                              value={customerSearchInput}
+                              onChange={(event) => {
+                                setIsCustomerDropdownOpen(true);
+                                setHighlightedCustomerIndex(-1);
+                                if (recibirPagoForm.customerId) {
+                                  handleRecibirPagoCustomerChange("");
+                                }
+                                setCustomerSearchInput(event.target.value);
+                              }}
+                              onFocus={() => setIsCustomerDropdownOpen(true)}
+                              onKeyDown={handlePaymentCustomerKeyDown}
+                              placeholder="Elige o busca un cliente"
+                              autoComplete="off"
+                              className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#1b426e] focus:ring-1 focus:ring-[#1b426e]/20"
+                            />
+
+                            {isCustomerDropdownOpen && (
+                              <div
+                                id="payment-customer-options"
+                                role="listbox"
+                                className="absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                              >
+                                {filteredPaymentCustomers.length > 0 ? (
+                                  filteredPaymentCustomers.map((customer, index) => (
+                                    <button
+                                      key={customer.id}
+                                      id={`payment-customer-option-${index}`}
+                                      type="button"
+                                      role="option"
+                                      aria-selected={recibirPagoForm.customerId === customer.id}
+                                      onMouseEnter={() => setHighlightedCustomerIndex(index)}
+                                      onClick={() => handleRecibirPagoCustomerChange(customer.id)}
+                                      className={`w-full rounded-lg px-3 py-2 text-left text-xs transition ${
+                                        recibirPagoForm.customerId === customer.id
+                                          ? "bg-blue-50 text-[#1b426e] font-semibold"
+                                          : highlightedCustomerIndex === index
+                                            ? "bg-slate-100 text-slate-900"
+                                            : "text-slate-700 hover:bg-slate-50"
+                                      }`}
+                                    >
+                                      <span className="block truncate font-semibold">
+                                        {customer.name}
+                                        {customer.macolaCode ? ` (${customer.macolaCode})` : ""}
+                                      </span>
+                                      {(customer.rtn || customer.email || customer.phone) && (
+                                        <span className="mt-0.5 block truncate text-[10px] text-slate-500">
+                                          {[customer.rtn, customer.email, customer.phone]
+                                            .filter(Boolean)
+                                            .join(" · ")}
+                                        </span>
+                                      )}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <p className="px-3 py-2 text-xs text-slate-500">
+                                    No se encontraron clientes.
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* Correo electrónico (4 cols) */}

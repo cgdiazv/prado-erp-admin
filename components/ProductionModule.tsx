@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Factory,
   Layers,
@@ -50,6 +50,8 @@ interface ProductionModuleProps {
   defaultCurrencyCode?: string;
   currentView?: string;
   initialTab?: "work-orders" | "boms";
+  autoOpenWorkOrderCreate?: boolean;
+  onAutoOpenWorkOrderCreateConsumed?: () => void;
   onChangeTab?: (tab: "work-orders" | "boms") => void;
   onNavigateToDashboard?: () => void;
   onNavigateToSalesOrders?: () => void;
@@ -74,6 +76,8 @@ export default function ProductionModule({
   defaultCurrencyCode = "USD",
   currentView,
   initialTab,
+  autoOpenWorkOrderCreate,
+  onAutoOpenWorkOrderCreateConsumed,
   onChangeTab,
   onNavigateToDashboard,
   onNavigateToSalesOrders,
@@ -139,6 +143,10 @@ export default function ProductionModule({
   const [woCreationMode, setWoCreationMode] = useState<"manual" | "sales_order">("manual");
   const [selectedSalesOrderId, setSelectedSalesOrderId] = useState("");
   const [selectedBomId, setSelectedBomId] = useState("");
+  const [bomSearchInput, setBomSearchInput] = useState("");
+  const [isBomDropdownOpen, setIsBomDropdownOpen] = useState(false);
+  const [highlightedBomIndex, setHighlightedBomIndex] = useState(-1);
+  const bomDropdownRef = useRef<HTMLDivElement>(null);
   const [woOrderNumber, setWoOrderNumber] = useState("");
   const [woProductName, setWoProductName] = useState("");
   const [woProductSku, setWoProductSku] = useState("");
@@ -150,6 +158,40 @@ export default function ProductionModule({
   const [woPriority, setWoPriority] = useState("MEDIA");
   const [woWarehouse, setWoWarehouse] = useState(warehouses[0]?.name || "Bodega Principal Zip Búfalo");
   const [woNotes, setWoNotes] = useState("");
+
+  const getBomSearchLabel = (bom: any) =>
+    `${bom.code} • ${bom.name} (${bom.finishedProductName})`;
+
+  const filteredBomSuggestions = useMemo(() => {
+    const query = bomSearchInput.trim();
+    if (!query) return boms.slice(0, 15);
+    const normalize = (value: string) =>
+      value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizedQuery = normalize(query);
+
+    return boms
+      .filter((bom) =>
+        [
+          bom.code || "",
+          bom.name || "",
+          bom.finishedProductName || "",
+          bom.finishedProductSku || "",
+        ].some((value) => normalize(value).includes(normalizedQuery))
+      )
+      .slice(0, 15);
+  }, [boms, bomSearchInput]);
+
+  useEffect(() => {
+    if (!isBomDropdownOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (bomDropdownRef.current && !bomDropdownRef.current.contains(event.target as Node)) {
+        setIsBomDropdownOpen(false);
+        setHighlightedBomIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isBomDropdownOpen]);
 
   // Form states for BOM
   const [bomCode, setBomCode] = useState("");
@@ -231,6 +273,9 @@ export default function ProductionModule({
     setWoCreationMode("manual");
     setSelectedSalesOrderId("");
     setSelectedBomId("");
+    setBomSearchInput("");
+    setIsBomDropdownOpen(false);
+    setHighlightedBomIndex(-1);
     setWoOrderNumber(nextWorkOrderNumber);
     setWoProductName("");
     setWoProductSku("");
@@ -244,6 +289,13 @@ export default function ProductionModule({
     setWoNotes("");
     setShowWorkOrderModal(true);
   };
+
+  useEffect(() => {
+    if (!autoOpenWorkOrderCreate) return;
+    setActiveTab("work-orders");
+    openNewWorkOrderModal();
+    onAutoOpenWorkOrderCreateConsumed?.();
+  }, [autoOpenWorkOrderCreate]);
 
   const openNewWorkOrderModalWithSalesOrder = (so: any) => {
     setEditingWorkOrder(null);
@@ -265,9 +317,11 @@ export default function ProductionModule({
     );
     if (matchedBom) {
       setSelectedBomId(matchedBom.id);
+      setBomSearchInput(getBomSearchLabel(matchedBom));
       setWoUnit(matchedBom.outputUnit || "Unidades");
     } else {
       setSelectedBomId("");
+      setBomSearchInput("");
     }
     setWoStartDate(new Date().toISOString().split("T")[0]);
     setWoDueDate("");
@@ -283,6 +337,10 @@ export default function ProductionModule({
     setWoCreationMode(wo.salesOrderId ? "sales_order" : "manual");
     setSelectedSalesOrderId(wo.salesOrderId || "");
     setSelectedBomId(wo.bomId);
+    const selectedBom = boms.find((bom) => bom.id === wo.bomId);
+    setBomSearchInput(selectedBom ? getBomSearchLabel(selectedBom) : "");
+    setIsBomDropdownOpen(false);
+    setHighlightedBomIndex(-1);
     setWoOrderNumber(wo.orderNumber);
     setWoProductName(wo.productName);
     setWoProductSku(wo.productSku || "");
@@ -302,9 +360,40 @@ export default function ProductionModule({
     setSelectedBomId(bomId);
     const selected = boms.find((b) => b.id === bomId);
     if (selected) {
+      setBomSearchInput(getBomSearchLabel(selected));
       if (!woProductName) setWoProductName(selected.finishedProductName);
       if (!woProductSku && selected.finishedProductSku) setWoProductSku(selected.finishedProductSku);
       setWoUnit(selected.outputUnit || "Unidades");
+    }
+    setIsBomDropdownOpen(false);
+    setHighlightedBomIndex(-1);
+  };
+
+  const handleBomSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!isBomDropdownOpen) {
+        setIsBomDropdownOpen(true);
+        setHighlightedBomIndex(
+          event.key === "ArrowDown" ? 0 : Math.max(filteredBomSuggestions.length - 1, 0)
+        );
+      } else if (filteredBomSuggestions.length > 0) {
+        setHighlightedBomIndex((current) =>
+          event.key === "ArrowDown"
+            ? (current + 1) % filteredBomSuggestions.length
+            : current <= 0
+              ? filteredBomSuggestions.length - 1
+              : current - 1
+        );
+      }
+    } else if (event.key === "Enter" && isBomDropdownOpen) {
+      event.preventDefault();
+      const bom = filteredBomSuggestions[highlightedBomIndex] || filteredBomSuggestions[0];
+      if (bom) handleSelectBom(bom.id);
+    } else if (event.key === "Escape" && isBomDropdownOpen) {
+      event.preventDefault();
+      setIsBomDropdownOpen(false);
+      setHighlightedBomIndex(-1);
     }
   };
 
@@ -326,6 +415,7 @@ export default function ProductionModule({
         );
         if (match) {
           setSelectedBomId(match.id);
+          setBomSearchInput(getBomSearchLabel(match));
           setWoUnit(match.outputUnit || "Unidades");
         }
       }
@@ -1354,9 +1444,6 @@ export default function ProductionModule({
                 <span>Regresar</span>
               </button>
               <div className="border-l border-slate-200 pl-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center shrink-0">
-                  <Factory className="w-4 h-4" />
-                </div>
                 <div>
                   <h1 className="text-base font-bold text-slate-900 leading-tight">
                     {editingWorkOrder ? `Editar Orden ${editingWorkOrder.orderNumber}` : "Nueva Orden de Trabajo"}
@@ -1383,7 +1470,7 @@ export default function ProductionModule({
                 type="submit"
                 form="work-order-editor-form"
                 disabled={actionLoading}
-                className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+                className="px-5 py-2 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
               >
                 {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
               </button>
@@ -1424,9 +1511,6 @@ export default function ProductionModule({
               {/* SHEET HEADER */}
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-slate-100 pb-5">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200/60 inline-block mb-1.5">
-                    Orden de Producción
-                  </span>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
                     {woOrderNumber || "OT-NUEVA"}
                   </h2>
@@ -1459,7 +1543,6 @@ export default function ProductionModule({
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <Package className="w-3.5 h-3.5 text-orange-600" />
                         Origen de la Orden de Trabajo
                       </span>
                       <span className="text-[11px] text-slate-400">
@@ -1476,7 +1559,7 @@ export default function ProductionModule({
                         }}
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition cursor-pointer text-center border ${
                           woCreationMode === "manual"
-                            ? "bg-white text-orange-700 border-orange-300 shadow-xs"
+                            ? "bg-white text-[#1b426e] border-[#1b426e] shadow-xs"
                             : "bg-white/60 text-slate-600 border-slate-200 hover:bg-white"
                         }`}
                       >
@@ -1487,7 +1570,7 @@ export default function ProductionModule({
                         onClick={() => setWoCreationMode("sales_order")}
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition cursor-pointer text-center border ${
                           woCreationMode === "sales_order"
-                            ? "bg-white text-orange-700 border-orange-300 shadow-xs"
+                            ? "bg-white text-[#1b426e] border-[#1b426e] shadow-xs"
                             : "bg-white/60 text-slate-600 border-slate-200 hover:bg-white"
                         }`}
                       >
@@ -1521,8 +1604,7 @@ export default function ProductionModule({
 
                 {/* SECTION 1: Orden y Configuración */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <Hash className="w-3.5 h-3.5 text-slate-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
                     1. Identificación y Parámetros de Producción
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1545,19 +1627,76 @@ export default function ProductionModule({
                       <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
                         Lista de Materiales (BOM) <span className="text-rose-500">*</span>
                       </label>
-                      <select
-                        value={selectedBomId}
-                        onChange={(e) => handleSelectBom(e.target.value)}
-                        required
-                        className="w-full text-xs p-2.5 bg-white border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 font-semibold text-slate-800 shadow-2xs"
-                      >
-                        <option value="">-- Seleccionar Lista de Materiales (BOM) --</option>
-                        {boms.map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.code} • {b.name} ({b.finishedProductName})
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative" ref={bomDropdownRef}>
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                        <input
+                          type="text"
+                          role="combobox"
+                          aria-label="Buscar lista de materiales"
+                          aria-required="true"
+                          aria-autocomplete="list"
+                          aria-expanded={isBomDropdownOpen}
+                          aria-controls="work-order-bom-options"
+                          aria-activedescendant={
+                            highlightedBomIndex >= 0
+                              ? `work-order-bom-option-${highlightedBomIndex}`
+                              : undefined
+                          }
+                          value={bomSearchInput}
+                          onChange={(event) => {
+                            setBomSearchInput(event.target.value);
+                            setSelectedBomId("");
+                            setIsBomDropdownOpen(true);
+                            setHighlightedBomIndex(-1);
+                          }}
+                          onFocus={() => setIsBomDropdownOpen(true)}
+                          onKeyDown={handleBomSearchKeyDown}
+                          placeholder="-- Buscar lista de materiales (BOM) --"
+                          autoComplete="off"
+                          className="w-full pl-9 pr-3 text-xs p-2.5 bg-white border-2 border-[#1b426e]/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1b426e]/20 font-semibold text-slate-800 shadow-2xs"
+                        />
+
+                        {isBomDropdownOpen && (
+                          <div
+                            id="work-order-bom-options"
+                            role="listbox"
+                            className="absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                          >
+                            {filteredBomSuggestions.length > 0 ? (
+                              filteredBomSuggestions.map((bom, index) => (
+                                <button
+                                  key={bom.id}
+                                  id={`work-order-bom-option-${index}`}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={selectedBomId === bom.id}
+                                  onMouseEnter={() => setHighlightedBomIndex(index)}
+                                  onClick={() => handleSelectBom(bom.id)}
+                                  className={`w-full rounded-lg px-3 py-2 text-left text-xs transition ${
+                                    selectedBomId === bom.id
+                                      ? "bg-blue-50 text-[#1b426e] font-semibold"
+                                      : highlightedBomIndex === index
+                                        ? "bg-slate-100 text-slate-900"
+                                        : "text-slate-700 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <span className="block truncate font-semibold">
+                                    {bom.code} • {bom.name}
+                                  </span>
+                                  <span className="mt-0.5 block truncate text-[10px] text-slate-500">
+                                    {bom.finishedProductName}
+                                    {bom.finishedProductSku ? ` · ${bom.finishedProductSku}` : ""}
+                                  </span>
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-3 py-2 text-xs text-slate-500">
+                                No se encontraron listas de materiales.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Priority */}
@@ -1581,8 +1720,7 @@ export default function ProductionModule({
 
                 {/* SECTION 2: Datos del Producto y Cliente */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <Boxes className="w-3.5 h-3.5 text-slate-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
                     2. Producto a Fabricar y Destino
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1679,8 +1817,7 @@ export default function ProductionModule({
 
                 {/* SECTION 3: Fechas y Cronograma */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
                     3. Fechas y Cronograma
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1714,8 +1851,7 @@ export default function ProductionModule({
 
                 {/* SECTION 4: Insumos según BOM (Component Breakdown) */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
                     4. Insumos y Materias Primas Requeridas según BOM
                   </h3>
 
@@ -1807,7 +1943,7 @@ export default function ProductionModule({
                   <button
                     type="submit"
                     disabled={actionLoading}
-                    className="px-6 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-2"
                   >
                     {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
                   </button>

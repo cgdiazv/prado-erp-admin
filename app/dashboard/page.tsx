@@ -2313,6 +2313,7 @@ export default function AdminDashboard() {
   const [vendorsAutoOpenCreate, setVendorsAutoOpenCreate] = useState(false);
   const [inventoryAutoOpenCreate, setInventoryAutoOpenCreate] = useState(false);
   const [vendorPaymentsAutoOpenCreate, setVendorPaymentsAutoOpenCreate] = useState(false);
+  const [productionAutoOpenCreate, setProductionAutoOpenCreate] = useState(false);
 
   // Quick Actions Bar State & Config
   const quickActions = [
@@ -2390,6 +2391,7 @@ export default function AdminDashboard() {
       return;
     }
     if (id === "crear-orden-trabajo") {
+      setProductionAutoOpenCreate(true);
       setCurrentView("ordenes-trabajo");
       return;
     }
@@ -12279,6 +12281,8 @@ ${accountRowsHtml(equity)}
                 defaultCurrencySymbol={defaultCurrencySymbol}
                 defaultCurrencyCode={defaultCurrencyCode}
                 currentView={currentView}
+                autoOpenWorkOrderCreate={productionAutoOpenCreate}
+                onAutoOpenWorkOrderCreateConsumed={() => setProductionAutoOpenCreate(false)}
                 onChangeTab={(tab) => setCurrentView(tab === "boms" ? "boms" : "ordenes-trabajo")}
                 onNavigateToDashboard={() => setCurrentView("dashboard")}
                 onNavigateToSalesOrders={() => setCurrentView("pedidos-venta")}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { CardSkeleton, TableRowsSkeleton, Skeleton } from "@/components/Skeleton";
 import {
   ChevronLeft,
@@ -129,6 +129,10 @@ export default function VendorPaymentsModule({
   const [createError, setCreateError] = useState("");
   const [selectedVendorId, setSelectedVendorId] = useState("");
   const [selectedVendorName, setSelectedVendorName] = useState("");
+  const [vendorSearchInput, setVendorSearchInput] = useState("");
+  const [isVendorDropdownOpen, setIsVendorDropdownOpen] = useState(false);
+  const [highlightedVendorIndex, setHighlightedVendorIndex] = useState(-1);
+  const vendorDropdownRef = useRef<HTMLDivElement>(null);
   const [pendingInvoices, setPendingInvoices] = useState<PendingInvoiceItem[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
@@ -137,6 +141,34 @@ export default function VendorPaymentsModule({
   const [selectedBankAccountId, setSelectedBankAccountId] = useState("");
   const [paymentCurrency, setPaymentCurrency] = useState("USD");
   const [paymentNotes, setPaymentNotes] = useState("");
+
+  const filteredPaymentVendors = useMemo(() => {
+    const query = vendorSearchInput.trim();
+    if (!query) return vendors.slice(0, 15);
+    const normalize = (value: string) =>
+      value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizedQuery = normalize(query);
+
+    return vendors
+      .filter((vendor) =>
+        [vendor.name, vendor.macolaCode || ""].some((value) =>
+          normalize(value).includes(normalizedQuery)
+        )
+      )
+      .slice(0, 15);
+  }, [vendors, vendorSearchInput]);
+
+  useEffect(() => {
+    if (!isVendorDropdownOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (vendorDropdownRef.current && !vendorDropdownRef.current.contains(event.target as Node)) {
+        setIsVendorDropdownOpen(false);
+        setHighlightedVendorIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isVendorDropdownOpen]);
 
   // View / Print Voucher Modal state
   const [activeVoucher, setActiveVoucher] = useState<VendorPaymentRecord | null>(null);
@@ -262,6 +294,44 @@ export default function VendorPaymentsModule({
     }
   };
 
+  const handleSelectVendor = (vendor: { id: string; name: string; macolaCode?: string }) => {
+    setSelectedVendorId(vendor.id);
+    setSelectedVendorName(vendor.name);
+    setVendorSearchInput(vendor.name);
+    setIsVendorDropdownOpen(false);
+    setHighlightedVendorIndex(-1);
+    loadVendorPendingInvoices(vendor.name);
+  };
+
+  const handleVendorSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!isVendorDropdownOpen) {
+        setIsVendorDropdownOpen(true);
+        setHighlightedVendorIndex(
+          event.key === "ArrowDown" ? 0 : Math.max(filteredPaymentVendors.length - 1, 0)
+        );
+      } else if (filteredPaymentVendors.length > 0) {
+        setHighlightedVendorIndex((current) =>
+          event.key === "ArrowDown"
+            ? (current + 1) % filteredPaymentVendors.length
+            : current <= 0
+              ? filteredPaymentVendors.length - 1
+              : current - 1
+        );
+      }
+    } else if (event.key === "Enter" && isVendorDropdownOpen) {
+      event.preventDefault();
+      const vendor =
+        filteredPaymentVendors[highlightedVendorIndex] || filteredPaymentVendors[0];
+      if (vendor) handleSelectVendor(vendor);
+    } else if (event.key === "Escape" && isVendorDropdownOpen) {
+      event.preventDefault();
+      setIsVendorDropdownOpen(false);
+      setHighlightedVendorIndex(-1);
+    }
+  };
+
   // Open Create Page (Full page view mode)
   const handleOpenCreate = (prefilledVendorName?: string) => {
     setCreateError("");
@@ -283,13 +353,17 @@ export default function VendorPaymentsModule({
       const v = vendors.find((vend) => vend.name.toLowerCase() === prefilledVendorName.toLowerCase());
       setSelectedVendorId(v?.id || "");
       setSelectedVendorName(prefilledVendorName);
+      setVendorSearchInput(prefilledVendorName);
       loadVendorPendingInvoices(prefilledVendorName);
     } else {
       setSelectedVendorId("");
       setSelectedVendorName("");
+      setVendorSearchInput("");
       setPendingInvoices([]);
     }
 
+    setIsVendorDropdownOpen(false);
+    setHighlightedVendorIndex(-1);
     setShowCreatePage(true);
   };
   const handleOpenCreateModal = handleOpenCreate;
@@ -994,9 +1068,6 @@ export default function VendorPaymentsModule({
               <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#1b426e] flex items-center justify-center font-bold">
-                      <CreditCard className="w-5 h-5" />
-                    </div>
                     <div>
                       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                         Datos del Comprobante de Egreso
@@ -1024,28 +1095,79 @@ export default function VendorPaymentsModule({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* Proveedor */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <label htmlFor="vendor-payment-vendor-search" className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
                       <Building2 className="w-3.5 h-3.5 text-slate-400" />
                       <span>Proveedor *</span>
                     </label>
-                    <select
-                      value={selectedVendorName}
-                      onChange={(e) => {
-                        const vName = e.target.value;
-                        setSelectedVendorName(vName);
-                        const found = vendors.find((v) => v.name === vName);
-                        setSelectedVendorId(found?.id || "");
-                        loadVendorPendingInvoices(vName);
-                      }}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] font-semibold text-slate-900 shadow-2xs"
-                    >
-                      <option value="">-- Selecciona un proveedor --</option>
-                      {vendors.map((v) => (
-                        <option key={v.id} value={v.name}>
-                          {v.name} {v.macolaCode ? `(${v.macolaCode})` : ""}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative" ref={vendorDropdownRef}>
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                      <input
+                        id="vendor-payment-vendor-search"
+                        type="text"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded={isVendorDropdownOpen}
+                        aria-controls="vendor-payment-vendor-options"
+                        aria-activedescendant={
+                          highlightedVendorIndex >= 0
+                            ? `vendor-payment-vendor-option-${highlightedVendorIndex}`
+                            : undefined
+                        }
+                        value={vendorSearchInput}
+                        onChange={(event) => {
+                          const query = event.target.value;
+                          setVendorSearchInput(query);
+                          setIsVendorDropdownOpen(true);
+                          setHighlightedVendorIndex(-1);
+                          setSelectedVendorId("");
+                          setSelectedVendorName("");
+                          setPendingInvoices([]);
+                        }}
+                        onFocus={() => setIsVendorDropdownOpen(true)}
+                        onKeyDown={handleVendorSearchKeyDown}
+                        placeholder="-- Selecciona o busca un proveedor --"
+                        autoComplete="off"
+                        className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1b426e]/30 focus:border-[#1b426e] font-semibold text-slate-900 shadow-2xs"
+                      />
+
+                      {isVendorDropdownOpen && (
+                        <div
+                          id="vendor-payment-vendor-options"
+                          role="listbox"
+                          className="absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                        >
+                          {filteredPaymentVendors.length > 0 ? (
+                            filteredPaymentVendors.map((vendor, index) => (
+                              <button
+                                key={vendor.id}
+                                id={`vendor-payment-vendor-option-${index}`}
+                                type="button"
+                                role="option"
+                                aria-selected={selectedVendorId === vendor.id}
+                                onMouseEnter={() => setHighlightedVendorIndex(index)}
+                                onClick={() => handleSelectVendor(vendor)}
+                                className={`w-full rounded-lg px-3 py-2 text-left text-xs transition ${
+                                  selectedVendorId === vendor.id
+                                    ? "bg-blue-50 text-[#1b426e] font-semibold"
+                                    : highlightedVendorIndex === index
+                                      ? "bg-slate-100 text-slate-900"
+                                      : "text-slate-700 hover:bg-slate-50"
+                                }`}
+                              >
+                                <span className="block truncate font-semibold">
+                                  {vendor.name}
+                                  {vendor.macolaCode ? ` (${vendor.macolaCode})` : ""}
+                                </span>
+                              </button>
+                            ))
+                          ) : (
+                            <p className="px-3 py-2 text-xs text-slate-500">
+                              No se encontraron proveedores.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Fecha de Pago */}
@@ -1082,7 +1204,7 @@ export default function VendorPaymentsModule({
                     >
                       {bankAccounts.map((b) => (
                         <option key={b.id} value={b.id}>
-                          {b.name} ({b.accountNumber}) - Saldo: ${b.bookBalance.toLocaleString()} {b.currency}
+                          {b.name} ({b.accountNumber}) - Saldo: {b.bookBalance.toLocaleString()} {b.currency}
                         </option>
                       ))}
                       {bankAccounts.length === 0 && (
