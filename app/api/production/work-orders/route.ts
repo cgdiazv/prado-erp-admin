@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
+        inventoryMovements: { orderBy: { createdAt: "desc" } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -123,6 +124,7 @@ export async function POST(request: NextRequest) {
       orderNumber,
       bomId,
       salesOrderId,
+      generateForAllSalesOrderItems,
       salesOrderNumber,
       customerName,
       productSku,
@@ -136,6 +138,137 @@ export async function POST(request: NextRequest) {
       notes,
       customItems, // Opcional si se ajustaron insumos manualmente
     } = body;
+
+    if (generateForAllSalesOrderItems) {
+      if (!salesOrderId) {
+        return NextResponse.json(
+          { success: false, error: "Debe seleccionar un pedido de venta." },
+          { status: 400 }
+        );
+      }
+
+      const salesOrder = await prisma.salesOrder.findFirst({
+        where: { id: salesOrderId, companyId },
+        include: { items: true },
+      });
+
+      if (!salesOrder) {
+        return NextResponse.json(
+          { success: false, error: "Pedido de venta no encontrado." },
+          { status: 404 }
+        );
+      }
+
+      const eligibleItems = salesOrder.items.filter((item) => Number(item.quantityOrdered) > 0);
+      if (eligibleItems.length === 0) {
+        return NextResponse.json(
+          { success: false, error: "El pedido de venta no contiene líneas con cantidad para producir." },
+          { status: 400 }
+        );
+      }
+
+      const [activeBoms, existingWorkOrders] = await Promise.all([
+        prisma.bom.findMany({ where: { companyId, isActive: true }, include: { items: true } }),
+        prisma.workOrder.findMany({
+          where: { companyId, salesOrderItemId: { in: eligibleItems.map((item) => item.id) } },
+          select: { salesOrderItemId: true, orderNumber: true },
+        }),
+      ]);
+      const existingItemIds = new Set(existingWorkOrders.map((order) => order.salesOrderItemId));
+      const unmatchedItems: string[] = [];
+      const alreadyPlannedItems: string[] = [];
+
+      const plannedItems = eligibleItems.flatMap((item) => {
+        if (existingItemIds.has(item.id)) {
+          alreadyPlannedItems.push(`${item.productName} (${item.sku || "sin SKU"})`);
+          return [];
+        }
+
+        const itemSku = item.sku?.trim().toLowerCase();
+        const itemName = item.productName.trim().toLowerCase();
+        const bom = activeBoms.find(
+          (candidate) =>
+            (itemSku && candidate.finishedProductSku?.trim().toLowerCase() === itemSku) ||
+            candidate.finishedProductName.trim().toLowerCase() === itemName
+        );
+
+        if (!bom) {
+          unmatchedItems.push(`${item.productName} (${item.sku || "sin SKU"})`);
+          return [];
+        }
+        return [{ item, bom }];
+      });
+
+      if (alreadyPlannedItems.length || unmatchedItems.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "No se creó ninguna orden. Resuelva las líneas indicadas y vuelva a intentarlo.",
+            alreadyPlannedItems,
+            unmatchedItems,
+          },
+          { status: 409 }
+        );
+      }
+
+      const yearPrefix = `OT-${new Date().getFullYear()}`;
+      const createdOrders = await prisma.$transaction(async (tx) => {
+        const existingCount = await tx.workOrder.count({
+          where: { companyId, orderNumber: { startsWith: yearPrefix } },
+        });
+
+        return Promise.all(
+          plannedItems.map(({ item, bom }, index) => {
+            const quantityPlanned = Number(item.quantityOrdered);
+            const factor = bom.outputQuantity > 0 ? quantityPlanned / bom.outputQuantity : 1;
+            const generatedNumber = `${yearPrefix}-${String(existingCount + index + 1).padStart(4, "0")}`;
+
+            return tx.workOrder.create({
+              data: {
+                companyId,
+                orderNumber: generatedNumber,
+                bomId: bom.id,
+                salesOrderId: salesOrder.id,
+                salesOrderItemId: item.id,
+                salesOrderNumber: salesOrder.orderNumber,
+                customerName: salesOrder.customerName,
+                productSku: item.sku || bom.finishedProductSku,
+                productName: item.productName,
+                quantityPlanned,
+                quantityProduced: 0,
+                unit: bom.outputUnit || "Unidades",
+                startDate: startDate || new Date().toISOString().split("T")[0],
+                dueDate: dueDate || salesOrder.expectedDeliveryDate || null,
+                status: "PLANIFICADA",
+                priority: priority || "MEDIA",
+                warehouse: warehouse || salesOrder.warehouse,
+                inventoryDeducted: false,
+                notes: notes?.trim() || `Generada desde Pedido de Venta ${salesOrder.orderNumber}`,
+                items: {
+                  create: bom.items.map((bomItem) => ({
+                    inventoryItemId: bomItem.inventoryItemId,
+                    sku: bomItem.sku,
+                    description: bomItem.description,
+                    quantityRequired: bomItem.quantityRequired * factor,
+                    quantityConsumed: 0,
+                    unit: bomItem.unit,
+                    unitCost: bomItem.estimatedCost,
+                    notes: bomItem.notes,
+                  })),
+                },
+              },
+              include: { bom: true, items: true, salesOrder: true },
+            });
+          })
+        );
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Se crearon ${createdOrders.length} órdenes de trabajo desde el pedido ${salesOrder.orderNumber}.`,
+        data: createdOrders,
+      });
+    }
 
     if (!bomId) {
       return NextResponse.json(

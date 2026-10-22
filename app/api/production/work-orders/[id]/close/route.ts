@@ -138,12 +138,50 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       // Rebajar materias primas
       for (const deduction of inventoryItemsToDeduct) {
-        await tx.inventoryItem.update({
-          where: { id: deduction.inventoryItemId },
+        const inventoryItem = await tx.inventoryItem.findFirst({
+          where: { id: deduction.inventoryItemId, companyId },
+        });
+        if (!inventoryItem || inventoryItem.quantity < deduction.quantityToDeduct) {
+          throw new Error("Las existencias cambiaron durante el cierre. Actualice e intente nuevamente.");
+        }
+
+        const deductionResult = await tx.inventoryItem.updateMany({
+          where: {
+            id: deduction.inventoryItemId,
+            companyId,
+            quantity: { gte: deduction.quantityToDeduct },
+          },
           data: {
-            quantity: {
-              decrement: deduction.quantityToDeduct,
-            },
+            quantity: { decrement: deduction.quantityToDeduct },
+          },
+        });
+        if (deductionResult.count !== 1) {
+          throw new Error("Las existencias cambiaron durante el cierre. Actualice e intente nuevamente.");
+        }
+
+        const inventoryAfter = await tx.inventoryItem.findUnique({
+          where: { id: deduction.inventoryItemId },
+        });
+        if (!inventoryAfter) {
+          throw new Error("No se encontró un artículo de inventario después de actualizar existencias.");
+        }
+        const quantityBefore = inventoryAfter.quantity + deduction.quantityToDeduct;
+
+        await tx.productionInventoryMovement.create({
+          data: {
+            companyId: companyId || "default",
+            inventoryItemId: inventoryItem.id,
+            workOrderId: workOrder.id,
+            movementType: "MATERIAL_CONSUMPTION",
+            quantity: deduction.quantityToDeduct,
+            quantityDelta: -deduction.quantityToDeduct,
+            quantityBefore,
+            quantityAfter: inventoryAfter.quantity,
+            sku: inventoryItem.sku,
+            description: inventoryItem.description,
+            unit: workOrder.items.find((item) => item.id === deduction.workOrderItemId)?.unit || "Unidades",
+            unitCost: inventoryItem.cost,
+            reference: workOrder.orderNumber,
           },
         });
 
@@ -172,12 +210,37 @@ export async function POST(
       }
 
       if (finishedItem) {
-        await tx.inventoryItem.update({
-          where: { id: finishedItem.id },
+        const receiptResult = await tx.inventoryItem.updateMany({
+          where: { id: finishedItem.id, companyId },
           data: {
-            quantity: {
-              increment: finalProducedQty,
-            },
+            quantity: { increment: finalProducedQty },
+          },
+        });
+        if (receiptResult.count !== 1) {
+          throw new Error("No se pudo actualizar el inventario de producto terminado.");
+        }
+        const inventoryAfter = await tx.inventoryItem.findUnique({
+          where: { id: finishedItem.id },
+        });
+        if (!inventoryAfter) {
+          throw new Error("No se encontró el producto terminado después de actualizar existencias.");
+        }
+        const quantityBefore = inventoryAfter.quantity - finalProducedQty;
+        await tx.productionInventoryMovement.create({
+          data: {
+            companyId: companyId || "default",
+            inventoryItemId: finishedItem.id,
+            workOrderId: workOrder.id,
+            movementType: "FINISHED_GOODS_RECEIPT",
+            quantity: finalProducedQty,
+            quantityDelta: finalProducedQty,
+            quantityBefore,
+            quantityAfter: inventoryAfter.quantity,
+            sku: inventoryAfter.sku,
+            description: inventoryAfter.description,
+            unit: workOrder.unit,
+            unitCost: finishedItem.cost,
+            reference: workOrder.orderNumber,
           },
         });
       } else {
@@ -192,7 +255,7 @@ export async function POST(
           skuToUse = `${skuToUse}-${Math.floor(1000 + Math.random() * 9000)}`;
         }
 
-        await tx.inventoryItem.create({
+        const createdFinishedItem = await tx.inventoryItem.create({
           data: {
             companyId,
             sku: skuToUse,
@@ -203,11 +266,28 @@ export async function POST(
             category: "Producto Terminado",
           },
         });
+        await tx.productionInventoryMovement.create({
+          data: {
+            companyId: companyId || "default",
+            inventoryItemId: createdFinishedItem.id,
+            workOrderId: workOrder.id,
+            movementType: "FINISHED_GOODS_RECEIPT",
+            quantity: finalProducedQty,
+            quantityDelta: finalProducedQty,
+            quantityBefore: 0,
+            quantityAfter: finalProducedQty,
+            sku: createdFinishedItem.sku,
+            description: createdFinishedItem.description,
+            unit: workOrder.unit,
+            unitCost: createdFinishedItem.cost,
+            reference: workOrder.orderNumber,
+          },
+        });
       }
 
       // Actualizar estado de la Orden de Trabajo a COMPLETADA
-      const updatedOrder = await tx.workOrder.update({
-        where: { id },
+      const completionResult = await tx.workOrder.updateMany({
+        where: { id, companyId, status: { in: ["PLANIFICADA", "EN_PROCESO"] }, inventoryDeducted: false },
         data: {
           status: "COMPLETADA",
           completionDate: todayDate,
@@ -215,18 +295,20 @@ export async function POST(
           inventoryDeducted: true,
           notes: notes ? `${workOrder.notes ? workOrder.notes + " | " : ""}${notes}` : workOrder.notes,
         },
+      });
+      if (completionResult.count !== 1) {
+        throw new Error("El estado de la orden cambió durante el cierre. Actualice e intente nuevamente.");
+      }
+
+      return tx.workOrder.findUniqueOrThrow({
+        where: { id },
         include: {
           bom: true,
-          items: {
-            include: {
-              inventoryItem: true,
-            },
-          },
+          items: { include: { inventoryItem: true } },
           salesOrder: true,
+          inventoryMovements: { orderBy: { createdAt: "desc" } },
         },
       });
-
-      return updatedOrder;
     });
 
     return NextResponse.json({
@@ -236,6 +318,12 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error closing Work Order:", error);
+    if (
+      error instanceof Error &&
+      (error.message.includes("existencias cambiaron") || error.message.includes("estado de la orden cambió"))
+    ) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 409 });
+    }
     return NextResponse.json(
       { success: false, error: "Error al cerrar la orden de trabajo" },
       { status: 500 }

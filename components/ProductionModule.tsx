@@ -141,6 +141,7 @@ export default function ProductionModule({
 
   // Form states for Work Order
   const [woCreationMode, setWoCreationMode] = useState<"manual" | "sales_order">("manual");
+  const [generateWorkOrdersForAllItems, setGenerateWorkOrdersForAllItems] = useState(false);
   const [selectedSalesOrderId, setSelectedSalesOrderId] = useState("");
   const [selectedBomId, setSelectedBomId] = useState("");
   const [bomSearchInput, setBomSearchInput] = useState("");
@@ -271,6 +272,7 @@ export default function ProductionModule({
   const openNewWorkOrderModal = () => {
     setEditingWorkOrder(null);
     setWoCreationMode("manual");
+    setGenerateWorkOrdersForAllItems(false);
     setSelectedSalesOrderId("");
     setSelectedBomId("");
     setBomSearchInput("");
@@ -452,6 +454,48 @@ export default function ProductionModule({
   // Save Work Order
   const handleSaveWorkOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editingWorkOrder && woCreationMode === "sales_order" && generateWorkOrdersForAllItems) {
+      if (!selectedSalesOrderId) {
+        setErrorMsg("Debe seleccionar un pedido de venta.");
+        return;
+      }
+      setActionLoading(true);
+      setErrorMsg(null);
+      try {
+        const res = await fetch("/api/production/work-orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            generateForAllSalesOrderItems: true,
+            salesOrderId: selectedSalesOrderId,
+            priority: woPriority,
+            warehouse: woWarehouse,
+            startDate: woStartDate,
+            dueDate: woDueDate || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          const details = [
+            data.unmatchedItems?.length
+              ? `Sin BOM activa: ${data.unmatchedItems.join(", ")}`
+              : "",
+            data.alreadyPlannedItems?.length
+              ? `Ya planificadas: ${data.alreadyPlannedItems.join(", ")}`
+              : "",
+          ].filter(Boolean);
+          throw new Error([data.error || "Error al generar órdenes", ...details].join(" "));
+        }
+        setSuccessMsg(data.message);
+        setShowWorkOrderModal(false);
+        fetchData();
+      } catch (err: any) {
+        setErrorMsg(err.message || "Error al generar órdenes desde el pedido.");
+      } finally {
+        setActionLoading(false);
+      }
+      return;
+    }
     if (!selectedBomId) {
       setErrorMsg("Debe seleccionar una lista de materiales (BOM) obligatoriamente.");
       return;
@@ -608,6 +652,31 @@ export default function ProductionModule({
       fetchData();
     } catch (err: any) {
       setErrorMsg(err.message || "Error al cerrar la orden de trabajo");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelWorkOrder = async (wo: any) => {
+    const reason = prompt(`Motivo para cancelar la orden ${wo.orderNumber}:`);
+    if (!reason?.trim()) return;
+
+    setActionLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch(`/api/production/work-orders/${wo.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reason.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Error al cancelar la orden");
+      }
+      setSuccessMsg(`Orden ${wo.orderNumber} cancelada.`);
+      fetchData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al cancelar la orden.");
     } finally {
       setActionLoading(false);
     }
@@ -1225,8 +1294,19 @@ export default function ProductionModule({
                               </button>
                             )}
 
+                            {!isCompleted && !isCancelled && (
+                              <button
+                                onClick={() => handleCancelWorkOrder(wo)}
+                                disabled={actionLoading}
+                                className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition cursor-pointer disabled:opacity-50"
+                                title="Cancelar orden conservando el historial"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             {/* Edit (only if not completed) */}
-                            {!isCompleted && (
+                            {!isCompleted && !isCancelled && (
                               <button
                                 onClick={() => openEditWorkOrderModal(wo)}
                                 className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition cursor-pointer"
@@ -1237,7 +1317,7 @@ export default function ProductionModule({
                             )}
 
                             {/* Delete */}
-                            {!isCompleted && (
+                            {!isCompleted && !isCancelled && (
                               <button
                                 onClick={() => handleDeleteWorkOrder(wo)}
                                 className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition cursor-pointer"
@@ -1472,7 +1552,13 @@ export default function ProductionModule({
                 disabled={actionLoading}
                 className="px-5 py-2 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
               >
-                {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
+                {actionLoading
+                  ? "Procesando..."
+                  : editingWorkOrder
+                    ? "Guardar Cambios"
+                    : generateWorkOrdersForAllItems && woCreationMode === "sales_order"
+                      ? "Generar órdenes por línea"
+                      : "Crear Orden de Trabajo"}
               </button>
               <button
                 type="button"
@@ -1597,6 +1683,15 @@ export default function ProductionModule({
                             </option>
                           ))}
                         </select>
+                        <label className="mt-3 flex items-start gap-2 text-xs text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={generateWorkOrdersForAllItems}
+                            onChange={(e) => setGenerateWorkOrdersForAllItems(e.target.checked)}
+                            className="mt-0.5 rounded border-slate-300 text-[#1b426e] focus:ring-[#1b426e]"
+                          />
+                          <span>Crear una orden de trabajo por cada línea del pedido que tenga una BOM activa</span>
+                        </label>
                       </div>
                     )}
                   </div>
@@ -1945,7 +2040,13 @@ export default function ProductionModule({
                     disabled={actionLoading}
                     className="px-6 py-2 rounded-lg bg-[#1b426e] hover:bg-[#143355] text-white font-bold text-xs transition cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-2"
                   >
-                    {actionLoading ? "Guardando..." : editingWorkOrder ? "Guardar Cambios" : "Crear Orden de Trabajo"}
+                    {actionLoading
+                      ? "Procesando..."
+                      : editingWorkOrder
+                        ? "Guardar Cambios"
+                        : generateWorkOrdersForAllItems && woCreationMode === "sales_order"
+                          ? "Generar órdenes por línea"
+                          : "Crear Orden de Trabajo"}
                   </button>
                 </div>
               </form>
@@ -2240,6 +2341,54 @@ export default function ProductionModule({
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800 text-xs mb-2">Historial de Movimientos de Inventario:</h4>
+                {viewingWorkOrder.inventoryMovements?.length ? (
+                  <div className="border border-slate-200 rounded-xl overflow-x-auto">
+                    <table className="w-full min-w-[560px] text-left text-xs">
+                      <thead>
+                        <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase border-b border-slate-200">
+                          <th className="py-2.5 px-3">Fecha</th>
+                          <th className="py-2.5 px-3">Tipo</th>
+                          <th className="py-2.5 px-3">Artículo</th>
+                          <th className="py-2.5 px-3 text-right">Cambio</th>
+                          <th className="py-2.5 px-3 text-right">Antes / Después</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {viewingWorkOrder.inventoryMovements.map((movement: any) => (
+                          <tr key={movement.id}>
+                            <td className="py-2 px-3 text-slate-500">
+                              {new Date(movement.createdAt).toLocaleString("es-HN")}
+                            </td>
+                            <td className="py-2 px-3 font-medium text-slate-700">
+                              {movement.movementType === "MATERIAL_CONSUMPTION"
+                                ? "Consumo de material"
+                                : "Ingreso de producto terminado"}
+                            </td>
+                            <td className="py-2 px-3 text-slate-700">
+                              <span className="font-semibold">{movement.sku}</span>
+                              <span className="block text-[10px] text-slate-500">{movement.description}</span>
+                            </td>
+                            <td className={`py-2 px-3 text-right font-mono font-bold ${movement.quantityDelta < 0 ? "text-rose-700" : "text-emerald-700"}`}>
+                              {movement.quantityDelta > 0 ? "+" : ""}
+                              {Number(movement.quantityDelta).toFixed(2)} {movement.unit}
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono text-slate-600">
+                              {Number(movement.quantityBefore).toFixed(2)} / {Number(movement.quantityAfter).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-[11px] text-slate-500">
+                    Esta orden todavía no tiene movimientos de inventario registrados.
+                  </p>
+                )}
               </div>
 
               {viewingWorkOrder.notes && (
