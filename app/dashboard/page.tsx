@@ -4045,16 +4045,12 @@ ${accountRowsHtml(equity)}
           } md:translate-x-0 md:sticky md:top-0 md:z-30`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 border-b border-slate-200 flex shrink-0 items-center justify-between">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
-              <img src="/logo-prado-erp.webp" alt="Prado ERP" className="w-full h-full object-contain" />
+        <div className={`h-16 px-4 border-b border-slate-200 flex shrink-0 items-center justify-between ${sidebarCollapsed ? "md:justify-center md:px-2" : ""}`}>
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <img src="/logo-prado-erp.webp" alt="Prado ERP" className="w-8 h-8 object-contain shrink-0" />
+            <div className={`truncate ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
+              <h1 className="font-bold text-base text-slate-900 leading-tight">Prado ERP</h1>
             </div>
-            {!sidebarCollapsed && (
-              <div className="truncate">
-                <h1 className="font-bold text-sm text-slate-900 leading-tight">Prado ERP</h1>
-              </div>
-            )}
           </div>
           <button
             onClick={() => setMobileSidebarOpen(false)}
@@ -4070,19 +4066,20 @@ ${accountRowsHtml(equity)}
         {/* Navigation Items */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto text-xs font-medium">
           {/* Dashboard Item */}
-          <div className={`flex items-center gap-1 -mx-1 ${sidebarCollapsed ? "flex-col-reverse" : ""}`}>
+          <div className={`flex items-center gap-1 -mx-1 ${sidebarCollapsed ? "md:flex-col-reverse" : ""}`}>
             <button
               onClick={() => setCurrentView("dashboard")}
-              className={`min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-lg transition cursor-pointer ${sidebarCollapsed ? "w-full justify-center px-2" : "flex-1"
-                } ${currentView === "dashboard"
-                  ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs border-l-2 border-[#1b426e]"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
+              className={`min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-lg transition cursor-pointer ${
+                sidebarCollapsed ? "w-full justify-start px-3 md:justify-center md:px-2" : "flex-1"
+              } ${currentView === "dashboard"
+                ? "bg-[#fff7ed] text-[#1b426e] font-semibold shadow-xs border-l-2 border-[#1b426e]"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
             >
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              {!sidebarCollapsed && <span>Dashboard</span>}
+              <span className={sidebarCollapsed ? "block md:hidden" : "block"}>Dashboard</span>
             </button>
             <button
               onClick={() => {
@@ -4106,33 +4103,36 @@ ${accountRowsHtml(equity)}
               onClick={() => toggleSidebarSection("contabilidad")}
               onMouseEnter={(event) => showSidebarFlyout("contabilidad", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
+              title={sidebarCollapsed ? "Contabilidad" : undefined}
+              className={`w-full flex items-center ${
+                sidebarCollapsed ? "justify-between px-3 md:justify-center md:px-2" : "justify-between px-3"
+              } py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
+                currentView.includes("cuentas") || currentView === "transacciones" || currentView === "caja-chica" || currentView === "conciliacion-bancaria"
                   ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
-                }`}
+              }`}
             >
-              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-start md:justify-center" : ""}`}>
                 <svg className="w-4 h-4 shrink-0 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
-                {!sidebarCollapsed && <span>Contabilidad</span>}
+                <span className={sidebarCollapsed ? "block md:hidden" : "block"}>Contabilidad</span>
               </div>
-              {!sidebarCollapsed && (
-                <svg
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${contabilidadOpen ? "rotate-180" : ""
-                    }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
+              <svg
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                  sidebarCollapsed ? "block md:hidden" : "block"
+                } ${contabilidadOpen ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
             {/* Sub-items */}
-            {contabilidadOpen && !sidebarCollapsed && (
-              <div className="pl-9 pr-2 py-1 space-y-0.5 border-l-2 border-slate-100 ml-5 mt-1">
+            {contabilidadOpen && (
+              <div className={`pl-9 pr-2 py-1 space-y-0.5 border-l-2 border-slate-100 ml-5 mt-1 ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
                 <button
                   onClick={() => setCurrentView("plan-cuentas")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer ${currentView === "plan-cuentas"
@@ -4197,7 +4197,9 @@ ${accountRowsHtml(equity)}
               onMouseEnter={(event) => showSidebarFlyout("ventas", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
               title={sidebarCollapsed ? "Ventas" : undefined}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
+              className={`w-full flex items-center ${
+                sidebarCollapsed ? "justify-between px-3 md:justify-center md:px-2" : "justify-between px-3"
+              } py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "clientes" ||
                   currentView === "cotizaciones" ||
                   currentView === "lista-facturas" ||
                   currentView === "factura-editor" ||
@@ -4211,25 +4213,24 @@ ${accountRowsHtml(equity)}
                   : ""
                 }`}
             >
-              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-start md:justify-center" : ""}`}>
                 <Tag className="w-4 h-4 shrink-0 text-slate-600" />
-                {!sidebarCollapsed && <span>Ventas</span>}
+                <span className={sidebarCollapsed ? "block md:hidden" : "block"}>Ventas</span>
               </div>
-              {!sidebarCollapsed && (
-                <svg
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${ventasOpen ? "rotate-180" : "rotate-0"
-                    }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
+              <svg
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                  sidebarCollapsed ? "block md:hidden" : "block"
+                } ${ventasOpen ? "rotate-180" : "rotate-0"}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
-            {ventasOpen && !sidebarCollapsed && (
-              <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
+            {ventasOpen && (
+              <div className={`ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
                 {/* 0. Punto de Venta (POS) */}
                 <button
                   onClick={() => setCurrentView("pos")}
@@ -4391,7 +4392,9 @@ ${accountRowsHtml(equity)}
               onMouseEnter={(event) => showSidebarFlyout("compras", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
               title={sidebarCollapsed ? "Compras" : undefined}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
+              className={`w-full flex items-center ${
+                sidebarCollapsed ? "justify-between px-3 md:justify-center md:px-2" : "justify-between px-3"
+              } py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "proveedores" ||
                   currentView === "lista-ordenes-compra" ||
                   currentView === "orden-compra-editor" ||
                   currentView === "factura-compra-lista" ||
@@ -4403,36 +4406,33 @@ ${accountRowsHtml(equity)}
                   : ""
                 }`}
             >
-              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-start md:justify-center" : ""}`}>
                 <svg className="w-4 h-4 shrink-0 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 11h14l1 12H4L5 11z" />
                 </svg>
-                {!sidebarCollapsed && (
-                  <span className="flex items-center gap-1.5">
-                    Compras
-                    {vendorReturns.filter((r) => r.status === "BORRADOR").length > 0 && !comprasOpen && (
-                      <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 rounded-full">
-                        {vendorReturns.filter((r) => r.status === "BORRADOR").length}
-                      </span>
-                    )}
-                  </span>
-                )}
+                <span className={`flex items-center gap-1.5 ${sidebarCollapsed ? "inline-flex md:hidden" : "inline-flex"}`}>
+                  Compras
+                  {vendorReturns.filter((r) => r.status === "BORRADOR").length > 0 && !comprasOpen && (
+                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 rounded-full">
+                      {vendorReturns.filter((r) => r.status === "BORRADOR").length}
+                    </span>
+                  )}
+                </span>
               </div>
-              {!sidebarCollapsed && (
-                <svg
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${comprasOpen ? "rotate-180" : "rotate-0"
-                    }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
+              <svg
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                  sidebarCollapsed ? "block md:hidden" : "block"
+                } ${comprasOpen ? "rotate-180" : "rotate-0"}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
-            {comprasOpen && !sidebarCollapsed && (
-              <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
+            {comprasOpen && (
+              <div className={`ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
                 {/* 1. Proveedores */}
                 <button
                   onClick={() => setCurrentView("proveedores")}
@@ -4560,30 +4560,31 @@ ${accountRowsHtml(equity)}
               onClick={() => toggleSidebarSection("inventario")}
               onMouseEnter={(event) => showSidebarFlyout("inventario", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
+              title={sidebarCollapsed ? "Inventario" : undefined}
+              className={`w-full flex items-center ${
+                sidebarCollapsed ? "justify-between px-3 md:justify-center md:px-2" : "justify-between px-3"
+              } py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${currentView === "inventario" || currentView === "lotes" || currentView === "series"
                   ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
                 }`}
             >
-              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-start md:justify-center" : ""}`}>
                 <Package className="w-4 h-4 shrink-0 text-slate-600" />
-                {!sidebarCollapsed && (
-                  <span className="flex items-center gap-1.5">
-                    <span>
-                      {isItemLocked("lotes") ? "Productos y Servicios" : "Inventario"} ({inventory.length})
-                    </span>
+                <span className={`flex items-center gap-1.5 ${sidebarCollapsed ? "inline-flex md:hidden" : "inline-flex"}`}>
+                  <span>
+                    {isItemLocked("lotes") ? "Productos y Servicios" : "Inventario"} ({inventory.length})
                   </span>
-                )}
+                </span>
               </div>
-              {!sidebarCollapsed && (
-                <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${inventarioOpen ? "rotate-180" : "rotate-0"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
+              <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                sidebarCollapsed ? "block md:hidden" : "block"
+              } ${inventarioOpen ? "rotate-180" : "rotate-0"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
-            {inventarioOpen && !sidebarCollapsed && (
-              <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
+            {inventarioOpen && (
+              <div className={`ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
                 <button
                   onClick={() => setCurrentView("inventario")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${currentView === "inventario"
@@ -4641,41 +4642,40 @@ ${accountRowsHtml(equity)}
               onClick={() => toggleSidebarSection("produccion")}
               onMouseEnter={(event) => showSidebarFlyout("produccion", event)}
               onMouseLeave={scheduleSidebarFlyoutClose}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"} py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
+              title={sidebarCollapsed ? "Producción" : undefined}
+              className={`w-full flex items-center ${
+                sidebarCollapsed ? "justify-between px-3 md:justify-center md:px-2" : "justify-between px-3"
+              } py-2.5 rounded-lg transition cursor-pointer text-slate-700 hover:bg-slate-100 ${
                 currentView === "produccion" || currentView === "ordenes-trabajo" || currentView === "boms"
                   ? "font-semibold text-slate-900 border-l-2 border-[#1b426e]"
                   : ""
               }`}
             >
-              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-center" : ""}`}>
+              <div className={`flex items-center gap-3 truncate ${sidebarCollapsed ? "justify-start md:justify-center" : ""}`}>
                 <Factory className="w-4 h-4 shrink-0 text-slate-600" />
-                {!sidebarCollapsed && (
-                  <span className="flex items-center gap-1.5">
-                    <span>Producción</span>
-                    {isItemLocked("produccion") && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
-                        EMP
-                      </span>
-                    )}
-                  </span>
-                )}
+                <span className={`flex items-center gap-1.5 ${sidebarCollapsed ? "inline-flex md:hidden" : "inline-flex"}`}>
+                  <span>Producción</span>
+                  {isItemLocked("produccion") && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                      EMP
+                    </span>
+                  )}
+                </span>
               </div>
-              {!sidebarCollapsed && (
-                <svg
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
-                    produccionOpen ? "rotate-180" : "rotate-0"
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
+              <svg
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                  sidebarCollapsed ? "block md:hidden" : "block"
+                } ${produccionOpen ? "rotate-180" : "rotate-0"}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
-            {produccionOpen && !sidebarCollapsed && (
-              <div className="ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs">
+            {produccionOpen && (
+              <div className={`ml-7 mt-1 pl-2 border-l border-slate-200 space-y-1 text-xs ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
                 <button
                   onClick={() => setCurrentView("ordenes-trabajo")}
                   className={`w-full text-left px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-between ${
@@ -4796,7 +4796,7 @@ ${accountRowsHtml(equity)}
             rel="noopener noreferrer"
             title="Soporte Técnico por WhatsApp"
             className={`w-full flex items-center ${
-              sidebarCollapsed ? "justify-center px-2" : "justify-start px-3"
+              sidebarCollapsed ? "justify-start px-3 md:justify-center md:px-2" : "justify-start px-3"
             } py-2 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/80 transition-all duration-200 cursor-pointer group shadow-2xs`}
           >
             <div className="flex items-center gap-2.5 truncate">
@@ -4807,36 +4807,35 @@ ${accountRowsHtml(equity)}
               >
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
               </svg>
-              {!sidebarCollapsed && <span>Soporte Técnico</span>}
+              <span className={sidebarCollapsed ? "block md:hidden" : "block"}>Soporte Técnico</span>
             </div>
           </a>
 
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/60">
-            {!sidebarCollapsed ? (
-              <>
-                <div className="truncate min-w-0 pr-2">
-                  <p className="font-semibold text-slate-800 text-xs truncate">
-                    {currentAdminUser?.name || "Administrador"}
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">
-                    {currentAdminUser?.email || "admin"}
-                  </p>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  title="Cerrar sesión"
-                  className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer shrink-0"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              </>
-            ) : (
+            <div className={`truncate min-w-0 pr-2 ${sidebarCollapsed ? "block md:hidden" : "block"}`}>
+              <p className="font-semibold text-slate-800 text-xs truncate">
+                {currentAdminUser?.name || "Administrador"}
+              </p>
+              <p className="text-[10px] text-slate-500 truncate">
+                {currentAdminUser?.email || "admin"}
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              title="Cerrar sesión"
+              className={`p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer shrink-0 ${
+                sidebarCollapsed ? "block md:hidden" : "block"
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+            {sidebarCollapsed && (
               <button
                 onClick={handleLogout}
                 title="Cerrar sesión"
-                className="w-full flex items-center justify-center p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                className="hidden md:flex w-full items-center justify-center p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
