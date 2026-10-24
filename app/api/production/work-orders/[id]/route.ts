@@ -40,6 +40,7 @@ export async function GET(
             },
           },
         },
+        inventoryMovements: { orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -106,6 +107,19 @@ export async function PUT(
       bomId,
       items,
     } = body;
+
+    if (existing.status === "CANCELADA" && status !== "CANCELADA") {
+      return NextResponse.json(
+        { success: false, error: "Una orden cancelada no puede reactivarse ni modificarse." },
+        { status: 400 }
+      );
+    }
+    if (status === "CANCELADA" && existing.status !== "CANCELADA") {
+      return NextResponse.json(
+        { success: false, error: "Use la acción de cancelar e indique el motivo de cancelación." },
+        { status: 400 }
+      );
+    }
 
     // Si cambió la cantidad planificada o el BOM, recalcular componentes si no vienen items personalizados
     let newBomId = existing.bomId;
@@ -219,11 +233,11 @@ export async function DELETE(
       );
     }
 
-    if (existing.status === "COMPLETADA" && existing.inventoryDeducted) {
+    if (existing.status === "COMPLETADA" || existing.status === "CANCELADA" || existing.inventoryDeducted) {
       return NextResponse.json(
         {
           success: false,
-          error: "No se puede eliminar una orden de trabajo que ya fue completada y cerrada con rebaja de inventario. Puede anularla o marcarla como cancelada si es necesario.",
+          error: "No se puede eliminar una orden completada o cancelada. El registro debe conservarse para auditoría.",
         },
         { status: 400 }
       );

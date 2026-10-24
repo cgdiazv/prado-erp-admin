@@ -85,6 +85,7 @@ model InventoryItem {
   serials      ItemSerial[]
   bomItems     BomItem[]
   workOrderItems WorkOrderItem[]
+  productionMovements ProductionInventoryMovement[]
 
   @@index([companyId])
 }
@@ -729,6 +730,7 @@ model SalesOrderItem {
   notes             String?
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
+  workOrder         WorkOrder?
 }
 
 model TaxRetention {
@@ -938,6 +940,8 @@ model WorkOrder {
   bom               Bom             @relation(fields: [bomId], references: [id], onDelete: Restrict)
   salesOrderId      String?
   salesOrder        SalesOrder?     @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
+  salesOrderItemId  String?         @unique
+  salesOrderItem    SalesOrderItem? @relation(fields: [salesOrderItemId], references: [id], onDelete: SetNull)
   salesOrderNumber  String?
   customerName      String?
   productSku        String?
@@ -952,10 +956,12 @@ model WorkOrder {
   priority          String          @default("MEDIA") // "BAJA" | "MEDIA" | "ALTA" | "URGENTE"
   warehouse         String          @default("Bodega Principal Zip Búfalo")
   inventoryDeducted Boolean         @default(false)
+  cancellationReason String?
   notes             String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   items             WorkOrderItem[]
+  inventoryMovements ProductionInventoryMovement[]
 
   @@unique([companyId, orderNumber])
   @@index([companyId])
@@ -979,4 +985,29 @@ model WorkOrderItem {
   updatedAt        DateTime       @updatedAt
 
   @@index([workOrderId])
+}
+
+model ProductionInventoryMovement {
+  id              String        @id @default(cuid())
+  companyId       String
+  inventoryItemId String?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  workOrderId     String
+  workOrder       WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Restrict)
+  movementType    String
+  quantity        Float
+  quantityDelta   Float
+  quantityBefore  Float
+  quantityAfter   Float
+  sku             String
+  description     String
+  unit            String
+  unitCost        Float         @default(0)
+  reference       String
+  notes           String?
+  createdAt       DateTime      @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([workOrderId])
+  @@index([inventoryItemId])
 }
