@@ -4851,16 +4851,28 @@ ${accountRowsHtml(equity)}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
         <header className="h-16 border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-20 px-4 sm:px-6 flex items-center justify-between shadow-xs shrink-0">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer md:hidden"
+              className="p-2 -ml-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer md:hidden"
+              aria-label="Abrir menú"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
+            {/* Mobile Logo & Brand */}
+            <button
+              type="button"
+              onClick={() => setCurrentView("dashboard")}
+              className="flex items-center gap-2 md:hidden cursor-pointer select-none text-left"
+            >
+              <img src="/logo-prado-erp.webp" alt="Prado ERP" className="h-8 w-auto object-contain shrink-0" />
+              <span className="font-bold text-sm text-slate-900 leading-tight">
+                Prado ERP
+              </span>
+            </button>
           </div>
 
           <div className="relative md:hidden" ref={mobileAccionesDropdownRef}>
