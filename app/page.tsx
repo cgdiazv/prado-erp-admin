@@ -105,8 +105,7 @@ export default function HomePage() {
                 <span className="text-[#b6c5d5] tracking-wide">
                   UNA SOLA PLATAFORMA. TODA SU OPERACIÓN.
                 </span>
-                <span className="text-[#a6e9cf] font-medium flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#a6e9cf] inline-block animate-pulse" />
+                <span className="text-[#a6e9cf] font-medium">
                   En la nube
                 </span>
               </div>
