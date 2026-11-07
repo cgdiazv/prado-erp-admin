@@ -137,12 +137,21 @@ export default function POSModule({
   // ----------------------------------------------------
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [stockFilter, setStockFilter] = useState("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Extract categories dynamically
   const sellableInventory = useMemo(
     () => inventory.filter((item) => item.isSold !== false),
     [inventory]
+  );
+
+  const stockFilteredInventory = useMemo(
+    () => sellableInventory.filter((item) =>
+      stockFilter === "in-stock" ? item.quantity > 0 :
+      stockFilter === "out-of-stock" ? item.quantity <= 0 : true
+    ),
+    [sellableInventory, stockFilter]
   );
 
   const categories = useMemo(() => {
@@ -158,21 +167,20 @@ export default function POSModule({
   // Filtered Products
   const filteredProducts = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return sellableInventory.filter((item) => {
+    return stockFilteredInventory.filter((item) => {
       const matchCat =
         selectedCategory === "all" ||
         (selectedCategory === "uncategorized" && (!item.category || item.category.trim() === "")) ||
         (item.category && item.category.toLowerCase() === selectedCategory.toLowerCase());
 
       if (!matchCat) return false;
-
       if (!q) return true;
       return (
         item.sku.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q)
       );
     });
-  }, [sellableInventory, searchQuery, selectedCategory]);
+  }, [stockFilteredInventory, searchQuery, selectedCategory]);
 
   // ----------------------------------------------------
   // Live Ticket / Cart State
@@ -710,7 +718,7 @@ export default function POSModule({
     >
       {/* ================= 1. TOP OPERATIONAL BAR ================= */}
       <div className="bg-[#1b426e] text-white shadow-md z-10 shrink-0">
-        {/* Row 1: Back, Title & Shift info, and Desktop controls */}
+        {/* Row 1: Back, Shift info, and Desktop controls */}
         <div className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {onNavigateBack && (
@@ -724,9 +732,6 @@ export default function POSModule({
               </button>
             )}
             <div className="flex items-center gap-2 min-w-0">
-              <span className="font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
-                Punto de Venta (POS)
-              </span>
               <button
                 type="button"
                 onClick={handleOpenShiftModal}
@@ -990,17 +995,34 @@ export default function POSModule({
 
           {/* Category Chips Bar */}
           <div className="p-3 bg-white border-b border-slate-200/80 overflow-x-auto flex items-center gap-2 no-scrollbar shrink-0">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+            <div
+              className={`flex shrink-0 items-stretch rounded-xl text-xs font-semibold transition ${
                 selectedCategory === "all"
                   ? "bg-[#1b426e] text-white shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
               }`}
             >
-              Todos los Artículos ({sellableInventory.length})
-            </button>
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("all")}
+                className="px-3.5 py-1.5 whitespace-nowrap cursor-pointer"
+              >
+                {stockFilter === "in-stock" ? "En stock" : stockFilter === "out-of-stock" ? "Fuera de stock" : "Todos"} ({stockFilteredInventory.length})
+              </button>
+              <div className="relative flex items-center justify-center w-8 border-l border-current/20 rounded-r-xl focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1b426e]">
+                <ChevronDown className="w-3.5 h-3.5 pointer-events-none" aria-hidden="true" />
+                <select
+                  aria-label="Filtrar artículos por existencias"
+                  value={stockFilter}
+                  onChange={(e) => setStockFilter(e.target.value)}
+                  className="absolute inset-0 w-full h-full bg-white text-slate-900 opacity-0 cursor-pointer"
+                >
+                  <option value="all">Todos</option>
+                  <option value="in-stock">En stock</option>
+                  <option value="out-of-stock">Fuera de stock</option>
+                </select>
+              </div>
+            </div>
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -1023,7 +1045,7 @@ export default function POSModule({
               <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
                 <Package className="w-12 h-12 text-slate-300 mb-2 stroke-[1.5]" />
                 <p className="font-semibold text-sm text-slate-600">No se encontraron artículos</p>
-                <p className="text-xs text-slate-400 mt-1">Prueba cambiando la búsqueda o de categoría</p>
+                <p className="text-xs text-slate-400 mt-1">Prueba cambiando la búsqueda, la categoría o el filtro de existencias</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">

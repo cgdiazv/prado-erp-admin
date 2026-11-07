@@ -776,6 +776,8 @@ export default function AdminDashboard() {
   const [configSubTab, setConfigSubTab] = useState<
     "empresa" | "reportes" | "contabilidad" | "ventas" | "gastos" | "horas" | "monedas" | "usuarios" | "avanzadas" | "listas" | "importar"
   >("empresa");
+  const [companySection, setCompanySection] = useState<"informacion" | "legal" | "contacto">("informacion");
+  const [teamSection, setTeamSection] = useState<"usuarios" | "contrasena">("usuarios");
 
   const [companySettings, setCompanySettings] = useState({
     nombre: "",
@@ -6567,6 +6569,27 @@ ${accountRowsHtml(equity)}
                     {/* SUBTAB 1: EMPRESA */}
                     {configSubTab === "empresa" && (
                       <div className="max-w-3xl space-y-6">
+                        <nav aria-label="Secciones de configuración de empresa" className="flex overflow-x-auto border-b border-slate-200">
+                          {([
+                            { id: "informacion", label: "Información de la empresa" },
+                            { id: "legal", label: "Información legal" },
+                            { id: "contacto", label: "Contacto del cliente" },
+                          ] as const).map((section) => (
+                            <button
+                              key={section.id}
+                              type="button"
+                              aria-pressed={companySection === section.id}
+                              onClick={() => setCompanySection(section.id)}
+                              className={`shrink-0 border-b-2 px-4 py-3 text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                                companySection === section.id
+                                  ? "border-[#1b426e] text-slate-900"
+                                  : "border-transparent text-slate-500 hover:text-slate-900"
+                              }`}
+                            >
+                              {section.label}
+                            </button>
+                          ))}
+                        </nav>
                         {/* Hidden File Input for Logo Upload */}
                         <input
                           ref={fileInputRef}
@@ -6577,7 +6600,7 @@ ${accountRowsHtml(equity)}
                         />
 
                         {/* Company Logo Header with Generic Fallback - Left Aligned */}
-                        <div className="flex flex-col items-start justify-start pb-4">
+                        <div hidden={companySection !== "informacion"} className="flex flex-col items-start justify-start pb-4">
                           {companyLogo ? (
                             /* Uploaded Custom Logo Display - Left Aligned */
                             <div className="flex flex-col items-start">
@@ -6638,7 +6661,7 @@ ${accountRowsHtml(equity)}
                         </div>
 
                         {/* Card 1: Información de la empresa */}
-                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                        <div hidden={companySection !== "informacion"} className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
                           <div className="mb-4">
                             <h2 className="font-bold text-sm text-slate-900">Información de la empresa</h2>
                             <p className="text-xs text-slate-500 mt-0.5">Esta información puede usarse con fines de facturación.</p>
@@ -6788,7 +6811,7 @@ ${accountRowsHtml(equity)}
                         </div>
 
                         {/* Card 2: Información legal */}
-                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                        <div hidden={companySection !== "legal"} className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
                           <div className="mb-4">
                             <h2 className="font-bold text-sm text-slate-900">Información legal</h2>
                             <p className="text-xs text-slate-500 mt-0.5">Esta es la información que tu empresa utiliza para fines fiscales.</p>
@@ -7031,7 +7054,7 @@ ${accountRowsHtml(equity)}
                         </div>
 
                         {/* Card 3: Información de contacto del cliente */}
-                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                        <div hidden={companySection !== "contacto"} className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
                           <div className="mb-4">
                             <h2 className="font-bold text-sm text-slate-900">Información de contacto del cliente</h2>
                             <p className="text-xs text-slate-500 mt-0.5">Así es como los clientes se ponen en contacto contigo.</p>
@@ -9674,7 +9697,27 @@ ${accountRowsHtml(equity)}
                     {/* SUBTAB: USUARIOS Y EQUIPO */}
                     {configSubTab === "usuarios" && (
                       <div className="max-w-3xl space-y-6">
-                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                        <nav aria-label="Secciones de usuarios y equipo" className="flex overflow-x-auto border-b border-slate-200">
+                          {([
+                            { id: "usuarios", label: "Usuarios y equipo" },
+                            { id: "contrasena", label: "Cambiar contraseña" },
+                          ] as const).map((section) => (
+                            <button
+                              key={section.id}
+                              type="button"
+                              aria-pressed={teamSection === section.id}
+                              onClick={() => setTeamSection(section.id)}
+                              className={`shrink-0 border-b-2 px-4 py-3 text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                                teamSection === section.id
+                                  ? "border-[#1b426e] text-slate-900"
+                                  : "border-transparent text-slate-500 hover:text-slate-900"
+                              }`}
+                            >
+                              {section.label}
+                            </button>
+                          ))}
+                        </nav>
+                        <div hidden={teamSection !== "usuarios"} className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                             <div>
                               <h2 className="font-bold text-sm text-slate-900 mb-1">Usuarios y Equipo</h2>
@@ -9823,7 +9866,7 @@ ${accountRowsHtml(equity)}
                           </div>
                         </div>
 
-                        <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+                        <div hidden={teamSection !== "contrasena"} className="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
                           <h2 className="font-bold text-sm text-slate-900 mb-1">Cambiar contraseña</h2>
                           <p className="text-xs text-slate-500 mb-4">
                             Ingrese su contraseña actual y elija una nueva contraseña para su cuenta.
@@ -10261,49 +10304,47 @@ ${accountRowsHtml(equity)}
                     {configSubTab === "importar" && (
                       <div className="max-w-4xl space-y-6 animate-in fade-in duration-150">
                         {/* Header */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                          <div>
-                            <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                              <ArrowUpDown className="w-5 h-5 text-[#1b426e]" />
-                              <span>Importar / Exportar Datos</span>
-                            </h2>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              Carga masiva y descarga de tablas maestras, catálogos y transacciones de {companySettings.nombreLegal || companySettings.nombre || "su empresa"}.
-                            </p>
-                          </div>
-
-                          {/* Mode Switcher Tabs */}
-                          <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200 self-start sm:self-auto shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDataExchangeMode("import");
-                                setImportNotification("");
-                              }}
-                              className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${dataExchangeMode === "import"
-                                  ? "bg-white text-[#1b426e] shadow-xs"
-                                  : "text-slate-600 hover:text-slate-900"
-                                }`}
-                            >
-                              <Upload className="w-3.5 h-3.5" />
-                              <span>Importar Datos</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDataExchangeMode("export");
-                                setImportNotification("");
-                              }}
-                              className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${dataExchangeMode === "export"
-                                  ? "bg-white text-[#1b426e] shadow-xs"
-                                  : "text-slate-600 hover:text-slate-900"
-                                }`}
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                              <span>Exportar Datos</span>
-                            </button>
-                          </div>
+                        <div>
+                          <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                            <ArrowUpDown className="w-5 h-5 text-[#1b426e]" />
+                            <span>Importar / Exportar Datos</span>
+                          </h2>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Carga masiva y descarga de tablas maestras, catálogos y transacciones de {companySettings.nombreLegal || companySettings.nombre || "su empresa"}.
+                          </p>
                         </div>
+
+                        {/* Mode Switcher Tabs */}
+                        <nav aria-label="Secciones de importar y exportar" className="flex overflow-x-auto border-b border-slate-200">
+                          <button
+                            type="button"
+                            aria-pressed={dataExchangeMode === "import"}
+                            onClick={() => {
+                              setDataExchangeMode("import");
+                              setImportNotification("");
+                            }}
+                            className={`shrink-0 border-b-2 px-4 py-3 text-xs font-semibold whitespace-nowrap transition cursor-pointer ${dataExchangeMode === "import"
+                                ? "border-[#1b426e] text-slate-900"
+                                : "border-transparent text-slate-500 hover:text-slate-900"
+                              }`}
+                          >
+                            Importar Datos
+                          </button>
+                          <button
+                            type="button"
+                            aria-pressed={dataExchangeMode === "export"}
+                            onClick={() => {
+                              setDataExchangeMode("export");
+                              setImportNotification("");
+                            }}
+                            className={`shrink-0 border-b-2 px-4 py-3 text-xs font-semibold whitespace-nowrap transition cursor-pointer ${dataExchangeMode === "export"
+                                ? "border-[#1b426e] text-slate-900"
+                                : "border-transparent text-slate-500 hover:text-slate-900"
+                              }`}
+                          >
+                            Exportar Datos
+                          </button>
+                        </nav>
 
                         {importNotification && (
                           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-in fade-in">

@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Cloud,
   Download,
+  Factory,
   FileCheck2,
   FileText,
   Landmark,
@@ -22,7 +23,6 @@ import {
   Plus,
   RefreshCw,
   Users,
-  Wallet,
 } from "lucide-react";
 import PublicNavbar from "@/components/PublicNavbar";
 import PublicFooter from "@/components/PublicFooter";
@@ -346,30 +346,7 @@ export default function HomePage() {
 
           {/* Module Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[30px]">
-            {/* 1. Facturación y cotizaciones */}
-            <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
-              <div className="flex flex-col gap-[21px]">
-                <div className="flex items-center justify-between">
-                  <FileText className="w-[30px] h-[30px] text-[#087e63]" strokeWidth={1.6} />
-                  <span className="font-inter font-semibold text-[9px] leading-[11px] tracking-wider text-[#637080] uppercase">
-                    VENDA CON ORDEN
-                  </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
-                    Facturación y cotizaciones
-                  </h3>
-                  <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
-                    De la primera cotización a la factura final, sin volver a ingresar la información.
-                  </p>
-                </div>
-              </div>
-              <p className="font-inter text-[12px] leading-[22px] text-[#14253b] pt-2 border-t border-[#dde5e2]/60">
-                Numeración CAI autorizada por el SAR · ISV del 15% y 18% automático · Cotizaciones y pedidos a facturas · Envío por correo y PDF
-              </p>
-            </div>
-
-            {/* 2. Contabilidad completa */}
+            {/* 1. Contabilidad */}
             <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
               <div className="flex flex-col gap-[21px]">
                 <div className="flex items-center justify-between">
@@ -380,7 +357,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex flex-col gap-3">
                   <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
-                    Contabilidad completa
+                    Contabilidad
                   </h3>
                   <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
                     Cada movimiento en su lugar. Una visión contable que acompaña su operación.
@@ -392,30 +369,53 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* 3. Bancos y conciliación */}
+            {/* 2. Ventas */}
             <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
               <div className="flex flex-col gap-[21px]">
                 <div className="flex items-center justify-between">
-                  <Landmark className="w-[30px] h-[30px] text-[#087e63]" strokeWidth={1.6} />
+                  <FileText className="w-[30px] h-[30px] text-[#087e63]" strokeWidth={1.6} />
                   <span className="font-inter font-semibold text-[9px] leading-[11px] tracking-wider text-[#637080] uppercase">
-                    CONTROLE SU LIQUIDEZ
+                    VENDA CON ORDEN
                   </span>
                 </div>
                 <div className="flex flex-col gap-3">
                   <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
-                    Bancos y conciliación
+                    Ventas
                   </h3>
                   <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
-                    Conecte sus registros con sus movimientos bancarios y mantenga sus saldos al día.
+                    De la primera cotización a la factura final, sin volver a ingresar la información.
                   </p>
                 </div>
               </div>
               <p className="font-inter text-[12px] leading-[22px] text-[#14253b] pt-2 border-t border-[#dde5e2]/60">
-                Cuentas en HNL, USD y EUR · Importación de estados y cruce de transacciones · Transferencias, cheques y depósitos
+                Numeración CAI autorizada por el SAR · ISV del 15% y 18% automático · Cotizaciones y pedidos a facturas · Envío por correo y PDF
               </p>
             </div>
 
-            {/* 4. Inventario y compras */}
+            {/* 3. Compras */}
+            <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
+              <div className="flex flex-col gap-[21px]">
+                <div className="flex items-center justify-between">
+                  <ClipboardList className="w-[30px] h-[30px] text-[#087e63]" strokeWidth={1.6} />
+                  <span className="font-inter font-semibold text-[9px] leading-[11px] tracking-wider text-[#637080] uppercase">
+                    ORGANICE SUS COMPRAS
+                  </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
+                    Compras
+                  </h3>
+                  <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
+                    Gestione sus proveedores y dé seguimiento a sus compras y pagos.
+                  </p>
+                </div>
+              </div>
+              <p className="font-inter text-[12px] leading-[22px] text-[#14253b] pt-2 border-t border-[#dde5e2]/60">
+                Proveedores · Órdenes de compra · Recepción de inventario · Facturas y pagos a proveedores
+              </p>
+            </div>
+
+            {/* 4. Inventario */}
             <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
               <div className="flex flex-col gap-[21px]">
                 <div className="flex items-center justify-between">
@@ -426,7 +426,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex flex-col gap-3">
                   <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
-                    Inventario y compras
+                    Inventario
                   </h3>
                   <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
                     Sepa qué tiene, cuánto vale y cuándo necesita reponerlo.
@@ -434,34 +434,34 @@ export default function HomePage() {
                 </div>
               </div>
               <p className="font-inter text-[12px] leading-[22px] text-[#14253b] pt-2 border-t border-[#dde5e2]/60">
-                Kardex valorizado en tiempo real · Costo promedio ponderado · Alertas de stock bajo · De la orden de compra a la recepción y factura del proveedor
+                Kardex valorizado en tiempo real · Costo promedio ponderado · Alertas de stock bajo
               </p>
             </div>
 
-            {/* 5. Caja chica y retenciones */}
+            {/* 5. Producción */}
             <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
               <div className="flex flex-col gap-[21px]">
                 <div className="flex items-center justify-between">
-                  <Wallet className="w-[30px] h-[30px] text-[#087e63]" strokeWidth={1.6} />
+                  <Factory className="w-[30px] h-[30px] text-[#087e63]" strokeWidth={1.6} />
                   <span className="font-inter font-semibold text-[9px] leading-[11px] tracking-wider text-[#637080] uppercase">
-                    CUIDE CADA MOVIMIENTO
+                    ORGANICE SU PRODUCCIÓN
                   </span>
                 </div>
                 <div className="flex flex-col gap-3">
                   <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
-                    Caja chica y retenciones
+                    Producción
                   </h3>
                   <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
-                    Orden para los gastos cotidianos y para sus obligaciones de retención.
+                    Planifique la fabricación y mantenga organizados sus materiales.
                   </p>
                 </div>
               </div>
               <p className="font-inter text-[12px] leading-[22px] text-[#14253b] pt-2 border-t border-[#dde5e2]/60">
-                Fondos fijos · Vales provisionales y arqueos de caja · Constancias de retención del SAR y reporte mensual
+                Órdenes de producción · Listas de materiales · Materias primas · Productos terminados
               </p>
             </div>
 
-            {/* 6. Reportes gerenciales */}
+            {/* 6. Reportes */}
             <div className="border border-[#dde5e2] rounded-[4px] p-7 md:p-[28px_28px_30px_28px] flex flex-col justify-between gap-6 hover:shadow-md transition">
               <div className="flex flex-col gap-[21px]">
                 <div className="flex items-center justify-between">
@@ -472,7 +472,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex flex-col gap-3">
                   <h3 className="font-manrope font-bold text-[23px] leading-[28px] text-[#25426f]">
-                    Reportes gerenciales
+                    Reportes
                   </h3>
                   <p className="font-inter text-[15px] leading-[24px] text-[#637080]">
                     La información que necesita para decidir, sin perderse entre hojas de cálculo.
