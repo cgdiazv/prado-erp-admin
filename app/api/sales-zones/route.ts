@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveCompanyId } from "@/lib/tenant";
 
-export const DEFAULT_SALES_ZONES = [
+const DEFAULT_SALES_ZONES = [
   "San Pedro Sula / Zona Norte",
   "Tegucigalpa / Zona Centro-Sur",
   "La Ceiba / Zona Atlántida",
